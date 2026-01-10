@@ -29,7 +29,7 @@ class SchedulePlanningController extends Controller
     public function index(Request $request)
     {
         $query = SchedulePlanning::with(['department', 'schedules', 'schedules.employee']); 
-        $currentYear = Carbon::now()->year;
+        $currentYear = $request->filled('year') ? $request->input('year') : Carbon::now()->year;
         
         // Filtro
         if ($request->filled('start') && $request->filled('end')) {
