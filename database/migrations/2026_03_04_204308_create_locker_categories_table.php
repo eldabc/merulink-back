@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lockers', function (Blueprint $table) {
+        Schema::create('locker_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
-            $table->string('status')->default('Disponible');
-            $table->foreignId('category_id');
+            $table->string('key')->unique(); // 'D', 'C'
+            $table->string('name');          // 'Damas', 'Caballeros'
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lockers');
+        Schema::dropIfExists('locker_categories');
     }
 };

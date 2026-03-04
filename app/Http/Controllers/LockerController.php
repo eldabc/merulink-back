@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Locker;
 use Illuminate\Http\Request;
+use App\Http\Resources\LockerResource;
 
 class LockerController extends Controller
 {
@@ -12,7 +13,10 @@ class LockerController extends Controller
      */
     public function index()
     {
-        return "Index";
+        // Usamos 'with' para evitar el problema de N+1 consultas
+        $lockers = Locker::with('locker_categories')->get();
+        return LockerResource::collection($lockers);
+        // return "Index";
     }
 
     /**
