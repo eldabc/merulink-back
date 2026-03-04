@@ -27,19 +27,19 @@ class RoleSeeder extends Seeder
         ]);
 
         Permission:: firstOrcreate([
-            'name' => 'crear departamento',
+            'name' => 'create-locker',
         ]);
 
         Permission:: firstOrcreate([
-            'name' => 'ver departamento',
+            'name' => 'view-locker',
         ]);
 
         Permission:: firstOrcreate([
-            'name' => 'editar departamento',
+            'name' => 'edit-locker',
         ]);
 
         $roleSuperAdmin->givePermissionTo(Permission::all());
-        $roleAdmin->givePermissionTo('ver departamento');
+        $roleUser->givePermissionTo('view-locker');
 
 
     }
