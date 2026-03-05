@@ -20,10 +20,10 @@ use App\Http\Controllers\LockerController;
 
         // Por permiso
         Route::middleware('permission:view-locker')->group(function () {
+            Route::get('/lockers', [LockerController::class, 'index']);
             Route::post('/lockers', [LockerController::class, 'store']);
             Route::get('/lockers/{locker}', [LockerController::class, 'show'])->whereNumber('locker');
-            Route::get('/lockers', [LockerController::class, 'index']);
-            Route::put('/lockers/{id}', [LockerController::class, 'update']);
+            Route::put('/lockers/{locker}', [LockerController::class, 'update'])->whereNumber('locker');
         });
 
     });

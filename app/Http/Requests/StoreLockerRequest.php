@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreLockerRequest extends FormRequest
@@ -22,7 +23,13 @@ class StoreLockerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code'        => 'required|string|unique:lockers,code',
+            // 'code'        => 'required|string|unique:lockers,code',
+            'code' => [
+                'required',
+                'string',
+                // Busca code en lockers, pero ignora el ID actual
+                Rule::unique('lockers', 'code')->ignore($this->route('locker')),
+            ],
             'status'      => 'required|string|in:Disponible,Ocupado',
             'category.id' => 'required|exists:locker_categories,id',
         ];

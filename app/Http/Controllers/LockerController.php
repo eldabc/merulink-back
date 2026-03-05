@@ -51,9 +51,18 @@ class LockerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Locker $locker)
+    public function update(StoreLockerRequest $request, Locker $locker)
     {
-        return "Update";
+        // Obtener datos validados
+        $data = $request->validated();
+
+        $locker->update([
+            'code'               => $data['code'],
+            'status'             => $data['status'],
+            'locker_category_id' => $data['category']['id'],
+        ]);
+
+        return new LockerResource($locker->load('lockerCategory'));
     }
 
     /**
