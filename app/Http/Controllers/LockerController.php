@@ -16,7 +16,6 @@ class LockerController extends Controller
         // Usamos 'with' para evitar el problema de N+1 consultas
         $lockers = Locker::with('lockerCategory')->get();
         return LockerResource::collection($lockers);
-        // return "Index";
     }
 
     /**
@@ -24,7 +23,24 @@ class LockerController extends Controller
      */
     public function store(Request $request)
     {
-        return "Store";
+        // Validar
+        $validated = $request->validate([
+            'code'                => 'required|string|unique:lockers,code',
+            'status'              => 'required|string',
+            'category.id'  => 'required|exists:locker_categories,id',
+        ]);
+
+        // Crear
+        $locker = Locker::create([
+            'code'               => $validated['code'],
+            'status'             => $validated['status'],
+            'locker_category_id' => $validated['category']['id'], 
+        ]);
+
+        // Carga la relación
+        $locker->load('lockerCategory');
+
+        return new LockerResource($locker);
     }
 
     /**

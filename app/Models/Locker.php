@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Locker extends Model
 {
+    protected $fillable = [
+        'code',
+        'status',
+        'locker_category_id',
+    ];
+
     // Locker pertenece a una categoría
     public function lockerCategory(): BelongsTo
     {
