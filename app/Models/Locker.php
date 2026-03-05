@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Locker extends Model
 {
     // Locker pertenece a una categoría
-    public function category(): BelongsTo
+    public function lockerCategory(): BelongsTo
     {
         return $this->belongsTo(LockerCategory::class);
     }

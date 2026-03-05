@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->string('status')->default('Disponible');
-            $table->foreignId('category_id');
+            $table->foreignId('locker_category_id');
             $table->timestamps();
         });
     }

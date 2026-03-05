@@ -19,9 +19,9 @@ class LockerResource extends JsonResource
             'code' => $this->code,
             'status' => $this->status,
             'category' => [
-                'id' => $this->category->id,
-                'key' => $this->category->key,
-                'name' => $this->category->name,
+                'id' => $this->lockerCategory?->id,
+                'key' => $this->lockerCategory?->key,
+                'name' => $this->lockerCategory?->name,
             ],
         ];
         // return parent::toArray($request);

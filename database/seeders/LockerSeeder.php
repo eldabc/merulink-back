@@ -15,7 +15,7 @@ class LockerSeeder extends Seeder
         \App\Models\Locker::create([
             'code' => 'C-01',
             'status' => 'Disponible',
-            'category_id' => 1,
+            'locker_category_id' => 1,
         ]);
     }
 }

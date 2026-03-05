@@ -14,7 +14,7 @@ class LockerController extends Controller
     public function index()
     {
         // Usamos 'with' para evitar el problema de N+1 consultas
-        $lockers = Locker::with('locker_categories')->get();
+        $lockers = Locker::with('lockerCategory')->get();
         return LockerResource::collection($lockers);
         // return "Index";
     }
