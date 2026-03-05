@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Locker;
 use Illuminate\Http\Request;
 use App\Http\Resources\LockerResource;
+use App\Http\Requests\StoreLockerRequest;
 
 class LockerController extends Controller
 {
@@ -21,26 +22,18 @@ class LockerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreLockerRequest $request)
     {
-        // Validar
-        $validated = $request->validate([
-            'code'                => 'required|string|unique:lockers,code',
-            'status'              => 'required|string',
-            'category.id'  => 'required|exists:locker_categories,id',
-        ]);
+        $data = $request->validated();
 
         // Crear
         $locker = Locker::create([
-            'code'               => $validated['code'],
-            'status'             => $validated['status'],
-            'locker_category_id' => $validated['category']['id'], 
+            'code'               => $data['code'],
+            'status'             => $data['status'],
+            'locker_category_id' => $data['category']['id'], 
         ]);
 
-        // Carga la relación
-        $locker->load('lockerCategory');
-
-        return new LockerResource($locker);
+        return new LockerResource($locker->load('lockerCategory'));
     }
 
     /**
