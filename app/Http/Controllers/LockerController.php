@@ -41,7 +41,10 @@ class LockerController extends Controller
      */
     public function show(Locker $locker)
     {
-        return "Show";
+        // Carga la relación para el Resource
+        $locker->load('lockerCategory');
+
+        return new LockerResource($locker);
     }
 
 
