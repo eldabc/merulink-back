@@ -51,7 +51,7 @@ class StorePadlockRequest extends FormRequest
             'pass.required' => 'Clave del candado es obligatoria.',
             'pass.string'   => 'Clave debe ser una cadena de texto válida.',
             'pass.regex'    => 'Clave debe tener el formato numérico 00-00-00 (ejemplo: 12-34-56).',
-            'status.enum'           => 'El estado seleccionado no es válido. Los valores permitidos son: Disponible y Ocupado.',
+            'status.enum'           => 'El estado seleccionado no es válido. Los valores permitidos son: Disponible y Asignado.',
             'status.required'       => 'El estatus del locker es obligatorio.',
         ];
     }

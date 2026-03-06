@@ -48,9 +48,17 @@ class PadlockController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePadlockRequest $request, Padlock $padlock)
+    public function update(StorePadlockRequest $request, Padlock $padlock)
     {
-        //
+        $data = $request->validated();
+
+        $padlock->update([
+            'serial'   => $data['serial'],
+            'pass'     => $data['pass'],
+            'status'   => $data['status'],
+        ]);
+
+        return new PadlockResource($padlock);
     }
 
     /**
@@ -58,6 +66,16 @@ class PadlockController extends Controller
      */
     public function destroy(Padlock $padlock)
     {
-        //
+        if ($padlock->status->isAssigned()) {
+            return response()->json([
+                'message' => 'No se puede eliminar un candado que está asignado.'
+            ], 422);
+        }
+
+        $padlock->delete();
+
+        return response()->json([
+            'message' => "El candado {$padlock->serial} ha sido eliminado correctamente."
+        ], 200);
     }
 }
