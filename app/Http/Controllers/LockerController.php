@@ -70,6 +70,22 @@ class LockerController extends Controller
      */
     public function destroy(Locker $locker)
     {
-        return "Destroy";
+        if ($locker->status->isOccupied()) {
+            return response()->json([
+                'message' => 'No se puede eliminar un locker que está ocupado.'
+            ], 422);
+        }
+
+        if ($locker->status->isMatched()) {
+            return response()->json([
+                'message' => 'No se puede eliminar un locker que está emparejado.'
+            ], 422);
+        }
+
+        $locker->delete();
+
+        return response()->json([
+            'message' => "El locker {$locker->code} ha sido eliminado correctamente."
+        ], 200);
     }
 }
