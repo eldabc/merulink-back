@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LockerController;
+use App\Http\Controllers\PadlockController;
 
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -16,6 +17,12 @@ use App\Http\Controllers\LockerController;
     Route::get('/lockers/{locker}', [LockerController::class, 'show'])->whereNumber('locker');
     Route::put('/lockers/{locker}', [LockerController::class, 'update'])->whereNumber('locker');
     Route::delete('/lockers/{locker}', [LockerController::class, 'destroy'])->whereNumber('locker');
+
+    Route::get('/padlocks', [PadlockController::class, 'index']);
+    Route::post('/padlocks', [PadlockController::class, 'store']);
+    Route::get('/padlocks/{padlock}', [PadlockController::class, 'show'])->whereNumber('padlock');
+    Route::put('/padlocks/{padlock}', [PadlockController::class, 'update'])->whereNumber('padlock');
+    Route::delete('/padlocks/{padlock}', [PadlockController::class, 'destroy'])->whereNumber('padlock');
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {
