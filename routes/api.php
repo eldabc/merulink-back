@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LockerController;
 use App\Http\Controllers\PadlockController;
+use App\Http\Controllers\AssignController;
 
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -18,11 +19,14 @@ use App\Http\Controllers\PadlockController;
     Route::put('/lockers/{locker}', [LockerController::class, 'update'])->whereNumber('locker');
     Route::delete('/lockers/{locker}', [LockerController::class, 'destroy'])->whereNumber('locker');
 
-    Route::get('/padlocks', [PadlockController::class, 'index']);
-    Route::post('/padlocks', [PadlockController::class, 'store']);
-    Route::get('/padlocks/{padlock}', [PadlockController::class, 'show'])->whereNumber('padlock');
-    Route::put('/padlocks/{padlock}', [PadlockController::class, 'update'])->whereNumber('padlock');
-    Route::delete('/padlocks/{padlock}', [PadlockController::class, 'destroy'])->whereNumber('padlock');
+    // Route::get('/padlocks', [PadlockController::class, 'index']);
+    // Route::post('/padlocks', [PadlockController::class, 'store']);
+    // Route::get('/padlocks/{padlock}', [PadlockController::class, 'show'])->whereNumber('padlock');
+    // Route::put('/padlocks/{padlock}', [PadlockController::class, 'update'])->whereNumber('padlock');
+    // Route::delete('/padlocks/{padlock}', [PadlockController::class, 'destroy'])->whereNumber('padlock');
+
+    Route::apiResource('padlocks', PadlockController::class);
+    Route::apiResource('assings', AssignController::class);
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {

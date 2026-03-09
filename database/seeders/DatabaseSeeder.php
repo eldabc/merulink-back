@@ -17,10 +17,12 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $this->call(RoleSeeder::class);
+        $this->call(EmployeeSeeder::class);
         $this->call(PadlockSeeder::class);
         $this->call(LockerCategorySeeder::class);
         $this->call(LockerSeeder::class);
-        $this->call(UserSeeder::class);
+        $this->call(AssignSeeder::class);
+        $this->call(UserSeeder::class);      
 
         User::factory()->create([
             'name' => 'Test User',

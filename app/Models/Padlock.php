@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PadlockStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Padlock extends Model
 {
@@ -17,4 +18,9 @@ class Padlock extends Model
     protected $casts = [
         'status' => PadlockStatus::class,
     ];
+
+    public function assignment(): HasOne
+    {
+        return $this->hasOne(Assign::class);
+    }
 }
