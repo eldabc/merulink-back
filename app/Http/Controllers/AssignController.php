@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Assign;
 use Illuminate\Http\Request;
 use App\Http\Resources\AssignResource;
+use App\Http\Requests\StoreAssingRequest;
 
 class AssignController extends Controller
 {
@@ -20,9 +21,19 @@ class AssignController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreAssingRequest $request)
     {
-        //
+        $data = $request->validated();
+        $assign = Assign::create([
+            'assign_code' => $data['assignCode'], // Si es nullable, puedes generar uno
+            'assign_date' => $data['assignDate'],
+            'locker_id'   => $data['locker']['id'],
+            'padlock_id'  => $data['locker']['padlock']['id'],
+            'employee_id' => $data['employee']['id'] ?? null,
+        ]);
+        // TODO: ACTUALIZAR status de locker, padlock
+
+    return new AssignResource($assign);
     }
 
     /**
