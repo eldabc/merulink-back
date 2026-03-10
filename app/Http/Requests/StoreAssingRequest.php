@@ -23,11 +23,10 @@ class StoreAssingRequest extends FormRequest
     public function rules(): array
 {
     return [
-        // Usamos camelCase para coincidir con tu JSON
         'assignCode' => [
             'nullable',
             'string',
-            'unique:assigns,assign_code', // Sigue validando contra la columna de la BD
+            'unique:assigns,assign_code',
             'max:20'
         ],
         'assignDate' => [
@@ -35,7 +34,7 @@ class StoreAssingRequest extends FormRequest
             'date',
             'date_format:Y-m-d',
         ],
-        // Accedemos al ID dentro del objeto locker
+        // Accede al ID dentro del objeto locker
         'locker.id' => [
             'required',
             'integer',
@@ -46,7 +45,7 @@ class StoreAssingRequest extends FormRequest
                 }
             },
         ],
-        // Accedemos al ID dentro del objeto padlock (que está dentro de locker)
+        // Accede al ID dentro del objeto padlock
         'locker.padlock.id' => [
             'required',
             'integer',
@@ -57,11 +56,16 @@ class StoreAssingRequest extends FormRequest
                 }
             },
         ],
-        // Accedemos al ID dentro del objeto employee
+        // Accede al ID dentro del objeto employee
         'employee.id' => [
             'nullable',
             'integer',
             'exists:employees,id',
+            function ($attribute, $value, $fail) {
+                if ($value && Assign::where('employee_id', $value)->exists()) {
+                    $fail('Este empleado ya tiene locker y candado asignados.');
+                }
+            },
         ],
     ];
 }

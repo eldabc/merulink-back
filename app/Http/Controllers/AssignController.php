@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assign;
+use App\Models\Padlock;
+use App\Models\Locker;
 use Illuminate\Http\Request;
 use App\Http\Resources\AssignResource;
 use App\Http\Requests\StoreAssingRequest;
+use Illuminate\Support\Facades\DB;
 
 class AssignController extends Controller
 {
@@ -24,16 +27,26 @@ class AssignController extends Controller
     public function store(StoreAssingRequest $request)
     {
         $data = $request->validated();
-        $assign = Assign::create([
-            'assign_code' => $data['assignCode'], // Si es nullable, puedes generar uno
-            'assign_date' => $data['assignDate'],
-            'locker_id'   => $data['locker']['id'],
-            'padlock_id'  => $data['locker']['padlock']['id'],
-            'employee_id' => $data['employee']['id'] ?? null,
-        ]);
-        // TODO: ACTUALIZAR status de locker, padlock
+        return DB::transaction(function () use ($data) {
+            $assign = Assign::create([
+                'assign_code' => $data['assignCode'], // Si es nullable, puedes generar uno
+                'assign_date' => $data['assignDate'],
+                'locker_id'   => $data['locker']['id'],
+                'padlock_id'  => $data['locker']['padlock']['id'],
+                'employee_id' => $data['employee']['id'] ?? null,
+            ]);
+            
 
-    return new AssignResource($assign);
+            Locker::where('id', $data['locker']['id'])->update([
+                'status' => 'Ocupado'
+            ]);
+
+            Padlock::where('id', $data['locker']['padlock']['id'])->update([
+                'status' => 'Asignado'
+            ]);
+
+            return new AssignResource($assign);
+        });
     }
 
     /**
