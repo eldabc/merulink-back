@@ -4,13 +4,13 @@ namespace App\Enums;
 
 enum LockerStatus: string {
     
-    case DISPONIBLE = 'Disponible';
-    case OCUPADO = 'Ocupado';
+    case AVAILABLE = 'Disponible';
+    case OCCUPIED = 'Ocupado';
     case MATCHED = 'Emparejado';
     
     public function isOccupied(): bool
     {
-        return $this === self::OCUPADO;
+        return $this === self::OCCUPIED;
     }
 
     public function isMatched(): bool

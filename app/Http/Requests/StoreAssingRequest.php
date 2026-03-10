@@ -75,6 +75,7 @@ class StoreAssingRequest extends FormRequest
         return [
             'assignCode.unique'      => 'Este código de asignación ya está registrado.',
             'locker.id.exists'       => 'El locker seleccionado no es válido.',
+            'locker.padlock.id.exists'  => 'El candado seleccionado no es válido.',
             'locker.id.required'     => 'El locker es obligatorio.',
             'locker.padlock.id.required' => 'El candado es obligatorio.',
             'employee.id.exists'     => 'El empleado seleccionado no existe.',

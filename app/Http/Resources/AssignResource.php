@@ -34,13 +34,14 @@ class AssignResource extends JsonResource
                     'status' => $this->padlock->status,
                 ],
             ],
-            'employee' => [
-                'id' => $this->employee->id,
-                'name' => $this->employee->first_name,
-                'sex' => $this->employee->sex,
-                'department' => null,
-                'department_name' => '',
-            ]
+            'employee' => $this->employee_id ?
+                    [
+                        'id' => $this->employee->id,
+                        'name' => $this->employee->first_name.' '.$this->employee->last_name,
+                        'sex' => $this->employee->sex,
+                        'department' => null,
+                        'department_name' => '',
+                    ] : null,
 
         ];
     }

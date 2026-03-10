@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Locker;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,10 +13,16 @@ class LockerSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Locker::create([
+        Locker::create([
+            'code' => 'D-01',
+            'status' => 'Ocupado',
+            'locker_category_id' => 1,
+        ]);
+
+        Locker::create([
             'code' => 'C-01',
             'status' => 'Disponible',
-            'locker_category_id' => 1,
+            'locker_category_id' => 2,
         ]);
     }
 }

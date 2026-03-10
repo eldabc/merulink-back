@@ -13,12 +13,20 @@ class PadlockSeeder extends Seeder
      */
     public function run(): void
     {
-        $padlock = Padlock::firstOrCreate(
+        Padlock::firstOrCreate(
             // Criterio de búsqueda
-            ['serial' => '101-102'], 
+            ['serial' => '123456'], 
             [
-                'pass'   => '11-32-77',
-                'status' => 'Disponible',
+             'pass'   => '11-32-66',
+             'status' => 'Asignado',
+            ]
+        );
+
+        Padlock::firstOrCreate(
+            ['serial' => '123457'], 
+            [
+             'pass'   => '11-32-77',
+             'status' => 'Disponible',
             ]
         );
     }
