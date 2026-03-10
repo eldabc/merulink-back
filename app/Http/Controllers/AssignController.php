@@ -32,14 +32,17 @@ class AssignController extends Controller
         return DB::transaction(function () use ($data) {
 
             $employeeId = data_get($data, 'employee.id');
-            
-            $assign = Assign::create([
-                'assign_code' => $data['assignCode'], // Si es nullable, puedes generar uno
-                'assign_date' => $data['assignDate'],
-                'locker_id'   => $data['locker']['id'],
-                'padlock_id'  => $data['locker']['padlock']['id'],
-                'employee_id' => $employeeId,
-            ]);
+
+            $assign = Assign::updateOrCreate(
+                ['locker_id' => $data['locker']['id']],
+
+                [
+                 'assign_code' => $data['assignCode'], // Si es nullable, puedes generar uno
+                 'assign_date' => $data['assignDate'],
+                 'padlock_id'  => $data['locker']['padlock']['id'],
+                 'employee_id' => $employeeId,
+                ]
+            );
 
             $locker_status = $employeeId ? LockerStatus::OCCUPIED : LockerStatus::MATCHED;
             

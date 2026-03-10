@@ -26,7 +26,7 @@ use App\Http\Controllers\AssignController;
     // Route::delete('/padlocks/{padlock}', [PadlockController::class, 'destroy'])->whereNumber('padlock');
 
     Route::apiResource('padlocks', PadlockController::class);
-    Route::apiResource('assings', AssignController::class);
+    Route::apiResource('assigns', AssignController::class);
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {

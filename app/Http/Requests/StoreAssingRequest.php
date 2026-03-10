@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 use App\Models\Assign;
-
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAssingRequest extends FormRequest
@@ -21,54 +21,73 @@ class StoreAssingRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
-{
-    return [
-        'assignCode' => [
-            'nullable',
-            'string',
-            'unique:assigns,assign_code',
-            'max:20'
-        ],
-        'assignDate' => [
-            'nullable',
-            'date',
-            'date_format:Y-m-d',
-        ],
-        // Accede al ID dentro del objeto locker
-        'locker.id' => [
-            'required',
-            'integer',
-            'exists:lockers,id',
-            function ($attribute, $value, $fail) {
-                if (Assign::where('locker_id', $value)->exists()) {
-                    $fail('Este locker ya está asignado a otro empleado.');
-                }
-            },
-        ],
-        // Accede al ID dentro del objeto padlock
-        'locker.padlock.id' => [
-            'required',
-            'integer',
-            'exists:padlocks,id',
-            function ($attribute, $value, $fail) {
-                if (Assign::where('padlock_id', $value)->exists()) {
-                    $fail('Este candado ya está en uso en otra asignación.');
-                }
-            },
-        ],
-        // Accede al ID dentro del objeto employee
-        'employee.id' => [
-            'nullable',
-            'integer',
-            'exists:employees,id',
-            function ($attribute, $value, $fail) {
-                if ($value && Assign::where('employee_id', $value)->exists()) {
-                    $fail('Este empleado ya tiene locker y candado asignados.');
-                }
-            },
-        ],
-    ];
-}
+    {
+        $existingAssign = Assign::where('locker_id', $this->input('locker.id'))
+                                ->where('padlock_id', $this->input('locker.padlock.id'))
+                                ->first();
+        return [
+            'assignCode' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('assigns', 'assign_code')->ignore($existingAssign)
+            ],
+            'assignDate' => [
+                'nullable',
+                'date',
+                'date_format:Y-m-d',
+            ],
+            // Accede al ID dentro del objeto locker
+            'locker.id' => [
+                'required', 'integer', 'exists:lockers,id',
+                function ($attribute, $value, $fail) use ($existingAssign) {
+                    // Solo falla si el locker está en una asignación que NO sea la actual
+                    $alreadyAssigned = Assign::where('locker_id', $value)
+                        ->when($existingAssign, function ($query) use ($existingAssign) {
+                            return $query->where('id', '!=', $existingAssign->id);
+                        })
+                        ->exists();
+
+                    if ($alreadyAssigned) {
+                        $fail('Este locker ya está asignado en otro registro.');
+                    }
+                },
+            ],
+            // Accede al ID dentro del objeto padlock
+            'locker.padlock.id' => [
+            'required', 'integer', 'exists:padlocks,id',
+                function ($attribute, $value, $fail) use ($existingAssign) {
+                    // Solo falla si el candado está en una asignación que NO sea la actual
+                    $alreadyInUse = Assign::where('padlock_id', $value)
+                        ->when($existingAssign, function ($query) use ($existingAssign) {
+                            return $query->where('id', '!=', $existingAssign->id);
+                        })
+                        ->exists();
+
+                    if ($alreadyInUse) {
+                        $fail('Este candado ya está siendo usado por otro locker.');
+                    }
+                },
+            ],
+            // Accede al ID dentro del objeto employee
+            'employee.id' => [
+                'nullable', 'integer', 'exists:employees,id',
+                function ($attribute, $value, $fail) use ($existingAssign) {
+                    if ($value) {
+                        // Validamos que el empleado no tenga OTRA asignación diferente a esta
+                        $employeeHasAnother = Assign::where('employee_id', $value)
+                            ->when($existingAssign, function ($query) use ($existingAssign) {
+                                return $query->where('id', '!=', $existingAssign->id);
+                            })->exists();
+
+                        if ($employeeHasAnother) {
+                            $fail('Este empleado ya tiene una asignación activa.');
+                        }
+                    }
+                },
+            ],
+        ];
+    }
 
     public function messages(): array
     {
