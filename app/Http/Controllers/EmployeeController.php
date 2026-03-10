@@ -4,15 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use App\Http\Resources\EmployeeResource;
 
 class EmployeeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Employee::query();
+
+        // Filtro por sexo (H o M)
+        if ($request->has('sex')) {
+            $query->where('sex', $request->sex);
+        }
+
+        // Filtro empleados SIN asignación activa
+        if ($request->boolean('unassigned')) {
+            $query->whereDoesntHave('assignment'); 
+        }
+
+        $employees = $query->get();
+
+        return EmployeeResource::collection($employees);
     }
 
     /**

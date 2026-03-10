@@ -38,8 +38,8 @@ class AssignResource extends JsonResource
                         'id' => $this->employee->id,
                         'name' => $this->employee->first_name.' '.$this->employee->last_name,
                         'sex' => $this->employee->sex,
-                        'department' => null,
-                        'department_name' => '',
+                        'department' => $this->employee->department_id,
+                        'departmentName' => $this->employee->department->name,
             ] : null,
 
         ];

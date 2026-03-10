@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LockerController;
 use App\Http\Controllers\PadlockController;
 use App\Http\Controllers\AssignController;
+use App\Http\Controllers\EmployeeController;
 
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -27,6 +28,7 @@ use App\Http\Controllers\AssignController;
 
     Route::apiResource('padlocks', PadlockController::class);
     Route::apiResource('assigns', AssignController::class);
+    Route::apiResource('employees', EmployeeController::class);
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {
