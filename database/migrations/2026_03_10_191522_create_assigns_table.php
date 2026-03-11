@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('assigns', function (Blueprint $table) {
             $table->id();
-            $table->string('assign_code');
-            $table->date('assign_date');
+            $table->string('assign_code')->nullable();
+            $table->date('assign_date')->nullable();
 
             $table->foreignId('locker_id')
                   ->constrained()
