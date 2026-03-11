@@ -13,7 +13,7 @@ class EmployeeSeeder extends Seeder
      */
     public function run(): void
     {
-        $padlock = Employee::firstOrCreate(
+        Employee::firstOrCreate(
             ['ci' => '21378987'], 
             [
                 'num_employee'   => '100',
@@ -26,11 +26,11 @@ class EmployeeSeeder extends Seeder
                 'nationality' => 'V',
                 'sex' => 'M',
                 'marital_status' => 'Soltera',
-                'department_id' => 1,
+                'department_id' => 3,
             ]
         );
 
-        $padlock = Employee::firstOrCreate(
+        Employee::firstOrCreate(
             ['ci' => '21378988'], 
             [
                 'num_employee'   => '101',
@@ -43,7 +43,58 @@ class EmployeeSeeder extends Seeder
                 'nationality' => 'V',
                 'sex' => 'H',
                 'marital_status' => 'Soltero',
-                'department_id' => 2,
+                'department_id' => 1,
+            ]
+        );
+
+        Employee::firstOrCreate(
+            ['ci' => '21378989'], 
+            [
+                'num_employee'   => '102',
+                'first_name' => 'Angel',
+                'second_name' => 'Andrés',
+                'last_name' => 'Carrillo',
+                'second_last_name' => 'Pérez',
+                'birthDate' => '1991-03-01',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'H',
+                'marital_status' => 'Soltero',
+                'department_id' => 1,
+            ]
+        );
+
+        Employee::firstOrCreate(
+            ['ci' => '22378929'], 
+            [
+                'num_employee'   => '104',
+                'first_name' => 'Manuel',
+                'second_name' => 'Jonh',
+                'last_name' => 'Fernández',
+                'second_last_name' => 'Pérez',
+                'birthDate' => '1991-04-01',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'H',
+                'marital_status' => 'Soltera',
+                'department_id' => 4,
+            ]
+        );
+
+        Employee::firstOrCreate(
+            ['ci' => '21378919'], 
+            [
+                'num_employee'   => '103',
+                'first_name' => 'María',
+                'second_name' => 'Josefa',
+                'last_name' => 'Hernández',
+                'second_last_name' => 'Pérez',
+                'birthDate' => '1991-03-01',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'M',
+                'marital_status' => 'Soltera',
+                'department_id' => 4,
             ]
         );
     }

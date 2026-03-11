@@ -20,7 +20,19 @@ class LockerSeeder extends Seeder
         ]);
 
         Locker::create([
+            'code' => 'D-02',
+            'status' => 'Disponible',
+            'locker_category_id' => 1,
+        ]);
+
+        Locker::create([
             'code' => 'C-01',
+            'status' => 'Disponible',
+            'locker_category_id' => 2,
+        ]);
+
+         Locker::create([
+            'code' => 'C-02',
             'status' => 'Disponible',
             'locker_category_id' => 2,
         ]);

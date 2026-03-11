@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Padlock;
+use Illuminate\Http\Request;
 use App\Http\Requests\StorePadlockRequest;
 use App\Http\Requests\UpdatePadlockRequest;
 use App\Http\Resources\PadlockResource;
@@ -12,9 +13,16 @@ class PadlockController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $padlocks = Padlock::all();
+        $query = Padlock::query();
+
+        // Filtro candados SIN asignación activa
+        if ($request->boolean('available')) {
+            $query->whereDoesntHave('assignment'); 
+        }
+
+        $padlocks = $query->get();
         return PadlockResource::collection($padlocks);
     }
 

@@ -29,5 +29,21 @@ class PadlockSeeder extends Seeder
              'status' => 'Disponible',
             ]
         );
+
+        Padlock::firstOrCreate(
+            ['serial' => '123458'], 
+            [
+             'pass'   => '11-32-88',
+             'status' => 'Disponible',
+            ]
+        );
+
+        Padlock::firstOrCreate(
+            ['serial' => '123459'], 
+            [
+             'pass'   => '11-32-99',
+             'status' => 'Disponible',
+            ]
+        );
     }
 }

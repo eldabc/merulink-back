@@ -14,19 +14,53 @@ class DepartmentSeeder extends Seeder
     public function run(): void
     {
         Department::firstOrCreate(
-            ['id' => 1],
-            [
-             'code' => 1,
-             'name' => 'Administración',
-            ]
+            ['code' => 1],
+            ['name' => 'Administración']
         );
 
         Department::firstOrCreate(
-            ['id' => 2],
-            [ 
-              'code' => 2,
-              'name' => 'Recepción',
-            ]  
+            ['code' => 2],
+            ['name' => 'Recepción']  
+        );
+
+        Department::firstOrCreate(
+            ['code' => 3],
+            ['name' => 'Ama de Llaves']  
+        );
+
+        Department::firstOrCreate(
+            ['code' => 4],
+            ['name' => 'Alimentos y Bebidas']  
+        );
+
+        Department::firstOrCreate(
+            ['code' => 5],
+            ['name' => 'Ventas']  
+        );
+
+        Department::firstOrCreate(
+            ['code' => 6],
+            ['name' => 'RRHH']  
+        );
+
+        Department::firstOrCreate(
+            ['code' => 7],
+            ['name' => 'Seguridad']  
+        );
+
+        Department::firstOrCreate(
+            ['code' => 8],
+            ['name' => 'Mantenimiento']  
+        );
+
+        Department::firstOrCreate(
+            ['code' => 9],
+            ['name' => 'Sistemas']  
+        );
+
+        Department::firstOrCreate(
+            ['code' => 10],
+            ['name' => 'Externo']  
         );
     }
 }

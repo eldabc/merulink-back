@@ -36,7 +36,8 @@ class AssignResource extends JsonResource
             ],
             'employee' => $this->employee_id ? [
                         'id' => $this->employee->id,
-                        'name' => $this->employee->first_name.' '.$this->employee->last_name,
+                        'firstName' => $this->employee->first_name,
+                        'lastName' => $this->employee->last_name,
                         'sex' => $this->employee->sex,
                         'department' => $this->employee->department_id,
                         'departmentName' => $this->employee->department->name,
