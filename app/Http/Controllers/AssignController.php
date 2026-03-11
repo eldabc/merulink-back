@@ -37,7 +37,7 @@ class AssignController extends Controller
                 ['locker_id' => $data['locker']['id']],
 
                 [
-                 'assign_code' => $data['assignCode'], // Si es nullable, puedes generar uno
+                 'assign_code' => $data['assignCode'],
                  'assign_date' => $data['assignDate'],
                  'padlock_id'  => $data['locker']['padlock']['id'],
                  'employee_id' => $employeeId,
