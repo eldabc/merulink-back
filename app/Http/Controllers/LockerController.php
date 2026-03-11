@@ -12,10 +12,23 @@ class LockerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Usamos 'with' para evitar el problema de N+1 consultas
-        $lockers = Locker::with('lockerCategory')->get();
+        $query = Locker::with('lockerCategory');
+
+        // Filtro categoryKey
+        if ($request->has('categoryKey')) {
+            $query->whereHas('lockerCategory', function ($q) use ($request) {
+                $q->where('key', $request->categoryKey);
+            });
+        }
+        // Filtro locker SIN asignación activa
+        if ($request->boolean('available')) {
+            $query->whereDoesntHave('assignment'); 
+        }
+
+        $lockers = $query->get();
+
         return LockerResource::collection($lockers);
     }
 
