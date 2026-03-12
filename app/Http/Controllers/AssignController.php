@@ -75,11 +75,51 @@ class AssignController extends Controller
         //
     }
 
+    public function destroyByCategory(Request $request)
+    {
+        $categoryKey = $request->query('categoryKey');
+
+        if (!$categoryKey) {
+            return response()->json(['message' => 'La categoría es requerida'], 400);
+        }
+
+        DB::transaction(function () use ($categoryKey) {
+            $assigns = Assign::whereHas('locker.lockerCategory', function ($q) use ($categoryKey) {
+                $q->where('key', $categoryKey);
+            })->get();
+
+            foreach ($assigns as $assign) {
+                // Método privado para resetear los estados
+                $this->resetStatuses($assign);
+                $assign->delete();
+            }
+        });
+
+        // Para front, status 204 es suficiente confirmación
+        return response()->noContent(); 
+    }
+
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Assign $assign)
+    public function destroy($id)
     {
-        //
+        $assign = Assign::findOrFail($id);
+
+        DB::transaction(function () use ($assign) {
+            $this->resetStatuses($assign);
+            $assign->delete();
+        });
+
+        return response()->noContent();
+    }
+
+    /**
+     * Función auxiliar para regresar Locker y Padlock a su estado inicial
+     */
+    private function resetStatuses($assign)
+    {
+        $assign->locker->update(['status' => LockerStatus::AVAILABLE]);
+        $assign->padlock->update(['status' => PadlockStatus::AVAILABLE]);
     }
 }

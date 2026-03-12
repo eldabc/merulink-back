@@ -28,6 +28,7 @@ use App\Http\Controllers\DepartmentController;
     // Route::delete('/padlocks/{padlock}', [PadlockController::class, 'destroy'])->whereNumber('padlock');
 
     Route::apiResource('padlocks', PadlockController::class);
+    Route::delete('assigns', [AssignController::class, 'destroyByCategory']);
     Route::apiResource('assigns', AssignController::class);
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('departments', DepartmentController::class);
