@@ -28,8 +28,11 @@ use App\Http\Controllers\DepartmentController;
     // Route::delete('/padlocks/{padlock}', [PadlockController::class, 'destroy'])->whereNumber('padlock');
 
     Route::apiResource('padlocks', PadlockController::class);
+    Route::apiResource('padlocks/patterns', PadlockPatternController::class);
     Route::delete('assigns', [AssignController::class, 'destroyByCategory']);
-    Route::apiResource('assigns', AssignController::class);
+    Route::apiResource('assigns', AssignController::class)->except([
+        'update', 'show'
+    ]);
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('departments', DepartmentController::class);
 
