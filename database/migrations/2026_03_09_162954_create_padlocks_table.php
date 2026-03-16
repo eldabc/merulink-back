@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('serial')->unique();
             $table->string('pass');
             $table->string('status');
+            $table->foreignId('padlock_pattern_id')
+                  ->constrained()
+                  ->onDelete('cascade');
             $table->timestamps();
         });
     }

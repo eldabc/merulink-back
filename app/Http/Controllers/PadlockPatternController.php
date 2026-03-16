@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PadlockPattern;
 use Illuminate\Http\Request;
+use App\Http\Resources\PadlockPatternResource;
 
 class PadlockPatternController extends Controller
 {
@@ -12,7 +13,8 @@ class PadlockPatternController extends Controller
      */
     public function index()
     {
-        //
+        $patthers = PadlockPattern::all();
+        return PadlockPatternResource::collection($patthers);
     }
 
     /**

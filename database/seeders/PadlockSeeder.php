@@ -14,11 +14,11 @@ class PadlockSeeder extends Seeder
     public function run(): void
     {
         Padlock::firstOrCreate(
-            // Criterio de búsqueda
             ['serial' => '123456'], 
             [
              'pass'   => '11-32-66',
              'status' => 'Asignado',
+             'padlock_pattern_id' => 1,
             ]
         );
 
@@ -27,6 +27,7 @@ class PadlockSeeder extends Seeder
             [
              'pass'   => '11-32-77',
              'status' => 'Disponible',
+             'padlock_pattern_id' => 1,
             ]
         );
 
@@ -35,6 +36,7 @@ class PadlockSeeder extends Seeder
             [
              'pass'   => '11-32-88',
              'status' => 'Disponible',
+             'padlock_pattern_id' => 1,
             ]
         );
 
@@ -43,6 +45,7 @@ class PadlockSeeder extends Seeder
             [
              'pass'   => '11-32-99',
              'status' => 'Disponible',
+             'padlock_pattern_id' => 1,
             ]
         );
     }

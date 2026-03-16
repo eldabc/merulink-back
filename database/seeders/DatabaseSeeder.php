@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleSeeder::class);
         $this->call(DepartmentSeeder::class);
         $this->call(EmployeeSeeder::class);
+        $this->call(PadlockPatternSeeder::class);
         $this->call(PadlockSeeder::class);
         $this->call(LockerCategorySeeder::class);
         $this->call(LockerSeeder::class);

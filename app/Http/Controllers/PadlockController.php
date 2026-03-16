@@ -15,7 +15,7 @@ class PadlockController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Padlock::query();
+        $query = Padlock::with('padlockPattern');
 
         // Filtro candados SIN asignación activa
         if ($request->boolean('available')) {

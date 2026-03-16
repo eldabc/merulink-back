@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LockerController;
+use App\Http\Controllers\PadlockPatternController;
 use App\Http\Controllers\PadlockController;
 use App\Http\Controllers\AssignController;
 use App\Http\Controllers\EmployeeController;
@@ -27,8 +28,11 @@ use App\Http\Controllers\DepartmentController;
     // Route::put('/padlocks/{padlock}', [PadlockController::class, 'update'])->whereNumber('padlock');
     // Route::delete('/padlocks/{padlock}', [PadlockController::class, 'destroy'])->whereNumber('padlock');
 
-    Route::apiResource('padlocks', PadlockController::class);
-    Route::apiResource('padlocks/patterns', PadlockPatternController::class);
+    Route::group(['prefix' => 'padlocks'], function () {
+        Route::apiResource('patterns', PadlockPatternController::class);
+        
+        Route::apiResource('/', PadlockController::class)->parameters(['' => 'padlock']);
+    });
     Route::delete('assigns', [AssignController::class, 'destroyByCategory']);
     Route::apiResource('assigns', AssignController::class)->except([
         'update', 'show'
