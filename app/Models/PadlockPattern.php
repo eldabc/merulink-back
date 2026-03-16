@@ -11,6 +11,12 @@ class PadlockPattern extends Model
         'unlock_sequence' => 'array',
     ];
 
+    protected $fillable = [
+        'model_name',
+        'reset_instructions',
+        'unlock_sequence',
+    ];
+
     public function padlock(): hasMany
     {
         return $this->hasMany(Padlock::class);

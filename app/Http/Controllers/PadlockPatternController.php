@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PadlockPattern;
 use Illuminate\Http\Request;
 use App\Http\Resources\PadlockPatternResource;
+use App\Http\Requests\StorePadlockPatternRequest;
 
 class PadlockPatternController extends Controller
 {
@@ -13,16 +14,25 @@ class PadlockPatternController extends Controller
      */
     public function index()
     {
-        $patthers = PadlockPattern::all();
-        return PadlockPatternResource::collection($patthers);
+        $patterns = PadlockPattern::all();
+        return PadlockPatternResource::collection($patterns);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePadlockPatternRequest $request)
     {
-        //
+        $data = $request->validated();
+
+        // Crear
+        $patterns = PadlockPattern::create([
+            'model_name'             => $data['modelName'],
+            'reset_instructions'     => $data['resetInstructions'],
+            'unlock_sequence'        => $data['unlockSequence'],
+        ]);
+
+        return new PadlockPatternResource($patterns);
     }
 
     /**
@@ -36,9 +46,17 @@ class PadlockPatternController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PadlockPattern $padlockPattern)
+    public function update(StorePadlockPatternRequest $request, PadlockPattern $pattern)
     {
-        //
+        $data = $request->validated();
+
+        $pattern->update([
+            'model_name'             => $data['modelName'],
+            'reset_instructions'     => $data['resetInstructions'],
+            'unlock_sequence'        => $data['unlockSequence'],
+        ]);
+
+        return new PadlockPatternResource($pattern->fresh());
     }
 
     /**
