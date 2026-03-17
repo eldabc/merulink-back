@@ -27,12 +27,7 @@ class AssignResource extends JsonResource
                     'key' => $this->locker->lockerCategory->key,
                     'name' => $this->locker->lockerCategory->name,
                 ],
-                'padlock' => [
-                    'id' => $this->padlock->id,
-                    'serial' => $this->padlock->serial,
-                    'pass' => $this->padlock->pass,
-                    'status' => $this->padlock->status,
-                ],
+                'padlock' => new PadlockResource($this->padlock),
             ],
             'employee' => $this->employee_id ? [
                         'id' => $this->employee->id,

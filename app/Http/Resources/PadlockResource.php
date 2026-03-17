@@ -19,12 +19,7 @@ class PadlockResource extends JsonResource
             'serial' => $this->serial,
             'pass' => $this->pass,
             'status' => $this->status,
-            'pattern' => [
-                'id' => $this->padlockPattern->id,
-                'model_name' => $this->padlockPattern->model_name,
-                'reset_instructions' => $this->padlockPattern->reset_instructions,
-                'unlock_sequence' => $this->padlockPattern->unlock_sequence
-            ]
+            'pattern' => new PadlockPatternResource($this->padlockPattern),
         ];
     }
 }

@@ -17,9 +17,15 @@ class AssignController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $assigns = Assign::all();
+        $query = Assign::query();
+
+        // SIN asignación activa
+        if ($request->boolean('unassigned')) {
+            $query->whereDoesntHave('employee'); 
+        }
+        $assigns = $query->get();
         return AssignResource::collection($assigns);
     }
 
