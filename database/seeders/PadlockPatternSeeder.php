@@ -36,5 +36,24 @@ class PadlockPatternSeeder extends Seeder
              ]
             ]
         );
+
+         PadlockPattern::firstOrCreate(
+            ['model_name' => 'Modelo Pruebas'], 
+            [
+             'reset_instructions' => 'Modelo Pruebas Hacer un mínimo de dos giros en cualquier dirección para reiniciar.',
+             'unlock_sequence' => [
+                [
+                    'action' => 'girar',
+                    'amount' => 3,
+                    'direction' => 'izquierda'
+                ],
+                [
+                    'action' => 'girar',
+                    'amount' => 2,
+                    'direction' => 'derecha'
+                ],
+             ]
+            ]
+        );
     }
 }

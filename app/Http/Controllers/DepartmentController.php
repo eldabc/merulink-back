@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Http\Resources\DepartmentResource;
+use App\Http\Requests\StoreDepartmentRequest;
 
 class DepartmentController extends Controller
 {
@@ -13,16 +14,24 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $departments = Department::all();
+        $departments = Department::with('subDepartments')->get();
         return DepartmentResource::collection($departments);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreDepartmentRequest $request)
     {
-        //
+        $data = $request->validated();
+
+        // Crear
+        $department = Department::create([
+            'code' => $data['code'],
+            'name' => $data['departmentName'],
+        ]);
+
+        return new DepartmentResource($department);
     }
 
     /**

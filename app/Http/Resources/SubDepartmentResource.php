@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class DepartmentResource extends JsonResource
+class SubDepartmentResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,8 +17,7 @@ class DepartmentResource extends JsonResource
         return [
             'id' => $this->id,
             'code' => $this->code,
-            'departmentName' => $this->name,
-            'subDepartments' => SubDepartmentResource::collection($this->whenLoaded('subDepartments')),
+            'name' => $this->name,
         ];
     }
 }

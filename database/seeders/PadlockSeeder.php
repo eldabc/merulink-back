@@ -27,7 +27,7 @@ class PadlockSeeder extends Seeder
             [
              'pass'   => '11-32-77',
              'status' => 'Disponible',
-             'padlock_pattern_id' => 1,
+             'padlock_pattern_id' => 2,
             ]
         );
 
