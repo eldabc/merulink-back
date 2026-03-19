@@ -45,9 +45,16 @@ class DepartmentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Department $department)
+    public function update(StoreDepartmentRequest $request, Department $department)
     {
-        //
+        $data = $request->validated();
+
+        $department->update([
+            'code' => $data['code'],
+            'name' => $data['departmentName'],
+        ]);
+
+        return new DepartmentResource($department->load('subDepartments'));
     }
 
     /**
@@ -55,6 +62,16 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
-        //
+        if ($department->subdepartments()->exists()) {
+            return response()->json([
+                'message' => 'No se puede eliminar: este departamento tiene subdepartamentos asociados.'
+            ], 422);
+        }
+
+        $department->delete();
+
+        return response()->json([
+            'message' => "El department {$department->code} ha sido eliminado correctamente."
+        ], 200);
     }
 }
