@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubDepartment extends Model
 {
+    protected $fillable = [
+        'code',
+        'name',
+        'department_id',
+    ];
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);

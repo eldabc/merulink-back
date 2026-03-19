@@ -38,11 +38,11 @@ class StoreDepartmentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'code.unique'           => 'El código del departamento ya está en uso.',
-            'code.required'         => 'El código de departamento es obligatorio.',
-            'code.string'           => 'El código de departamento debe ser una cadena de texto válida.',
-            'departmentName.required' => 'El nombre de departamento es obligatorio.',
-            'departmentName.string'   => 'El nombre de departamento debe ser una cadena de texto válida.',
+            'code.unique'           => 'El código del Departamento ya está en uso.',
+            'code.required'         => 'El código de Departamento es obligatorio.',
+            'code.string'           => 'El código de Departamento debe ser una cadena de texto válida.',
+            'departmentName.required' => 'El nombre de Departamento es obligatorio.',
+            'departmentName.string'   => 'El nombre de Departamento debe ser una cadena de texto válida.',
         ];
     }
 }

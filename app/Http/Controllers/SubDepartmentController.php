@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\SubDepartment;
 use Illuminate\Http\Request;
+use App\Http\Resources\SubDepartmentResource;
+use App\Http\Requests\StoreSubDepartmentRequest;
 
 class SubDepartmentController extends Controller
 {
@@ -12,15 +14,23 @@ class SubDepartmentController extends Controller
      */
     public function index()
     {
-        //
+        $sub_departments = SubDepartment::all();
+        return SubDepartmentResource::collection($sub_departments);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreSubDepartmentRequest $request)
     {
-        //
+        $data = $request->validated();
+        $sub_department = SubDepartment::create([
+            'code'          => $data['code'],
+            'name'          => $data['name'],
+            'department_id' => $data['department']['id'], 
+        ]);
+
+        return new SubDepartmentResource($sub_department);   
     }
 
     /**
@@ -34,16 +44,28 @@ class SubDepartmentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, SubDepartment $subDepartment)
+    public function update(StoreSubDepartmentRequest $request, SubDepartment $subdepartment)
     {
-        //
+        $data = $request->validated();
+
+        $subdepartment->update([
+            'code'          => $data['code'],
+            'name'          => $data['name'],
+            'department_id' => $data['department']['id']
+        ]);
+
+        return new SubDepartmentResource($subdepartment->load('department'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(SubDepartment $subDepartment)
+    public function destroy(SubDepartment $subdepartment)
     {
-        //
+        $subdepartment->delete();
+
+        return response()->json([
+            'message' => "El Subdepartamento {$subdepartment->name} ha sido eliminado correctamente."
+        ], 200);
     }
 }
