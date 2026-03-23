@@ -10,6 +10,7 @@ use App\Http\Controllers\AssignController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\SubDepartmentController;
+use App\Http\Controllers\PositionController;
 
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -41,6 +42,7 @@ use App\Http\Controllers\SubDepartmentController;
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('departments', DepartmentController::class);
     Route::apiResource('subdepartments', SubDepartmentController::class);
+    Route::apiResource('positions', PositionController::class);
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {

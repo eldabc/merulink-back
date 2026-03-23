@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Position;
 use Illuminate\Http\Request;
+use App\Http\Resources\PositionResource;
+use App\Http\Requests\StorePositionRequest;
 
 class PositionController extends Controller
 {
@@ -12,23 +14,26 @@ class PositionController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $positions = Position::all();
+        return PositionResource::collection($positions);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePositionRequest $request)
     {
-        //
+        $data = $request->validated();
+
+        // Crear
+        $position = Position::create([
+            'code' => $data['code'],
+            'name' => $data['name'],
+            'department_id' => $data['department']['id'],
+            'sub_department_id' => $data['subDepartment']['id'],
+        ]);
+
+        return new PositionResource($position);
     }
 
     /**
@@ -40,19 +45,20 @@ class PositionController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Position $position)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Position $position)
+    public function update(StorePositionRequest $request, Position $position)
     {
-        //
+        $data = $request->validated();
+
+        $position->update([
+           'code' => $data['code'],
+            'name' => $data['name'],
+            'department_id' => $data['department']['id'],
+            'sub_department_id' => $data['subDepartment']['id'],
+        ]);
+
+        return new PositionResource($position); //->load('department','subDepartment')
     }
 
     /**
@@ -60,6 +66,16 @@ class PositionController extends Controller
      */
     public function destroy(Position $position)
     {
-        //
+        if ($position->employees()->exists()) {
+            return response()->json([
+                'message' => 'No se puede eliminar: este cargo tiene empleados asociados.'
+            ], 422);
+        }
+
+        $position->delete();
+
+        return response()->json([
+            'message' => "El cargo {$position->name} ha sido eliminado correctamente."
+        ], 200);
     }
 }

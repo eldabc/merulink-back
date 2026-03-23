@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('positions', function (Blueprint $table) {
             $table->id();
+            $table->string('code')->unique();
+            $table->string('name');
+            $table->foreignId('department_id')
+                  ->constrained()
+                  ->onDelete('cascade');
+            $table->foreignId('sub_department_id')
+                  ->nullable()
+                  ->constrained()
+                  ->onDelete('set null'); 
             $table->timestamps();
         });
     }
