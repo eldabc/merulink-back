@@ -26,7 +26,7 @@ class EmployeeResource extends JsonResource
             'nationality' => $this->nationality,
             'sex' => $this->sex,
             'maritalStatus' => $this->marital_status,
-            'department' => $this->department_id,
+            'department' => new DepartmentResource($this->department),
         ];
     }
 }
