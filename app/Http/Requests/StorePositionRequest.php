@@ -34,7 +34,7 @@ class StorePositionRequest extends FormRequest
                 Rule::unique('positions', 'name')->ignore($this->route('position')),
             ],
             'department.id' => 'required|exists:departments,id',
-            'subDepartment.id' => 'exists:sub_departments,id',
+            'subDepartment.id' => 'nullable|integer|exists:sub_departments,id',
         ];
     }
 

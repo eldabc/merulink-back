@@ -19,7 +19,8 @@ class PositionResource extends JsonResource
             'code' => $this->code,
             'name' => $this->name,
             'department' => new DepartmentResource($this->department),
-            'subDepartment' => new SubDepartmentResource($this->subDepartment)
+            'subDepartment' => new SubDepartmentResource($this->subDepartment),
+            'employees' =>  EmployeeResource::collection($this->employees),
         ];
     }
 }
