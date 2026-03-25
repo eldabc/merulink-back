@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Imports\PadlockImport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Padlock;
@@ -13,40 +15,16 @@ class PadlockSeeder extends Seeder
      */
     public function run(): void
     {
-        Padlock::firstOrCreate(
-            ['serial' => '123456'], 
-            [
-             'pass'   => '11-32-66',
-             'status' => 'Asignado',
-             'padlock_pattern_id' => 1,
-            ]
-        );
+        Excel::import(new PadlockImport, storage_path('app\padlocks.xls'));
 
         Padlock::firstOrCreate(
             ['serial' => '123457'], 
             [
-             'pass'   => '11-32-77',
+             'pass'   => '11-12-77',
              'status' => 'Disponible',
              'padlock_pattern_id' => 2,
             ]
         );
 
-        Padlock::firstOrCreate(
-            ['serial' => '123458'], 
-            [
-             'pass'   => '11-32-88',
-             'status' => 'Disponible',
-             'padlock_pattern_id' => 1,
-            ]
-        );
-
-        Padlock::firstOrCreate(
-            ['serial' => '123459'], 
-            [
-             'pass'   => '11-32-99',
-             'status' => 'Disponible',
-             'padlock_pattern_id' => 1,
-            ]
-        );
     }
 }
