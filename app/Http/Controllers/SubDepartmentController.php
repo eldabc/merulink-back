@@ -30,7 +30,7 @@ class SubDepartmentController extends Controller
             'department_id' => $data['department']['id'], 
         ]);
 
-        return new SubDepartmentResource($sub_department);   
+        return new SubDepartmentResource($sub_department->load('department'));   
     }
 
     /**
