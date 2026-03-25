@@ -25,7 +25,10 @@ class EmployeeController extends Controller
             $query->whereDoesntHave('assignment'); 
         }
 
-        $employees = $query->get();
+        $employees = $query->with([
+            'position.department', 
+            'position.subDepartment'
+        ])->get();
 
         return EmployeeResource::collection($employees);
     }

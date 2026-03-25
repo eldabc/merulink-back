@@ -29,14 +29,8 @@ class AssignResource extends JsonResource
                 ],
                 'padlock' => new PadlockResource($this->padlock),
             ],
-            'employee' => $this->employee_id ? [
-                        'id' => $this->employee->id,
-                        'firstName' => $this->employee->first_name,
-                        'lastName' => $this->employee->last_name,
-                        'sex' => $this->employee->sex,
-                        'department' => $this->employee->department_id,
-                        'departmentName' => $this->employee->department->name,
-            ] : null,
+            'employee' => $this->employee_id ? new EmployeeResource($this->employee)
+             : null,
 
         ];
     }

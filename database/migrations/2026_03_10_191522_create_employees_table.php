@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('nationality');
             $table->string('sex');
             $table->string('marital_status');
+            $table->boolean('status')->default(true);
             $table->foreignId('department_id')
                   ->constrained()
                   ->onDelete('cascade');

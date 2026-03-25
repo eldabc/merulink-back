@@ -25,7 +25,8 @@ class EmployeeSeeder extends Seeder
                 'place_of_birth' => 'Puerto Ordaz',
                 'nationality' => 'V',
                 'sex' => 'M',
-                'marital_status' => 'Soltera',
+                'marital_status' => 'Soltero',
+                'status' => true,
                 'department_id' => 3,
                 'position_id' => 3,
             ]
@@ -44,6 +45,7 @@ class EmployeeSeeder extends Seeder
                 'nationality' => 'V',
                 'sex' => 'H',
                 'marital_status' => 'Soltero',
+                'status' => true,
                 'department_id' => 1,
                 'position_id' => 1,
             ]
@@ -62,6 +64,7 @@ class EmployeeSeeder extends Seeder
                 'nationality' => 'V',
                 'sex' => 'H',
                 'marital_status' => 'Soltero',
+                'status' => true,
                 'department_id' => 1,
                 'position_id' => 2,
             ]
@@ -79,7 +82,8 @@ class EmployeeSeeder extends Seeder
                 'place_of_birth' => 'Puerto Ordaz',
                 'nationality' => 'V',
                 'sex' => 'H',
-                'marital_status' => 'Soltera',
+                'marital_status' => 'Soltero',
+                'status' => true,
                 'department_id' => 4,
                 'position_id' => 4,
             ]
@@ -97,7 +101,8 @@ class EmployeeSeeder extends Seeder
                 'place_of_birth' => 'Puerto Ordaz',
                 'nationality' => 'V',
                 'sex' => 'M',
-                'marital_status' => 'Soltera',
+                'marital_status' => 'Soltero',
+                'status' => true,
                 'department_id' => 4,
                 'position_id' => 5,
             ]
