@@ -22,12 +22,17 @@ class EmployeeResource extends JsonResource
             'secondName' => $this->second_name,
             'lastName' => $this->last_name,
             'secondLastName' => $this->second_last_name,
-            'birthDate' => $this->birthDate,
+            'birthdate' => $this->birthdate,
             'placeOfBirth' => $this->place_of_birth,
             'nationality' => $this->nationality,
             'sex' => $this->sex,
             'maritalStatus' => $this->marital_status,
-            'status' => $this->status,
+            'bloodType' => $this->blood_type,
+            'email' => $this->email,
+            'mobilePhone' => $this->mobile_phone,
+            'homePhone' => $this->home_phone,
+            'address' => $this->address,
+            'joinDate' => $this->join_date,
             // 'department' => new DepartmentResource($this->department),
             'department' => [
                 'id' => $this->position->department->id,
@@ -41,6 +46,16 @@ class EmployeeResource extends JsonResource
                 'id' => $this->position->id,
                 'name' => $this->position->name
             ],
+            'userName' => $this->user_name,
+            'userPass' => $this->user_pass,
+            'changePassNextLogin' => $this->change_pass_next_login,
+            'status' => $this->status,
+            'useMeruLink' => $this->use_meru_link,
+            'useHidCard' => $this->use_hid_card,
+            'useLocker' => $this->use_locker,
+            'useTransport' => $this->use_transport,
+            // 'contacts' => $this->contacts,
+            // 'lockerAssing' => $this->lockerAssingId,
         ];
     }
 }

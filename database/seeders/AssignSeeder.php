@@ -19,15 +19,15 @@ class AssignSeeder extends Seeder
         // Primer registro disponible de cada tabla
         $locker = Locker::first();
         $padlock = Padlock::first();
-        $employee = Employee::first();
+        $first_employee = Employee::first();
 
-        if ($locker && $padlock && $employee) {
+        if ($locker && $padlock && $first_employee) {
             Assign::create([
                 'assign_code' => 'ASG'. $locker->code .'-'. now()->format('d-m-Y'),
                 'assign_date' => now()->format('Y-m-d'), 
                 'locker_id'   => $locker->id,
                 'padlock_id'  => $padlock->id,
-                'employee_id' => $employee->id,
+                'employee_id' => $first_employee->id,
             ]);
 
             Assign::create([

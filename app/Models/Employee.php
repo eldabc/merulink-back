@@ -6,6 +6,7 @@ use App\Models\Department;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
@@ -21,5 +22,10 @@ class Employee extends Model
 
     public function position() {
         return $this->belongsTo(Position::class);
+    }
+
+    public function emergencyContacts() : hasMany
+    {
+        return $this->hasMany(EmergencyContact::class);
     }
 }
