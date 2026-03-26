@@ -54,7 +54,7 @@ class EmployeeResource extends JsonResource
             'useHidCard' => $this->use_hid_card,
             'useLocker' => $this->use_locker,
             'useTransport' => $this->use_transport,
-            // 'contacts' => $this->contacts,
+            'contacts' => EmergencyContactResource::collection($this->emergencyContacts),
             // 'lockerAssing' => $this->lockerAssingId,
         ];
     }
