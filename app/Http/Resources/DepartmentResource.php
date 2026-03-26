@@ -19,6 +19,7 @@ class DepartmentResource extends JsonResource
             'code' => $this->code,
             'departmentName' => $this->name,
             'subDepartments' => SubDepartmentResource::collection($this->whenLoaded('subDepartments')),
+            'positions' => PositionResource::collection($this->whenLoaded('positions')),
         ];
     }
 }

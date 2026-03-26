@@ -14,7 +14,7 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $departments = Department::with('subDepartments')->get();
+        $departments = Department::with('subDepartments', 'positions')->get();
         return DepartmentResource::collection($departments);
     }
 
