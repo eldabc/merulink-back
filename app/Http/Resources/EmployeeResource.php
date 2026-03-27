@@ -55,7 +55,7 @@ class EmployeeResource extends JsonResource
             'useLocker' => $this->use_locker,
             'useTransport' => $this->use_transport,
             'contacts' => EmergencyContactResource::collection($this->emergencyContacts),
-            // 'lockerAssing' => $this->lockerAssingId,
+            'assign' => new AssignResource($this->whenLoaded('assignment')),
         ];
     }
 }

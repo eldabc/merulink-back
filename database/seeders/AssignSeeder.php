@@ -31,18 +31,18 @@ class AssignSeeder extends Seeder
             ]);
 
             Assign::create([
-                'assign_code' => 'ASG'. $locker->code .'-'. now()->format('d-m-Y'),
-                'assign_date' => now()->format('Y-m-d'), 
+                'assign_code' => '',
+                'assign_date' => '', 
                 'locker_id'   => 5,
                 'padlock_id'  => 2,
                 'employee_id' => null,
             ]);
 
             Assign::create([
-                'assign_code' => 'ASG'. $locker->code .'-'. now()->format('d-m-Y'),
-                'assign_date' => now()->format('Y-m-d'), 
+                'assign_code' => '',
+                'assign_date' => '', 
                 'locker_id'   => 6,
-                'padlock_id'  => 3,
+                'padlock_id'  => 150,
                 'employee_id' => null,
             ]);
         }

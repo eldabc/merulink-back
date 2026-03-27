@@ -29,7 +29,7 @@ class AssignResource extends JsonResource
                 ],
                 'padlock' => new PadlockResource($this->padlock),
             ],
-            'employee' => $this->employee_id ? new EmployeeResource($this->employee)
+            'employee' => $this->employee_id ? new EmployeeResource($this->whenLoaded('employee'))
              : null,
 
         ];

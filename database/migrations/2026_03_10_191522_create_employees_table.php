@@ -16,19 +16,19 @@ return new class extends Migration
             $table->string('ci')->unique();
             $table->string('num_employee')->unique();
             $table->string('first_name');
-            $table->string('second_name');
+            $table->string('second_name')->nullable();
             $table->string('last_name');
-            $table->string('second_last_name');
-            $table->date('birthdate');
-            $table->string('place_of_birth');
+            $table->string('second_last_name')->nullable();
+            $table->date('birthdate')->nullable();
+            $table->string('place_of_birth')->nullable();
             $table->string('nationality');
             $table->string('sex');
-            $table->string('marital_status');
-            $table->string('blood_type');
+            $table->string('marital_status')->nullable();
+            $table->string('blood_type')->nullable();
             $table->string('email');
             $table->string('mobile_phone');
-            $table->string('home_phone');
-            $table->string('address');
+            $table->string('home_phone')->nullable();
+            $table->string('address')->nullable();
             $table->string('join_date');
 
             $table->foreignId('department_id')
@@ -39,8 +39,8 @@ return new class extends Migration
                   ->constrained()
                   ->onDelete('cascade');
 
-            $table->string('user_name');
-            $table->string('user_pass');
+            $table->string('user_name')->nullable();
+            $table->string('user_pass')->nullable();
             $table->boolean('change_pass_next_login')->default(false);
             $table->boolean('status')->default(true);
             $table->boolean('use_meru_link')->default(false);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreEmployeeRequest extends FormRequest
@@ -28,47 +29,46 @@ class StoreEmployeeRequest extends FormRequest
                 'numeric',   
                 Rule::unique('employees', 'ci')->ignore($this->route('employee')),
             ],
-            'numEmployee' => [
+            'num_employee' => [
                 'required',
                 'numeric',   
                 Rule::unique('employees', 'num_employee')->ignore($this->route('employee')),
             ],
-           'firstName' => [
+           'first_name' => [
                 'required',
                 'string',
             ],
-            'secondName' => [
+            'second_name' => [
                 'string',
             ],
-            'lastName' => [
-                'required',
+            'last_name' => [
                 'string',
             ],
-            'secondLastName' => [
+            'second_last_name' => [
+                'nullable',
                 'string',
             ],
             'birthdate' => [
+                'nullable',
                 'date',
                 'string',
             ],
-            'placeOfBirth' => [
+            'place_of_birth' => [
+                'nullable',
                 'string',
             ],
             'nationality' => [
                 'required',
                 'string',
             ],
-            'age' => [
-                'numeric',
-            ],
             'sex' => [
                 'required',
                 'string',
             ],
-            'maritalStatus' => [
+            'marital_status' => [
                 'string',
             ],
-            'bloodType' => [
+            'blood_type' => [
                 'string',
             ],
             'email' => [
@@ -77,51 +77,58 @@ class StoreEmployeeRequest extends FormRequest
                 'string',
             ],
             
-            'mobilePhone' => [
+            'mobile_phone' => [
                 'required',
-                'numeric',
+                'string',
+                'regex:/^[0-9]{4}-[0-9]{7}$/'
             ],
 
-            'homePhone' => [
-                'numeric',
+            'home_phone' => [
+                'nullable',
+                'string',
+                'regex:/^[0-9]{4}-[0-9]{7}$/'
             ],
 
             'address' => [
+                'nullable',
                 'string',
             ],
 
-            'joinDate' => [
+            'join_date' => [
                 'required',
                 'date',
             ],
 
-            'department' => [
+            'department_id' => [
                 'required',
                 'integer',
                 'exists:departments,id',
             ],
 
-            'subDepartment' => [
+            'sub_department.id' => [
                 'nullable',
                 'integer',
                 'exists:sub_departments,id',
             ],
 
-            'position' => [
+            'position_id' => [
                 'required',
                 'integer',
                 'exists:positions,id',
             ],
 
-            'userName' => [
+            'user_name' => [
+                'nullable',
                 'string',
             ],
 
-            'userPass' => [
+            'user_pass' => [
+                'nullable',
                 'string',
             ],
 
-            'changePassNextLogin' => [
+            'change_pass_next_login' => [
+                'nullable',
                 'boolean',
             ],
 
@@ -130,34 +137,59 @@ class StoreEmployeeRequest extends FormRequest
                 'boolean'
             ],
 
-            'useMeruLink' => [
+            'use_meru_link' => [
                 'boolean'
             ],
 
-            'useHidCard' => [
+            'use_hid_card' => [
                 'boolean'
             ],
 
-            'useLocker' => [
+            'use_locker' => [
                 'boolean'
             ],
 
-            'useTransport' => [
+            'use_transport' => [
                 'boolean'
             ],
 
             'contacts' => [
                 'nullable',
                 'array',
-                'min:1',
+                // 'min:1',
                 'max:5',
             ],
 
-            'lockerAssingId' => [
-                'required',
+            'assign_id' => [
+                'nullable',
                 'integer',
                 'exists:assigns,id',
             ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'ci.required'         => 'La cédula es obligatoria.',    
+            'ci.numeric' => 'La cédula debe contener solo números, sin puntos ni guiones.',
+            'ci.unique'           => 'La cédula ingresada ya está en uso.',
+            'num_employee.required'       => 'El número de empleado es obligatorio.',
+            'num_employee.numeric'           => 'El número de trabajador debe ser un valor numérico.',
+            'num_employee.unique'       => 'El número de empleado ya está en uso.',
+            'first_name.required' => 'El primer nombre es obligatorio.',
+            'first_name.string'   => 'El nombre debe ser una cadena de caracteres válida.',
+            'last_name.required' => 'El segundo nombre es obligatorio.',
+            'last_name.string'   => 'El segundo nombre debe ser una cadena de caracteres válida.',
+            
+            'join_date.required' => 'La fecha de ingreso es requerida',
+            'department_id.required' => 'El departamento es requerido',
+
+            'position_id.required' => 'El cargo es requerido',
+            'mobile_phone.required' => 'El número de teléfono móvil es obligatorio.',
+            'mobile_phone.regex' => 'El formato del teléfono móvil debe ser 04XX-XXXXXXX (incluyendo el guion).',
+            'home_phone.regex' => 'El teléfono de habitación debe tener el formato 0286-XXXXXXX.',
+            'assign_id.exists' => 'El locker seleccionado no tiene registro de emparejamiento',
         ];
     }
 }

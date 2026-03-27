@@ -25,7 +25,7 @@ class AssignController extends Controller
         if ($request->boolean('unassigned')) {
             $query->whereDoesntHave('employee'); 
         }
-        $assigns = $query->get();
+        $assigns = $query->with('employee')->get();
         return AssignResource::collection($assigns);
     }
 
