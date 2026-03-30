@@ -24,21 +24,18 @@ use App\Http\Controllers\PositionController;
     Route::put('/lockers/{locker}', [LockerController::class, 'update'])->whereNumber('locker');
     Route::delete('/lockers/{locker}', [LockerController::class, 'destroy'])->whereNumber('locker');
 
-    // Route::get('/padlocks', [PadlockController::class, 'index']);
-    // Route::post('/padlocks', [PadlockController::class, 'store']);
-    // Route::get('/padlocks/{padlock}', [PadlockController::class, 'show'])->whereNumber('padlock');
-    // Route::put('/padlocks/{padlock}', [PadlockController::class, 'update'])->whereNumber('padlock');
-    // Route::delete('/padlocks/{padlock}', [PadlockController::class, 'destroy'])->whereNumber('padlock');
-
     Route::group(['prefix' => 'padlocks'], function () {
         Route::apiResource('patterns', PadlockPatternController::class);
         
         Route::apiResource('/', PadlockController::class)->parameters(['' => 'padlock']);
     });
+    
     Route::delete('assigns', [AssignController::class, 'destroyByCategory']);
     Route::apiResource('assigns', AssignController::class)->except([
         'update', 'show'
     ]);
+
+    Route::put('employees/{employee}/status', [EmployeeController::class, 'changeStatus']);
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('departments', DepartmentController::class);
     Route::apiResource('subdepartments', SubDepartmentController::class);

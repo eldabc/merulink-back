@@ -154,6 +154,69 @@ class EmployeeController extends Controller
 
     }
 
+    public function changeStatus(Request $request, Employee $employee)
+    {
+        $field = $request->query('field');
+
+        if (!$field) {
+            return response()->json(['message' => 'El campo a cambiar es requerido.'], 400);
+        }
+        
+        return response()->json([ 'employee' => $employee, 'field' => $field ]);
+
+        DB::transaction(function () use ($field, $employee) {
+            
+            // $newStatus = !$field;
+            $employeeDataReset = [];
+            if ($field === 'status') {
+                $newStatus = !$employee->status;
+                // updatedEmployee.status = $newStatus;   
+                if ($newStatus === false) {
+                    $employeeDataReset = [
+                        use_meru_link => false,
+                        // user_name => '',
+                        // user_pass => '',
+                        use_locker => false,
+                        assign => null,
+                        use_hid_card => false,
+                        use_transport => false,
+                    ];
+                }       
+            } 
+            // else {
+            //     // updatedEmployee[field] = !emp[field];
+            //     $employee->$field = !$employee->$field;
+            // }
+            if ($field === 'use_locker') {
+                // Se resetea la asignación (crear servicio para esto)
+                // Se cambia el status de locker a MATCHED y padlock a AVAILABLE
+                // assign => null,
+            }
+
+            $employee->update([
+                $field => !$employee->$field,
+                $employeeDataReset
+            ]);
+            // $employee->update([
+            //     $field => $newStatus,
+            //     $employeeDataReset
+            // ]);
+            
+            $assigns = Assign::whereHas('locker.lockerCategory', function ($q) use ($id) {
+                $q->where('key', $id);
+            })->get();
+
+            foreach ($assigns as $assign) {
+                // Método privado para resetear los estados
+                $this->resetStatuses($assign);
+                $assign->delete();
+            }
+        });
+
+        // Para front, status 204 es suficiente confirmación
+        return response()->noContent(); 
+    }
+
     /**
      * Remove the specified resource from storage.
      */
