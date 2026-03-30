@@ -18,7 +18,7 @@ class AssignSeeder extends Seeder
     {
         // Primer registro disponible de cada tabla
         $locker = Locker::first();
-        $padlock = Padlock::first();
+        $padlock = Padlock::orderBy('id', 'asc')->first();
         $first_employee = Employee::first();
 
         if ($locker && $padlock && $first_employee) {
@@ -30,20 +30,33 @@ class AssignSeeder extends Seeder
                 'employee_id' => $first_employee->id,
             ]);
 
+            Padlock::where('id', $padlock->id)->update([
+                'status' => 'Asignado',
+            ]);
+
             Assign::create([
                 'assign_code' => '',
-                'assign_date' => '', 
+                'assign_date' => null, 
                 'locker_id'   => 5,
                 'padlock_id'  => 2,
                 'employee_id' => null,
             ]);
 
+            Padlock::where('id', 2)->update([
+                'status' => 'Asignado',
+            ]);
+
             Assign::create([
                 'assign_code' => '',
-                'assign_date' => '', 
+                'assign_date' => null, 
                 'locker_id'   => 6,
-                'padlock_id'  => 150,
+                'padlock_id'  => 3,
                 'employee_id' => null,
+            ]);
+
+            Padlock::where('id', 3)->update([
+                'status' => 'Asignado',
+                'padlock_pattern_id' => 2,
             ]);
         }
     }

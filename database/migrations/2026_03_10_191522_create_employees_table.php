@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('sex');
             $table->string('marital_status')->nullable();
             $table->string('blood_type')->nullable();
-            $table->string('email');
+            $table->string('email')->unique();
             $table->string('mobile_phone');
             $table->string('home_phone')->nullable();
             $table->string('address')->nullable();

@@ -16,15 +16,5 @@ class PadlockSeeder extends Seeder
     public function run(): void
     {
         Excel::import(new PadlockImport, storage_path('app\padlocks.xls'));
-
-        Padlock::firstOrCreate(
-            ['serial' => '123457'], 
-            [
-             'pass'   => '11-12-77',
-             'status' => 'Disponible',
-             'padlock_pattern_id' => 2,
-            ]
-        );
-
     }
 }

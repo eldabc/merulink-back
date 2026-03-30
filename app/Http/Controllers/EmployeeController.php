@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Assign;
 use App\Models\Locker;
+use App\Models\EmergencyContact;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\EmployeeResource;
@@ -94,9 +95,63 @@ class EmployeeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Employee $employee)
+    public function update(StoreEmployeeRequest $request, Employee $employee)
     {
-        //
+        $data = $request->validated();
+        return DB::transaction(function () use ($data, $employee) {
+
+            $employee->update($data);
+
+            $assignment = Assign::where('employee_id', $employee->id)->first();
+            if (isset($data['assign_id'])) {
+                if (isset($assignment) && $assignment?->id !== $data['assign_id']) {
+                    $assignment->update([
+                        'assign_code' => '',
+                        'assign_date' => null,
+                        'employee_id' => null,
+                    ]);
+
+                    Locker::where('id', $assignment->locker_id)->update([ 'status' => LockerStatus::MATCHED ]);
+
+                    $assign = Assign::find($data['assign_id']);
+
+                    if ($assign) {
+                        $assign->update([
+                            'assign_code' => 'ASG' . $assign->locker->code . '-' . now()->format('d-m-Y'),
+                            'assign_date' => now()->format('Y-m-d'),
+                            'employee_id' => $employee->id,
+                        ]);
+
+                        Locker::where('id', $assign->locker_id)->update([
+                            'status' => LockerStatus::OCCUPIED
+                        ]);
+                    }
+                }
+
+            } elseif ($assignment)  {
+                $assignment->delete();
+            }
+
+            $contacts = EmergencyContact::where('employee_id', $employee->id)->get();
+
+            if ($contacts->count() > 0) {
+                $employee->emergencyContacts()->delete();
+            }
+
+            if (isset($data['contacts'])) {
+                foreach ($data['contacts'] as $contact) {
+                    $employee->emergencyContacts()->create($contact);
+                }
+            }
+
+
+            return new EmployeeResource($employee->load([
+                'position.department', 
+                'position.subDepartment',
+                'assignment'
+            ]));
+        });
+
     }
 
     /**
