@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Assign;
+use App\Models\Locker;
+
 use Illuminate\Http\Request;
 use App\Http\Resources\EmployeeResource;
 use App\Http\Requests\StoreEmployeeRequest;
 use Illuminate\Support\Facades\DB;
+use App\Enums\LockerStatus;
 
 class EmployeeController extends Controller
 {
@@ -47,7 +50,6 @@ class EmployeeController extends Controller
             // return response()->json([ 'data' => $data, 'dataDos' => $data['assign_id'] ]);
 
             // Crear
-            $employeeData = collect($data)->except(['assign_id', 'contacts'])->toArray();
             $employee = Employee::create($data);
 
             if (isset($data['assign_id'])) {
@@ -58,6 +60,10 @@ class EmployeeController extends Controller
                         'assign_code' => 'ASG' . $assignment->locker->code . '-' . now()->format('d-m-Y'),
                         'assign_date' => now()->format('Y-m-d'),
                         'employee_id' => $employee->id,
+                    ]);
+
+                    Locker::where('id', $assignment->locker_id)->update([
+                        'status' => LockerStatus::OCCUPIED
                     ]);
                 }
             }

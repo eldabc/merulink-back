@@ -69,12 +69,14 @@ class StoreEmployeeRequest extends FormRequest
                 'string',
             ],
             'blood_type' => [
+                'nullable',
                 'string',
             ],
             'email' => [
                 'email',
                 'required',
                 'string',
+                Rule::unique('employees', 'email')->ignore($this->route('employee')),
             ],
             
             'mobile_phone' => [
@@ -183,6 +185,9 @@ class StoreEmployeeRequest extends FormRequest
             'last_name.string'   => 'El segundo nombre debe ser una cadena de caracteres válida.',
             
             'join_date.required' => 'La fecha de ingreso es requerida',
+            'email'           => 'El email ingresado ya está en uso.',
+            'blood_type.string'   => 'El tipo de sangre debe ser una cadena de caracteres válida.',
+
             'department_id.required' => 'El departamento es requerido',
 
             'position_id.required' => 'El cargo es requerido',
