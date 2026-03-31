@@ -35,7 +35,7 @@ use App\Http\Controllers\PositionController;
         'update', 'show'
     ]);
 
-    Route::put('employees/{employee}/status', [EmployeeController::class, 'changeStatus']);
+    Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('departments', DepartmentController::class);
     Route::apiResource('subdepartments', SubDepartmentController::class);
