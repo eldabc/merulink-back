@@ -12,9 +12,17 @@ use App\Http\Resources\EmployeeResource;
 use App\Http\Requests\StoreEmployeeRequest;
 use Illuminate\Support\Facades\DB;
 use App\Enums\LockerStatus;
+use App\Services\LockerService;
 
 class EmployeeController extends Controller
 {
+    protected $lockerService;
+
+    public function __construct(LockerService $lockerService)
+    {
+        $this->lockerService = $lockerService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -48,24 +56,14 @@ class EmployeeController extends Controller
     {
         $data = $request->validated();
         return DB::transaction(function () use ($data) {
-            // return response()->json([ 'data' => $data, 'dataDos' => $data['assign_id'] ]);
 
-            // Crear
             $employee = Employee::create($data);
 
             if (isset($data['assign_id'])) {
                 $assignment = Assign::find($data['assign_id']);
 
                 if ($assignment) {
-                    $assignment->update([
-                        'assign_code' => 'ASG' . $assignment->locker->code . '-' . now()->format('d-m-Y'),
-                        'assign_date' => now()->format('Y-m-d'),
-                        'employee_id' => $employee->id,
-                    ]);
-
-                    Locker::where('id', $assignment->locker_id)->update([
-                        'status' => LockerStatus::OCCUPIED
-                    ]);
+                    $this->lockerService->assignLocker($employee->id, $assignment->id);
                 }
             }
 
@@ -102,34 +100,15 @@ class EmployeeController extends Controller
 
             $employee->update($data);
 
-            $assignment = Assign::where('employee_id', $employee->id)->first();
-            if (isset($data['assign_id'])) {
-                if (isset($assignment) && $assignment?->id !== $data['assign_id']) {
-                    $assignment->update([
-                        'assign_code' => '',
-                        'assign_date' => null,
-                        'employee_id' => null,
-                    ]);
+            $assignId = $data['assign_id'] ?? null;
+            $currentAssign = $employee->assignment;
 
-                    Locker::where('id', $assignment->locker_id)->update([ 'status' => LockerStatus::MATCHED ]);
-
-                    $assign = Assign::find($data['assign_id']);
-
-                    if ($assign) {
-                        $assign->update([
-                            'assign_code' => 'ASG' . $assign->locker->code . '-' . now()->format('d-m-Y'),
-                            'assign_date' => now()->format('Y-m-d'),
-                            'employee_id' => $employee->id,
-                        ]);
-
-                        Locker::where('id', $assign->locker_id)->update([
-                            'status' => LockerStatus::OCCUPIED
-                        ]);
-                    }
+            if ($assignId) {
+                if (!$currentAssign || $currentAssign->id !== $assignId) {
+                    $this->lockerService->assignLocker($employee->id, $assignId);
                 }
-
-            } elseif ($assignment)  {
-                $assignment->delete();
+            } elseif ($currentAssign) {
+                $this->lockerService->unassignLocker($employee->id);
             }
 
             $contacts = EmergencyContact::where('employee_id', $employee->id)->get();
@@ -161,60 +140,39 @@ class EmployeeController extends Controller
         if (!$field) {
             return response()->json(['message' => 'El campo a cambiar es requerido.'], 400);
         }
-        
-        return response()->json([ 'employee' => $employee, 'field' => $field ]);
 
-        DB::transaction(function () use ($field, $employee) {
+        return DB::transaction(function () use ($field, $employee) {
             
-            // $newStatus = !$field;
             $employeeDataReset = [];
             if ($field === 'status') {
                 $newStatus = !$employee->status;
-                // updatedEmployee.status = $newStatus;   
-                if ($newStatus === false) {
+
+                if (!$employee->status === false) {
                     $employeeDataReset = [
-                        use_meru_link => false,
-                        // user_name => '',
-                        // user_pass => '',
-                        use_locker => false,
-                        assign => null,
-                        use_hid_card => false,
-                        use_transport => false,
+                        "use_meru_link" => false,
+                        "use_locker" => false,
+                        "use_hid_card" => false,
+                        "use_transport" => false,
                     ];
+                    $this->lockerService->unassignLocker($employee->id);
                 }       
             } 
-            // else {
-            //     // updatedEmployee[field] = !emp[field];
-            //     $employee->$field = !$employee->$field;
-            // }
-            if ($field === 'use_locker') {
-                // Se resetea la asignación (crear servicio para esto)
-                // Se cambia el status de locker a MATCHED y padlock a AVAILABLE
-                // assign => null,
+
+            if ($field === 'use_locker' && !$employee->use_locker) {
+                $this->lockerService->unassignLocker($employee->id);
             }
 
-            $employee->update([
-                $field => !$employee->$field,
+            $employee->update(array_merge(
+                [$field => !$employee->$field],
                 $employeeDataReset
-            ]);
-            // $employee->update([
-            //     $field => $newStatus,
-            //     $employeeDataReset
-            // ]);
+            ));
             
-            $assigns = Assign::whereHas('locker.lockerCategory', function ($q) use ($id) {
-                $q->where('key', $id);
-            })->get();
-
-            foreach ($assigns as $assign) {
-                // Método privado para resetear los estados
-                $this->resetStatuses($assign);
-                $assign->delete();
-            }
+            return new EmployeeResource($employee->fresh()->load([
+                'position.department', 
+                'position.subDepartment',
+                'assignment'
+            ]));
         });
-
-        // Para front, status 204 es suficiente confirmación
-        return response()->noContent(); 
     }
 
     /**
