@@ -33,8 +33,8 @@ class StorePositionRequest extends FormRequest
                 'string',
                 Rule::unique('positions', 'name')->ignore($this->route('position')),
             ],
-            'department.id' => 'required|exists:departments,id',
-            'subDepartment.id' => 'nullable|integer|exists:sub_departments,id',
+            'department_id' => 'required|exists:departments,id',
+            'sub_department_id' => 'nullable|integer|exists:sub_departments,id',
         ];
     }
 
@@ -47,9 +47,9 @@ class StorePositionRequest extends FormRequest
             'name.string'           => 'El nombre del Cargo debe ser una cadena de texto válida.',
             'name.required'         => 'El nombre del Cargo es obligatorio.',
             'name.unique'           => 'El nombre del Cargo ya está en uso.',
-            'department.id.required' => 'El Departamento es obligatorio.',
-            'department.id.exists'   => 'El Departamento seleccionado no existe.',
-            'subDepartment.id.exists'   => 'El Subdepartamento seleccionado no existe.',
+            'department_id.required' => 'El Departamento es obligatorio.',
+            'department_id.exists'   => 'El Departamento seleccionado no existe.',
+            'sub_department_id.exists'   => 'El Subdepartamento seleccionado no existe.',
 
         ];
     }

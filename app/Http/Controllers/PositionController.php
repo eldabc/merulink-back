@@ -24,8 +24,16 @@ class PositionController extends Controller
     public function store(StorePositionRequest $request)
     {
         $data = $request->validated();
+        // if ($data['sub_department_name']) {
+        //     $subDepartment = SubDepartment::firstOrCreate(
+        //         ['name' => $data['sub_department_name'], 'department_id' => $data['department_id']],
+        //         ['code' => Str::slug($data['sub_department_name'], '-')]
+        //     );
+        //     $data['sub_department_id'] = $subDepartment->id;
+        // }
 
-        // Crear
+        // // Crear
+        // $position = Position::create($data);
         $position = Position::create([
             'code' => $data['code'],
             'name' => $data['name'],
