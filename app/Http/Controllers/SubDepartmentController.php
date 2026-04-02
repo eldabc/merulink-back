@@ -14,7 +14,7 @@ class SubDepartmentController extends Controller
      */
     public function index()
     {
-        $sub_departments = SubDepartment::with('department')->get();
+        $sub_departments = SubDepartment::with('department','positions')->get();
         return SubDepartmentResource::collection($sub_departments);
     }
 
@@ -30,7 +30,7 @@ class SubDepartmentController extends Controller
             'department_id' => $data['department']['id'], 
         ]);
 
-        return new SubDepartmentResource($sub_department->load('department'));   
+        return new SubDepartmentResource($sub_department->load('department','positions'));   
     }
 
     /**
@@ -54,7 +54,7 @@ class SubDepartmentController extends Controller
             'department_id' => $data['department']['id']
         ]);
 
-        return new SubDepartmentResource($subdepartment->load('department'));
+        return new SubDepartmentResource($subdepartment->load('department','positions'));
     }
 
     /**
