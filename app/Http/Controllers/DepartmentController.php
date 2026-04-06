@@ -31,7 +31,7 @@ class DepartmentController extends Controller
             'name' => $data['departmentName'],
         ]);
 
-        return new DepartmentResource($department);
+        return new DepartmentResource($department->load(['subDepartments', 'positions']));
     }
 
     /**
@@ -54,7 +54,7 @@ class DepartmentController extends Controller
             'name' => $data['departmentName'],
         ]);
 
-        return new DepartmentResource($department->load('subDepartments'));
+        return new DepartmentResource($department->load(['subDepartments', 'positions']));
     }
 
     /**

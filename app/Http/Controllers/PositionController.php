@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Position;
+use App\Models\SubDepartment;
 use Illuminate\Http\Request;
 use App\Http\Resources\PositionResource;
 use App\Http\Requests\StorePositionRequest;
+use Illuminate\Support\Facades\DB;
+
 
 class PositionController extends Controller
 {
@@ -24,24 +27,30 @@ class PositionController extends Controller
     public function store(StorePositionRequest $request)
     {
         $data = $request->validated();
-        // if ($data['sub_department_name']) {
-        //     $subDepartment = SubDepartment::firstOrCreate(
-        //         ['name' => $data['sub_department_name'], 'department_id' => $data['department_id']],
-        //         ['code' => Str::slug($data['sub_department_name'], '-')]
-        //     );
-        //     $data['sub_department_id'] = $subDepartment->id;
-        // }
+        return DB::transaction(function () use ($data) {
 
-        // // Crear
-        // $position = Position::create($data);
-        $position = Position::create([
-            'code' => $data['code'],
-            'name' => $data['name'],
-            'department_id' => $data['department']['id'],
-            'sub_department_id' => $data['subDepartment']['id'],
-        ]);
+            if ($data['sub_department_name'] && $data['sub_department_code']) {
+                $subDepartment = SubDepartment::firstOrCreate(
+                    [
+                        'name' => $data['sub_department_name'], 
+                        'department_id' => $data['department_id']
+                    ],
+                    ['code' => $data['sub_department_code']]
+                );
+                $data['sub_department_id'] = $subDepartment->id;
+            }
 
-        return new PositionResource($position);
+            // Crear
+            $position = Position::create([
+                'code' => $data['code'],
+                'name' => $data['name'],
+                'department_id' => $data['department_id'],
+                'sub_department_id' => $data['sub_department_id'],
+            ]);
+
+            return new PositionResource($position);
+        });
+
     }
 
     /**
@@ -58,15 +67,29 @@ class PositionController extends Controller
     public function update(StorePositionRequest $request, Position $position)
     {
         $data = $request->validated();
+        return DB::transaction(function () use ($data, $position) {
 
-        $position->update([
-           'code' => $data['code'],
-            'name' => $data['name'],
-            'department_id' => $data['department']['id'],
-            'sub_department_id' => $data['subDepartment']['id'],
-        ]);
+            if ($data['sub_department_name'] && $data['sub_department_code']) {
+                $subDepartment = SubDepartment::firstOrCreate(
+                    [
+                        'name' => $data['sub_department_name'], 
+                        'department_id' => $data['department_id']
+                    ],
+                    ['code' => $data['sub_department_code']]
+                );
+                $data['sub_department_id'] = $subDepartment->id;
+            }
 
-        return new PositionResource($position); //->load('department','subDepartment')
+            // Crear
+            $position->update([
+                'code' => $data['code'],
+                'name' => $data['name'],
+                'department_id' => $data['department_id'],
+                'sub_department_id' => $data['sub_department_id'],
+            ]);
+
+            return new PositionResource($position);
+        });
     }
 
     /**

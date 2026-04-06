@@ -35,6 +35,8 @@ class StorePositionRequest extends FormRequest
             ],
             'department_id' => 'required|exists:departments,id',
             'sub_department_id' => 'nullable|integer|exists:sub_departments,id',
+            'sub_department_name' => 'nullable|string|max:100|required_with:sub_department_code',
+            'sub_department_code' => 'nullable|string|max:4|required_with:sub_department_name',
         ];
     }
 
@@ -50,6 +52,8 @@ class StorePositionRequest extends FormRequest
             'department_id.required' => 'El Departamento es obligatorio.',
             'department_id.exists'   => 'El Departamento seleccionado no existe.',
             'sub_department_id.exists'   => 'El Subdepartamento seleccionado no existe.',
+            'sub_department_code.required_with' => 'Si va a crear un subdepartamento, el código es obligatorio.',
+            'sub_department_name.required_with' => 'No puede enviar un código sin un nombre de subdepartamento.',
 
         ];
     }
