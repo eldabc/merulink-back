@@ -19,7 +19,7 @@ return new class extends Migration
             $table->boolean('all_day')->default(false);
             $table->json('extended_props');
 
-            $table->foreignId('category_id')
+            $table->foreignId('event_category_id')
                   ->constrained()
                   ->onDelete('cascade');
 

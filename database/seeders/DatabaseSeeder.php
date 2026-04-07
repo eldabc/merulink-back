@@ -27,6 +27,9 @@ class DatabaseSeeder extends Seeder
         $this->call(LockerCategorySeeder::class);
         $this->call(LockerSeeder::class);
         $this->call(AssignSeeder::class);
+        $this->call(EventCategorySeeder::class);
+        $this->call(LocationSeeder::class);
+        $this->call(EventSeeder::class);
         $this->call(UserSeeder::class);      
 
         User::factory()->create([

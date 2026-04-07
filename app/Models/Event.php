@@ -24,7 +24,7 @@ class Event extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(EventCategory::class);
     }
 
     public function location(): BelongsTo
