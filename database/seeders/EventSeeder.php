@@ -19,8 +19,8 @@ class EventSeeder extends Seeder
         Event::firstOrCreate(
             [ 'title' => 'Evento 1 meru-events' ],
             [
-                'start' => now()->addHours(78)->format('Y-m-d\TH:i:s'),
-                'end' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
+                'start' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
+                'end' => now()->addHours(82)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
                     // category: 'meru-events',
                     // label: 'Eventos Merú',
@@ -75,6 +75,55 @@ class EventSeeder extends Seeder
                 ],
                 'event_category_id' => 7,
                 'location_id' => null
+            ]
+        );
+
+        Event::firstOrCreate(
+            [ 'title' => 'Evento 4 meru-events' ],
+            [
+                'start' => now()->addHours(78)->format('Y-m-d\TH:i:s'),
+                'end' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
+                'extended_props' => [
+                    // category: 'meru-events',
+                    // label: 'Eventos Merú',
+                    'status' => 'Tentativo',
+                    // 'locationId' => 4,
+                    // 'locationName' => 'Salon 4',
+                    'repeatEvent' => true,
+                    'repeatInterval' => 'Mensual',
+                    'createAlert' => true,
+                    'coloringDay' => true,
+                    'description' => 'Descripción del evento 4',
+                    'comments' => 'Comentarios del evento 4',
+                    'createdBy' => "Ana Luna"
+                ],
+                'event_category_id' => 1,
+                'location_id' => 2
+            ]
+        );
+
+
+        Event::firstOrCreate(
+            [ 'title' => 'Evento 5 meru-events' ],
+            [
+                'start' => '2026-01-30T20:00:00',
+                'end' => '2026-01-30T23:00:00',
+                'extended_props' => [
+                    // category: 'meru-events',
+                    // label: 'Eventos Merú',
+                    'status' => 'Tentativo',
+                    // 'locationId' => 5,
+                    // 'locationName' => 'Salon 5',
+                    'repeatEvent' => true,
+                    'repeatInterval' => 'Mensual',
+                    'createAlert' => true,
+                    'coloringDay' => true,
+                    'description' => 'Descripción del evento 5',
+                    'comments' => 'Comentarios del evento 5',
+                    'createdBy' => "Ana Luna"
+                ],
+                'event_category_id' => 1,
+                'location_id' => 3
             ]
         );
     }

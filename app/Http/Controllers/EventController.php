@@ -20,6 +20,14 @@ class EventController extends Controller
                 $q->where('key', $request->category);
             });
         }
+
+        if ($request->filled('history')) {
+            $query->where('start', '<', now())
+                  ->orderBy('start', 'desc');;
+        } else {
+            $query->where('start', '>=', now())
+                  ->orderBy('start', 'asc');
+        }
         
         return EventResource::collection($query->get());
     }
