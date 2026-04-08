@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Http\Resources\EventResource;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -10,9 +11,17 @@ class EventController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Event::with(['eventCategory', 'location']);
+
+        if ($request->filled('category')) {
+            $query->whereHas('eventCategory', function($q) use ($request) {
+                $q->where('key', $request->category);
+            });
+        }
+        
+        return EventResource::collection($query->get());
     }
 
     /**

@@ -22,7 +22,7 @@ class Event extends Model
         'all_day' => 'boolean',
     ];
 
-    public function category(): BelongsTo
+    public function eventCategory(): BelongsTo
     {
         return $this->belongsTo(EventCategory::class);
     }

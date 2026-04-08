@@ -19,8 +19,8 @@ class EventSeeder extends Seeder
         Event::firstOrCreate(
             [ 'title' => 'Evento 1 meru-events' ],
             [
-                'start' => now()->format('Y-m-d\TH:i:s'),
-                'end' => now()->addHours(2)->format('Y-m-d\TH:i:s'),
+                'start' => now()->addHours(78)->format('Y-m-d\TH:i:s'),
+                'end' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
                     // category: 'meru-events',
                     // label: 'Eventos Merú',
@@ -43,8 +43,8 @@ class EventSeeder extends Seeder
         Event::firstOrCreate(
             [ 'title' => 'Evento 2 wedding-nights' ],
             [
-                'start' => now()->format('Y-m-d\TH:i:s'),
-                'end' => now()->addHours(24)->format('Y-m-d\TH:i:s'),
+                'start' => now()->addHours(82)->format('Y-m-d\TH:i:s'),
+                'end' => now()->addHours(84)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
                     // 'category' => 'wedding-nights',
                     // 'label' => 'Plan Noche de Bodas',
@@ -56,15 +56,15 @@ class EventSeeder extends Seeder
                     'createdBy' => "Ana Luna"
                 ],
                 'event_category_id' => 2,
-                'location_id' => null
+                'location_id' => 2
             ]
         );
 
         Event::firstOrCreate(
             [ 'title' => 'Evento 3 executive-mod' ],
             [
-                'start' => now()->format('Y-m-d\TH:i:s'),
-                'end' => now()->addHours(72)->format('Y-m-d\TH:i:s'),
+                'start' => now()->addHours(86)->format('Y-m-d\TH:i:s'),
+                'end' => now()->addHours(90)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
                     // 'category' => 'executive-mod',
                     // 'label' => 'Ejecutivos MOD',
