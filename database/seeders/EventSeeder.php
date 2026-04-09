@@ -14,7 +14,6 @@ class EventSeeder extends Seeder
     public function run(): void
     {
         $fechaConHora = now()->setTime(13, 0, 0)->format('Y-m-d\TH:i:s');
-        // Resultado: "2026-04-07T13:00:00"
 
         Event::firstOrCreate(
             [ 'title' => 'Evento 1 meru-events' ],
@@ -22,11 +21,7 @@ class EventSeeder extends Seeder
                 'start' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
                 'end' => now()->addHours(82)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
-                    // category: 'meru-events',
-                    // label: 'Eventos Merú',
                     'status' => 'Tentativo',
-                    // 'locationId' => 1,
-                    // 'locationName' => 'Salon 1',
                     'repeatEvent' => true,
                     'repeatInterval' => 'Mensual',
                     'createAlert' => true,
@@ -41,60 +36,18 @@ class EventSeeder extends Seeder
         );
 
         Event::firstOrCreate(
-            [ 'title' => 'Evento 2 wedding-nights' ],
-            [
-                'start' => now()->addHours(82)->format('Y-m-d\TH:i:s'),
-                'end' => now()->addHours(84)->format('Y-m-d\TH:i:s'),
-                'extended_props' => [
-                    // 'category' => 'wedding-nights',
-                    // 'label' => 'Plan Noche de Bodas',
-                    'status' => 'Tentativo',
-                    // 'locationId' => 2,
-                    // 'locationName' => 'Salon 2',
-                    'coloringDay' => true,
-                    'comments' => 'Comentario del evento 2',
-                    'createdBy' => "Ana Luna"
-                ],
-                'event_category_id' => 2,
-                'location_id' => 2
-            ]
-        );
-
-        Event::firstOrCreate(
-            [ 'title' => 'Evento 3 executive-mod' ],
-            [
-                'start' => now()->addHours(86)->format('Y-m-d\TH:i:s'),
-                'end' => now()->addHours(90)->format('Y-m-d\TH:i:s'),
-                'extended_props' => [
-                    // 'category' => 'executive-mod',
-                    // 'label' => 'Ejecutivos MOD',
-                    'status' => 'Tentativo',
-                    'coloringDay' => true,
-                    'comments' => 'Comentario del evento 4',
-                    'createdBy' => "Riad Abdo"
-                ],
-                'event_category_id' => 7,
-                'location_id' => null
-            ]
-        );
-
-        Event::firstOrCreate(
-            [ 'title' => 'Evento 4 meru-events' ],
+            [ 'title' => 'Evento 2 meru-events' ],
             [
                 'start' => now()->addHours(78)->format('Y-m-d\TH:i:s'),
                 'end' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
-                    // category: 'meru-events',
-                    // label: 'Eventos Merú',
                     'status' => 'Tentativo',
-                    // 'locationId' => 4,
-                    // 'locationName' => 'Salon 4',
                     'repeatEvent' => true,
                     'repeatInterval' => 'Mensual',
                     'createAlert' => true,
                     'coloringDay' => true,
-                    'description' => 'Descripción del evento 4',
-                    'comments' => 'Comentarios del evento 4',
+                    'description' => 'Descripción del evento 2',
+                    'comments' => 'Comentarios del evento 2',
                     'createdBy' => "Ana Luna"
                 ],
                 'event_category_id' => 1,
@@ -104,16 +57,49 @@ class EventSeeder extends Seeder
 
 
         Event::firstOrCreate(
-            [ 'title' => 'Evento 5 meru-events' ],
+            [ 'title' => 'Evento 3 meru-events' ],
             [
                 'start' => '2026-01-30T20:00:00',
                 'end' => '2026-01-30T23:00:00',
                 'extended_props' => [
-                    // category: 'meru-events',
-                    // label: 'Eventos Merú',
                     'status' => 'Tentativo',
-                    // 'locationId' => 5,
-                    // 'locationName' => 'Salon 5',
+                    'repeatEvent' => true,
+                    'repeatInterval' => 'Mensual',
+                    'createAlert' => true,
+                    'coloringDay' => true,
+                    'description' => 'Descripción del evento 3',
+                    'comments' => 'Comentarios del evento 3',
+                    'createdBy' => "Ana Luna"
+                ],
+                'event_category_id' => 1,
+                'location_id' => 3
+            ]
+        );
+
+        Event::firstOrCreate(
+            [ 'title' => 'Evento 4 wedding-nights' ],
+            [
+                'start' => now()->addHours(82)->format('Y-m-d\TH:i:s'),
+                'end' => now()->addHours(84)->format('Y-m-d\TH:i:s'),
+                'extended_props' => [
+                    'status' => 'Tentativo',
+                    'coloringDay' => true,
+                    'comments' => 'Comentario del evento 4',
+                    'createdBy' => "Ana Luna"
+                ],
+                'event_category_id' => 2,
+                'location_id' => 2
+            ]
+        );
+
+
+         Event::firstOrCreate(
+            [ 'title' => 'Evento 5 dinner-heights' ],
+            [
+                'start' => '2026-01-30T20:00:00',
+                'end' => '2026-01-30T23:00:00',
+                'extended_props' => [
+                    'status' => 'Tentativo',
                     'repeatEvent' => true,
                     'repeatInterval' => 'Mensual',
                     'createAlert' => true,
@@ -122,8 +108,63 @@ class EventSeeder extends Seeder
                     'comments' => 'Comentarios del evento 5',
                     'createdBy' => "Ana Luna"
                 ],
-                'event_category_id' => 1,
-                'location_id' => 3
+                'event_category_id' => 3,
+            ]
+        );
+
+         Event::firstOrCreate(
+            [ 'title' => 'Evento 6 ve-holidays' ],
+            [
+                'start' => '2026-12-30T20:00:00',
+                'end' => '2026-12-30T23:00:00',
+                'extended_props' => [
+                    'status' => 'Tentativo',
+                    'repeatEvent' => true,
+                    'repeatInterval' => 'Mensual',
+                    'createAlert' => true,
+                    'coloringDay' => true,
+                    'description' => 'Descripción del evento 6',
+                    'comments' => 'Comentarios del evento 6',
+                    'createdBy' => "Ana Luna"
+                ],
+                'event_category_id' => 4,
+            ]
+        );
+
+
+        Event::firstOrCreate(
+            [ 'title' => 'Evento 7 executive-mod' ],
+            [
+                'start' => now()->addHours(86)->format('Y-m-d\TH:i:s'),
+                'end' => now()->addHours(90)->format('Y-m-d\TH:i:s'),
+                'extended_props' => [
+                    'status' => 'Tentativo',
+                    'coloringDay' => true,
+                    'comments' => 'Comentario del evento 7',
+                    'createdBy' => "Riad Abdo"
+                ],
+                'event_category_id' => 7,
+                'location_id' => null
+            ]
+        );
+
+        
+        Event::firstOrCreate(
+            [ 'title' => 'Evento 8 banking-mondays' ],
+            [
+                'start' => '2026-12-30T20:00:00',
+                'end' => '2026-12-30T23:00:00',
+                'extended_props' => [
+                    'status' => 'Tentativo',
+                    'repeatEvent' => true,
+                    'repeatInterval' => 'Mensual',
+                    'createAlert' => true,
+                    'coloringDay' => true,
+                    'description' => 'Descripción del evento 8',
+                    'comments' => 'Comentarios del evento 8',
+                    'createdBy' => "Ana Luna"
+                ],
+                'event_category_id' => 8,
             ]
         );
     }

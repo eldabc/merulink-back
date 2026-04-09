@@ -14,11 +14,18 @@ class EventController extends Controller
     public function index(Request $request)
     {
         $query = Event::with(['eventCategory', 'location']);
-
-        if ($request->filled('category')) {
-            $query->whereHas('eventCategory', function($q) use ($request) {
-                $q->where('key', $request->category);
-            });
+        if ($request->filled('categoryKeys')) {
+            
+            if ($request->categoryKeys[0] === 'meru-birthdays') {
+                $query->whereHas('eventCategory', function($q) {
+                    $q->where('key', 'meru-birthdays');
+                })->with('department');
+            } else {
+                $categoryKeysArray = explode(',', $request->categoryKeys);
+                $query->whereHas('eventCategory', function($q) use ($categoryKeysArray) {
+                    $q->whereIn('key', $categoryKeysArray);
+                });
+            }
         }
 
         if ($request->filled('history')) {
@@ -28,6 +35,7 @@ class EventController extends Controller
             $query->where('start', '>=', now())
                   ->orderBy('start', 'asc');
         }
+            // return response()->json([ 'data' => $query->get() ]);
         
         return EventResource::collection($query->get());
     }

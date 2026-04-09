@@ -25,7 +25,7 @@ class EventCategorySeeder extends Seeder
             ['key' => 'wedding-nights'],
             [
              'label' => "Plan Noche de Bodas",
-             'color' => 'wedding-nights',
+             'color' => 'di-heights-wedding-nights',
             ]
         );
 
@@ -33,7 +33,7 @@ class EventCategorySeeder extends Seeder
             ['key' => 'dinner-heights'],
             [
              'label' => "Cena en las Alturas",
-             'color' => 'dinner-heights',
+             'color' => 'di-heights-wedding-nights',
             ]
         );
 
@@ -41,7 +41,7 @@ class EventCategorySeeder extends Seeder
             ['key' => 've-holidays'],
             [
              'label' => "Festivos Venezolanos",
-             'color' => 've-holidays',
+             'color' => 'g-calendar-ve-holidays',
             ]
         );
 
@@ -49,7 +49,7 @@ class EventCategorySeeder extends Seeder
             ['key' => 'google-calendar'],
             [
              'label' => "Calendario Google",
-             'color' => 'google-calendar',
+             'color' => 'g-calendar-ve-holidays',
             ]
         );
 
