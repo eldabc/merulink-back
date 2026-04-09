@@ -3,42 +3,97 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Employee;
+use App\Models\EventCategory;
 use App\Http\Resources\EventResource;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class EventController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $query = Event::with(['eventCategory', 'location']);
-        if ($request->filled('categoryKeys')) {
-            
-            if ($request->categoryKeys[0] === 'meru-birthdays') {
-                $query->whereHas('eventCategory', function($q) {
-                    $q->where('key', 'meru-birthdays');
-                })->with('department');
-            } else {
-                $categoryKeysArray = explode(',', $request->categoryKeys);
-                $query->whereHas('eventCategory', function($q) use ($categoryKeysArray) {
-                    $q->whereIn('key', $categoryKeysArray);
-                });
-            }
-        }
+    
+// use Illuminate\Support\Facades\DB;
 
-        if ($request->filled('history')) {
-            $query->where('start', '<', now())
-                  ->orderBy('start', 'desc');;
-        } else {
-            $query->where('start', '>=', now())
-                  ->orderBy('start', 'asc');
-        }
-            // return response()->json([ 'data' => $query->get() ]);
-        
-        return EventResource::collection($query->get());
+public function index(Request $request)
+{
+    $query = Event::with(['eventCategory', 'location']);
+    $categoryKeysArray = explode(',', $request->categoryKeys );
+
+    if ($request->filled('categoryKeys') ) {
+        if( $request->categoryKeys === 'meru-birthdays') {
+
+            $today = Carbon::today();
+
+            $employees = Employee::with('department')
+                ->whereNotNull('birthdate')
+                ->get()
+                ->filter(function ($employee) use ($today) {
+                    $birthdayThisYear = Carbon::parse($employee->birthdate)
+                        ->year($today->year);
+
+                    return $birthdayThisYear->greaterThanOrEqualTo($today);
+                })
+                ->sortBy(function ($employee) use ($today) {
+                    return Carbon::parse($employee->birthdate)
+                        ->year($today->year);
+                })
+                ->values();
+
+                $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
+
+                // return response()->json([ 'data' => $eventCategory ]);
+            $events = $employees->map(function ($employee) use ($today, $eventCategory) {
+
+                $birthday = Carbon::parse($employee->birthdate)->year($today->year);
+
+                return [
+                    'id' => 'birthday-' . $employee->id,
+                    'title' => '🎂 ' . $employee->first_name.' '.$employee->last_name,
+                    'start' => $birthday->toDateString(),
+                    'end' => $birthday->toDateString(),
+                    'allDay' => true,
+                    'extendedProps' => [
+                        'type' => 'birthday',
+                        'employee_id' => $employee->id,
+                        'department' => [
+                            'id' => $employee->position->department->id,
+                            'name' => $employee->position->department->name,
+                        ],
+                        'category' => [
+                            'id' => $eventCategory->id,
+                            'key' => $eventCategory->key,
+                            'label' => $eventCategory->label,
+                            'color' => $eventCategory->color,
+                        ],
+                    ],
+                ];
+            });
+
+            return response()->json([ 'data' => $events ]);
+        } //else {
+
+            // Flujo events
+            
+
+            $query->whereHas('eventCategory', function($q) use ($categoryKeysArray) {
+                $q->whereIn('key', $categoryKeysArray);
+            });
+        //}
     }
+
+    if ($request->filled('history')) {
+        $query->where('start', '<', now())
+              ->orderBy('start', 'desc');
+    } else {
+        $query->where('start', '>=', now())
+              ->orderBy('start', 'asc');
+    }
+
+    return EventResource::collection($query->get());
+}
 
     /**
      * Store a newly created resource in storage.
