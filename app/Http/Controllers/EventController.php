@@ -16,58 +16,93 @@ class EventController extends Controller
      * Display a listing of the resource.
      */
     
-// use Illuminate\Support\Facades\DB;
+    // use Illuminate\Support\Facades\DB;
 
-public function index(Request $request)
-{
-    $query = Event::with(['eventCategory', 'location']);
-    $categoryKeysArray = explode(',', $request->categoryKeys );
+    public function index(Request $request)
+    {
+        $categoryKeys = explode(',', $request->categoryKeys);
 
-    if ($request->filled('categoryKeys') ) {
-        if( $request->categoryKeys === 'meru-birthdays') {
+        $includeAll = in_array('all', $categoryKeys);
+        $includeBirthdays = $includeAll || in_array('meru-birthdays', $categoryKeys);
+        $includeEvents = $includeAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
 
-            $today = Carbon::today();
+        // history SOLO aplica si NO es "all"
+        $applyHistory = !$includeAll && $request->boolean('history');
 
-            $employees = Employee::with('department')
-                            ->whereNotNull('birthdate')
-                            ->get()
-                            ->filter(function ($employee) use ($today) {
-                                $birthdayThisYear = Carbon::parse($employee->birthdate)
-                                    ->year($today->year);
+        // colección base
+        $events = collect();
 
-                                return $birthdayThisYear->greaterThanOrEqualTo($today);
-                            })
-                            ->sortBy(function ($employee) use ($today) {
-                                return Carbon::parse($employee->birthdate)
-                                    ->year($today->year);
-                            })
-                            ->values();
+        // EVENTOS NORMALES
+        if ($includeEvents) {
+
+            $query = Event::with(['eventCategory', 'location']);
+
+            // Filtrar por categorías SOLO si no es "all"
+            if (!$includeAll && !empty($categoryKeys)) {
+                $query->whereHas('eventCategory', function($q) use ($categoryKeys) {
+                    $q->whereIn('key', $categoryKeys);
+                });
+            }
+
+            // aplicar history solo si corresponde
+            if ($request->boolean('history')) {
+                $query->where('start', '<', now())
+                    ->orderBy('start', 'desc');
+            } elseif (!$includeAll) { // si es "all", no filtramos fechas
+                $query->where('start', '>=', now())
+                    ->orderBy('start', 'asc');
+            }
+            
+
+            $eventResults = EventResource::collection($query->get())->resolve();
+            // return response()->json([ 'PRINT' => $query->get() ]);
+
+            $events = $events->concat($eventResults);
+        }
+
+        // CUMPLEAÑOS
+        if ($includeBirthdays) {
+            
+            $today = \Carbon\Carbon::today()->startOfDay();
+            $limitDate = $today->copy()->addMonths(2)->startOfDay();
+
+            $employees = Employee::with('position.department')
+                ->whereNotNull('birthdate')
+                ->where('status', true)
+                ->get()
+                ->map(function ($employee) use ($today) {
+                    
+                    $birthdate = \Carbon\Carbon::parse($employee->birthdate);
+                    $nextBirthday = $birthdate->copy()->year($today->year)->startOfDay();
+
+                if ($nextBirthday->lt($today)) {
+                    $nextBirthday->addYear();
+                }
+
+                $employee->next_birthday = $nextBirthday;
+
+                return $employee;
+            })
+            ->filter(function ($employee) use ($today, $limitDate) {
+
+                // 🔥 SOLO dentro del rango de 2 meses
+                return $employee->next_birthday->between($today, $limitDate);
+            })
+            ->sortBy('next_birthday')
+            ->values();
 
             $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
-            $events = $employees->map(function ($employee) use ($today, $eventCategory) {
+
+            $birthdayEvents = $employees->map(function ($employee) use ($today, $eventCategory) {
                 return (new BirthdayEventResource($employee, $today, $eventCategory))->resolve();
             });
 
-            // return response()->json([ 'data' => $eventCategory ]);
-            return response()->json([ 'data' => $events ]);
+            $events = $events->concat($birthdayEvents);
         }
 
-        // Flujo usual events
-        $query->whereHas('eventCategory', function($q) use ($categoryKeysArray) {
-            $q->whereIn('key', $categoryKeysArray);
-        });
+        return response()->json([ 'data' => $events->values()->all() ]);
     }
 
-    if ($request->filled('history')) {
-        $query->where('start', '<', now())
-              ->orderBy('start', 'desc');
-    } else {
-        $query->where('start', '>=', now())
-              ->orderBy('start', 'asc');
-    }
-
-    return EventResource::collection($query->get());
-}
 
     /**
      * Store a newly created resource in storage.

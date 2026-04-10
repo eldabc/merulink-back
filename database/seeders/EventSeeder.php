@@ -96,8 +96,8 @@ class EventSeeder extends Seeder
          Event::firstOrCreate(
             [ 'title' => 'Evento 5 dinner-heights' ],
             [
-                'start' => '2026-01-30T20:00:00',
-                'end' => '2026-01-30T23:00:00',
+                'start' => '2026-05-30T20:00:00',
+                'end' => '2026-05-30T23:00:00',
                 'extended_props' => [
                     'status' => 'Tentativo',
                     'repeatEvent' => true,
@@ -109,6 +109,7 @@ class EventSeeder extends Seeder
                     'createdBy' => "Ana Luna"
                 ],
                 'event_category_id' => 3,
+                'location_id' => 3
             ]
         );
 
