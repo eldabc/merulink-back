@@ -19,19 +19,23 @@ class BirthdayEventResource extends JsonResource
 
     public function toArray($request)
     {
-        $birthday = \Carbon\Carbon::parse($this->birthdate)->year($this->today->year);
+        $birthdate = \Carbon\Carbon::parse($this->birthdate);
+
+        $birthday = $birthdate->copy()->year($this->today->year);
+
+        $nextAge = $this->today->year - $birthdate->year;
 
         return [
             'id' => 'birthday-' . $this->id,
             'title' => '🎂 ' . $this->first_name . ' ' . $this->last_name,
-            'start' => $birthday->toDateString(),
-            'end' => $birthday->toDateString(),
+            'start' => $birthday->toDateString().'T00:00:00',
+            'end' => $birthday->toDateString().'T00:00:00',
             'allDay' => true,
 
             'extendedProps' => [
                 'type' => 'birthday',
                 'employee_id' => $this->id,
-
+                'nextAge' => $nextAge,
                 'department' => $this->position?->department ? [
                     'id' => $this->position->department->id,
                     'name' => $this->position->department->name,
