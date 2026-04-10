@@ -7,37 +7,43 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class BirthdayEventResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
+    protected $today;
+    protected $eventCategory;
+
+    public function __construct($resource, $today = null, $eventCategory = null)
     {
+        parent::__construct($resource);
+        $this->today = $today ?? now();
+        $this->eventCategory = $eventCategory;
+    }
+
+    public function toArray($request)
+    {
+        $birthday = \Carbon\Carbon::parse($this->birthdate)->year($this->today->year);
+
         return [
-            'id' => 'bday-' . $this->id,
-            'title' => 'Cumpleaños 🎂 ' . $this->first_name.' '.$this->last_name,
-            'start' => now()->year . '-' . date('m-d', strtotime($this->birthdate)),
-            'all_day' => true,
-            'extended_props' => [
-                'category' => [
-                    'key' => 'meru-birthdays',
-                    'label' => 'Cumpleaños',
-                    'color' => '#f472b6' // Rosa o color distintivo
-                ],
-                'department' => [
-                    'id' => $this->subdepartment?->department?->id,
-                    'name' => $this->subdepartment?->department?->name,
-                ],
-                'subDepartment' => $this->position->subdepartment ? [
-                    'id' => $this->position->subdepartment->id,
-                    'name' => $this->position->subdepartment->name,
-                ] : [],
-                'position' => [
-                    'id' => $this->position->id,
-                    'name' => $this->position->name
-                ],
-            ]
+            'id' => 'birthday-' . $this->id,
+            'title' => '🎂 ' . $this->first_name . ' ' . $this->last_name,
+            'start' => $birthday->toDateString(),
+            'end' => $birthday->toDateString(),
+            'allDay' => true,
+
+            'extendedProps' => [
+                'type' => 'birthday',
+                'employee_id' => $this->id,
+
+                'department' => $this->position?->department ? [
+                    'id' => $this->position->department->id,
+                    'name' => $this->position->department->name,
+                ] : null,
+
+                'category' => $this->eventCategory ? [
+                    'id' => $this->eventCategory->id,
+                    'key' => $this->eventCategory->key,
+                    'label' => $this->eventCategory->label,
+                    'color' => $this->eventCategory->color,
+                ] : null,
+            ],
         ];
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Employee;
 use App\Models\EventCategory;
 use App\Http\Resources\EventResource;
+use App\Http\Resources\BirthdayEventResource;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -28,60 +29,33 @@ public function index(Request $request)
             $today = Carbon::today();
 
             $employees = Employee::with('department')
-                ->whereNotNull('birthdate')
-                ->get()
-                ->filter(function ($employee) use ($today) {
-                    $birthdayThisYear = Carbon::parse($employee->birthdate)
-                        ->year($today->year);
+                            ->whereNotNull('birthdate')
+                            ->get()
+                            ->filter(function ($employee) use ($today) {
+                                $birthdayThisYear = Carbon::parse($employee->birthdate)
+                                    ->year($today->year);
 
-                    return $birthdayThisYear->greaterThanOrEqualTo($today);
-                })
-                ->sortBy(function ($employee) use ($today) {
-                    return Carbon::parse($employee->birthdate)
-                        ->year($today->year);
-                })
-                ->values();
+                                return $birthdayThisYear->greaterThanOrEqualTo($today);
+                            })
+                            ->sortBy(function ($employee) use ($today) {
+                                return Carbon::parse($employee->birthdate)
+                                    ->year($today->year);
+                            })
+                            ->values();
 
-                $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
-
-                // return response()->json([ 'data' => $eventCategory ]);
+            $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
             $events = $employees->map(function ($employee) use ($today, $eventCategory) {
-
-                $birthday = Carbon::parse($employee->birthdate)->year($today->year);
-
-                return [
-                    'id' => 'birthday-' . $employee->id,
-                    'title' => '🎂 ' . $employee->first_name.' '.$employee->last_name,
-                    'start' => $birthday->toDateString(),
-                    'end' => $birthday->toDateString(),
-                    'allDay' => true,
-                    'extendedProps' => [
-                        'type' => 'birthday',
-                        'employee_id' => $employee->id,
-                        'department' => [
-                            'id' => $employee->position->department->id,
-                            'name' => $employee->position->department->name,
-                        ],
-                        'category' => [
-                            'id' => $eventCategory->id,
-                            'key' => $eventCategory->key,
-                            'label' => $eventCategory->label,
-                            'color' => $eventCategory->color,
-                        ],
-                    ],
-                ];
+                return (new BirthdayEventResource($employee, $today, $eventCategory))->resolve();
             });
 
+            // return response()->json([ 'data' => $eventCategory ]);
             return response()->json([ 'data' => $events ]);
-        } //else {
+        }
 
-            // Flujo events
-            
-
-            $query->whereHas('eventCategory', function($q) use ($categoryKeysArray) {
-                $q->whereIn('key', $categoryKeysArray);
-            });
-        //}
+        // Flujo usual events
+        $query->whereHas('eventCategory', function($q) use ($categoryKeysArray) {
+            $q->whereIn('key', $categoryKeysArray);
+        });
     }
 
     if ($request->filled('history')) {
