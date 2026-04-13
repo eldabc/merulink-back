@@ -20,6 +20,8 @@ class Event extends Model
     protected $casts = [
         'extended_props' => 'array',
         'all_day' => 'boolean',
+        'start' => 'datetime:Y-m-d\TH:i:s',
+        'end'   => 'datetime:Y-m-d\TH:i:s',
     ];
 
     public function eventCategory(): BelongsTo

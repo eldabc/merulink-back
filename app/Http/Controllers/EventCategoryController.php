@@ -12,7 +12,8 @@ class EventCategoryController extends Controller
      */
     public function index()
     {
-        //
+        $eventCategory = EventCategory::get();
+        return response()->json([ 'data' => $eventCategory ]);
     }
 
     /**
