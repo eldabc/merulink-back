@@ -3,15 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-use App\Models\Employee;
-use App\Models\EventCategory;
+// use App\Models\Employee;
+// use App\Models\EventCategory;
 use App\Http\Resources\EventResource;
-use App\Http\Resources\BirthdayEventResource;
+// use App\Http\Resources\BirthdayEventResource;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+// use Carbon\Carbon;
+use App\Services\BirthdayEventService;
 
 class EventController extends Controller
 {
+    protected $birthdayEventService;
+
+    public function __construct(BirthdayEventService $birthdayEventService)
+    {
+        $this->birthdayEventService = $birthdayEventService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -61,43 +69,10 @@ class EventController extends Controller
         }
 
         // CUMPLEAÑOS
-        if ($includeBirthdays) {
-            
-            $today = \Carbon\Carbon::today()->startOfDay();
-            $limitDate = $today->copy()->addMonths(2)->startOfDay();
-
-            $employees = Employee::with('position.department')
-                ->whereNotNull('birthdate')
-                ->where('status', true)
-                ->get()
-                ->map(function ($employee) use ($today) {
-                    
-                    $birthdate = \Carbon\Carbon::parse($employee->birthdate);
-                    $nextBirthday = $birthdate->copy()->year($today->year)->startOfDay();
-
-                if ($nextBirthday->lt($today)) {
-                    $nextBirthday->addYear();
-                }
-
-                $employee->next_birthday = $nextBirthday;
-
-                return $employee;
-            })
-            ->filter(function ($employee) use ($today, $limitDate) {
-
-                // 🔥 SOLO dentro del rango de 2 meses
-                return $employee->next_birthday->between($today, $limitDate);
-            })
-            ->sortBy('next_birthday')
-            ->values();
-
-            $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
-
-            $birthdayEvents = $employees->map(function ($employee) use ($today, $eventCategory) {
-                return (new BirthdayEventResource($employee, $today, $eventCategory))->resolve();
-            });
-
-            $events = $events->concat($birthdayEvents);
+        if ($includeBirthdays) { 
+            return response()->json([ 'PRINT' => $request->boolean('history') ]);    
+              
+            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($request->boolean('history')));
         }
 
         return response()->json([ 'data' => $events->values()->all() ]);
