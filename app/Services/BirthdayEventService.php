@@ -10,42 +10,43 @@ use App\Http\Resources\BirthdayEventResource;
 use Carbon\Carbon;
 
 class BirthdayEventService {
+
     /**
      * Lógica centralizada para calcular eventos de cumpleaños.
     */
-    public function calculateBirthdayEvents($history)
-    {
-        $today = \Carbon\Carbon::today()->startOfDay();
-        $limitDate = $today->copy()->addMonths(2)->startOfDay();
+public function calculateBirthdayEvents($history = false)
+{
+    $today = \Carbon\Carbon::today()->startOfDay();
+    $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
 
-        $employees = Employee::with('position.department')
-            ->whereNotNull('birthdate')
-            ->where('status', true)
-            ->get()
-            ->map(function ($employee) use ($today) {
-                
-                $birthdate = \Carbon\Carbon::parse($employee->birthdate);
-                $nextBirthday = $birthdate->copy()->year($today->year)->startOfDay();
+    // Define los límites "MMDD" para base de datos
+    if ($history) {
+        // Desde el 1 de enero hasta ayer
+        $startLimit = "0101";
+        $endLimit   = $today->copy()->subDay()->format('md');
+    } else {
+        // Desde hoy hasta el 31 de diciembre
+        $startLimit = $today->format('md');
+        $endLimit   = "1231";
+    }
 
-            if ($nextBirthday->lt($today)) {
-                $nextBirthday->addYear();
-            }
-
-            $employee->next_birthday = $nextBirthday;
-
+    $employees = Employee::with('position.department')
+        ->whereNotNull('birthdate')
+        ->where('status', true)
+        ->whereRaw("to_char(birthdate, 'MMDD') BETWEEN ? AND ?", [$startLimit, $endLimit])
+        ->get()
+        ->map(function ($employee) use ($today) {
+            // Fecha cumpleaños siempre en el año actual
+            $birthdate = \Carbon\Carbon::parse($employee->birthdate);
+            $employee->next_birthday = $birthdate->copy()->year($today->year)->startOfDay();
+            
             return $employee;
         })
-        ->filter(function ($employee) use ($today, $limitDate) {
-            return $employee->next_birthday->between($today, $limitDate); // SOLO dentro del rango de 2 meses
-        })
-        ->sortBy('next_birthday')
+        ->sortBy('next_birthday', SORT_REGULAR, $history)
         ->values();
 
-        $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
-
-        return  $employees->map(function ($employee) use ($today, $eventCategory) {
-            return (new BirthdayEventResource($employee, $today, $eventCategory))->resolve();
-        });
-
-    }
+    return $employees->map(function ($employee) use ($today, $eventCategory) {
+        return (new BirthdayEventResource($employee, $today, $eventCategory))->resolve();
+    });
+}
 }

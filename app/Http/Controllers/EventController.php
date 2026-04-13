@@ -69,9 +69,7 @@ class EventController extends Controller
         }
 
         // CUMPLEAÑOS
-        if ($includeBirthdays) { 
-            return response()->json([ 'PRINT' => $request->boolean('history') ]);    
-              
+        if ($includeBirthdays) {
             $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($request->boolean('history')));
         }
 
