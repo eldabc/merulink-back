@@ -13,6 +13,7 @@ use App\Http\Controllers\SubDepartmentController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventCategoryController;
+use App\Http\Controllers\LocationController;
 
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -44,6 +45,7 @@ use App\Http\Controllers\EventCategoryController;
     Route::apiResource('positions', PositionController::class);
     Route::apiResource('events', EventController::class);
     Route::apiResource('eventCategories', EventCategoryController::class);
+    Route::apiResource('locations', LocationController::class);
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {
