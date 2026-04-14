@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-// use App\Models\Employee;
-// use App\Models\EventCategory;
-use App\Http\Resources\EventResource;
-// use App\Http\Resources\BirthdayEventResource;
+use App\Models\EventCategory;
+
 use Illuminate\Http\Request;
-// use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use App\Services\BirthdayEventService;
+use App\Http\Resources\EventResource;
+use App\Http\Requests\StoreEventRequest;
 
 class EventController extends Controller
 {
@@ -45,14 +45,13 @@ class EventController extends Controller
 
             $query = Event::with(['eventCategory', 'location']);
 
-            // Filtrar por categorías SOLO si no es "all"
+            // Sino es all filtrar por categorías
             if (!$includeAll && !empty($categoryKeys)) {
                 $query->whereHas('eventCategory', function($q) use ($categoryKeys) {
                     $q->whereIn('key', $categoryKeys);
                 });
             }
 
-            // aplicar history solo si corresponde
             if ($request->boolean('history')) {
                 $query->where('start', '<', now())
                     ->orderBy('start', 'desc');
@@ -80,9 +79,37 @@ class EventController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreEventRequest $request)
     {
-        //
+        $data = $request->validated();
+        return DB::transaction(function () use ($data) {
+
+            // $key = $request->input('extended_props.0.category_key');
+            $data['event_category_id'] = EventCategory::where('key', $data['extended_props']['category_key'])->value('id');
+            return response()->json([ 'data' => $data ]);
+
+            $event = Event::create($data);
+
+            if (filled($data['template_name'])) {
+                $eventTemplate = EventTemplate::create([
+                    'name' => $data['template_name'],
+                    'event_id' => $event->id,
+                ]);
+            }
+
+            // if (isset($data['contacts'])) {
+            //     foreach ($data['contacts'] as $contact) {
+            //         $event->emergencyContacts()->create($contact);
+            //     }
+            // }
+
+            return new EventResource($event->load([
+                'eventCategory',
+                'eventTemplate', 
+                'location'
+            ]));
+        });
+
     }
 
     /**
