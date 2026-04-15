@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Event extends Model
 {
@@ -13,7 +14,7 @@ class Event extends Model
         'end',
         'all_day',
         'extended_props',
-        'category_id',
+        'event_category_id',
         'location_id',
     ];
 
@@ -32,5 +33,15 @@ class Event extends Model
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
+    }
+
+    public function templateOrigin(): HasOne
+    {
+        return $this->hasOne(EventTemplate::class, 'origin_event_id');
+    }
+
+    public function templateRecord()
+    {
+        return $this->hasOne(EventTemplate::class, 'event_id');
     }
 }

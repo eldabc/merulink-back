@@ -16,7 +16,11 @@ return new class extends Migration
             $table->string('name');
 
             $table->foreignId('event_id')
-                  ->constrained()
+                  ->constrained('events')
+                  ->onDelete('cascade');
+
+            $table->foreignId('origin_event_id')
+                  ->constrained('events')
                   ->onDelete('cascade');
 
             $table->timestamps();

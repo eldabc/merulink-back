@@ -43,7 +43,7 @@ class EventController extends Controller
         // EVENTOS NORMALES
         if ($includeEvents) {
 
-            $query = Event::with(['eventCategory', 'location']);
+            $query = Event::with(['eventCategory', 'location'])->doesntHave('templateRecord');
 
             // Sino es all filtrar por categorías
             if (!$includeAll && !empty($categoryKeys)) {
@@ -84,28 +84,25 @@ class EventController extends Controller
         $data = $request->validated();
         return DB::transaction(function () use ($data) {
 
-            // $key = $request->input('extended_props.0.category_key');
-            $data['event_category_id'] = EventCategory::where('key', $data['extended_props']['category_key'])->value('id');
-            return response()->json([ 'data' => $data ]);
-
+            $data['event_category_id'] = EventCategory::where('key', $data['category_key'])->value('id');
+            // return response()->json([ 'data' => $data ]);
             $event = Event::create($data);
 
-            if (filled($data['template_name'])) {
-                $eventTemplate = EventTemplate::create([
+            if (filled($data['template_name']) && !$event->templateOrigin()->exists()) {
+
+                $clonEvent = $event->replicate();
+                $clonEvent->save();
+
+                // Registrar plantilla
+                $event->templateOrigin()->create([
                     'name' => $data['template_name'],
-                    'event_id' => $event->id,
+                    'event_id' => $clonEvent->id,
                 ]);
             }
 
-            // if (isset($data['contacts'])) {
-            //     foreach ($data['contacts'] as $contact) {
-            //         $event->emergencyContacts()->create($contact);
-            //     }
-            // }
-
             return new EventResource($event->load([
                 'eventCategory',
-                'eventTemplate', 
+                // 'templateOrigin', 
                 'location'
             ]));
         });
