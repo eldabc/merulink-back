@@ -43,7 +43,7 @@ class EventController extends Controller
         // EVENTOS NORMALES
         if ($includeEvents) {
 
-            $query = Event::with(['eventCategory', 'location'])->doesntHave('templateRecord');
+            $query = Event::with(['eventCategory', 'location'])->onlyEventOrigin();
 
             // Sino es all filtrar por categorías
             if (!$includeAll && !empty($categoryKeys)) {

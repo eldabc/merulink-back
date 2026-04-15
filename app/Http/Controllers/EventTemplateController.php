@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use App\Models\EventTemplate;
+
 use Illuminate\Http\Request;
+use App\Http\Resources\EventTemplateResource;
 
 class EventTemplateController extends Controller
 {
@@ -12,7 +15,8 @@ class EventTemplateController extends Controller
      */
     public function index()
     {
-        //
+        $templates = EventTemplate::with(['event.eventCategory', 'event.location'])->get();
+        return EventTemplateResource::collection($templates);
     }
 
     /**

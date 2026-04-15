@@ -13,8 +13,14 @@ class EventTemplate extends Model
         'origin_event_id',
     ];
 
-    public function event(): BelongsTo
+    public function event()
     {
-        return $this->belongsTo(Event::class);
+        return $this->belongsTo(Event::class, 'event_id');
+    }
+
+    public function originEvent()
+    {
+        // Evento origen
+        return $this->belongsTo(Event::class, 'origin_event_id');
     }
 }

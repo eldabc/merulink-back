@@ -13,6 +13,7 @@ use App\Http\Controllers\SubDepartmentController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventCategoryController;
+use App\Http\Controllers\EventTemplateController;
 use App\Http\Controllers\LocationController;
 
     Route::get('/user', function (Request $request) {
@@ -45,6 +46,7 @@ use App\Http\Controllers\LocationController;
     Route::apiResource('positions', PositionController::class);
     Route::apiResource('events', EventController::class);
     Route::apiResource('eventCategories', EventCategoryController::class);
+    Route::apiResource('eventTemplates', EventTemplateController::class);
     Route::apiResource('locations', LocationController::class);
 
     // Rutas protegidas

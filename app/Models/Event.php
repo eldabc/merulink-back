@@ -44,4 +44,19 @@ class Event extends Model
     {
         return $this->hasOne(EventTemplate::class, 'event_id');
     }
+
+    public function scopeOnlyEventOrigin($query)
+    {
+        return $query->doesntHave('templateRecord');
+    }
+
+    // public function scopeOnlyTemplates($query)
+    // {
+    //     return $query->has('templateRecord');
+    // }
+
+    public function scopeHasGeneratedTemplate($query)
+    {
+        return $query->has('templateOrigin');
+    }
 }
