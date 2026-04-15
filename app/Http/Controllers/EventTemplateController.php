@@ -13,9 +13,18 @@ class EventTemplateController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $templates = EventTemplate::with(['event.eventCategory', 'event.location'])->get();
+        $query = EventTemplate::with(['event.eventCategory', 'event.location']);
+
+        if ($request->filled('selectedCategory')) {
+            $query->whereHas('event.eventCategory', function($q) use ($request) {
+                $q->where('key', $request->selectedCategory);
+            });
+        }
+        
+        $templates = $query->get();
+
         return EventTemplateResource::collection($templates);
     }
 
