@@ -114,15 +114,41 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        //
+        return new EventResource($event->load([
+            'eventCategory', 
+            'location', 
+            'templateOrigin'
+        ]));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Event $event)
+    public function update(StoreEventRequest $request, Event $event)
     {
-        //
+        $data = $request->validated();
+        $data['event_category_id'] = EventCategory::where('key', $data['category_key'])->value('id');
+
+        $event->update($data);
+
+        if (filled($data['template_name']) && !$event->templateOrigin()->exists()) {
+
+            $clonEvent = $event->replicate();
+            $clonEvent->save();
+
+            // Registrar plantilla
+            $event->templateOrigin()->create([
+                'name' => $data['template_name'],
+                'event_id' => $clonEvent->id,
+            ]);
+        }
+        
+
+        return new EventResource($event->load([
+            'eventCategory',
+            'location',
+            'templateOrigin'
+        ]));
     }
 
     /**

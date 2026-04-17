@@ -36,7 +36,7 @@ class StoreEventRequest extends FormRequest
             ],
 
             'extended_props' => ['required', 'array', 'min:1'],
-            'extended_props.status' => ['required', 'string', 'in:Tentativo,Confirmado'],
+            'extended_props.status' => ['nullable', 'string', 'in:Tentativo,Confirmado'],
             'extended_props.repeat_event' => ['nullable', 'boolean'],
             'extended_props.repeat_interval' => ['nullable', 'string'],
             'extended_props.create_alert' => ['nullable', 'boolean'],
