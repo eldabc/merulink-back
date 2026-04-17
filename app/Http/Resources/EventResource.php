@@ -37,10 +37,10 @@ class EventResource extends JsonResource
 
                 'templateInfo' => $this->when($this->relationLoaded('templateOrigin') && $this->templateOrigin, function() {
                     return [
-                        'has_template' => true,
-                        'tid' => $this->templateOrigin->id,
+                        'hasTemplate' => true,
+                        'id' => $this->templateOrigin->event_id,
                         'name' => $this->templateOrigin->name,
-                        'route_path' => '/templates/edit/' . $this->templateOrigin->id 
+                        'routePath' => '/eventos/editar/' . $this->templateOrigin->event_id 
                     ];
                 }),
             ],
