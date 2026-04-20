@@ -26,6 +26,8 @@ class StoreEventRequest extends FormRequest
                 'required',
                 'string',
             ],
+            // 'start' => $this->input('is_template') ? 'nullable|date' : 'required|date',
+            // 'end'   => $this->input('is_template') ? 'nullable|date' : 'required|date|after_or_equal:start',
             'start' => [
                 'date',
                 'required',

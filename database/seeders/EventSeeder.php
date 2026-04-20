@@ -22,13 +22,13 @@ class EventSeeder extends Seeder
                 'end' => now()->addHours(82)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeatEvent' => true,
-                    'repeatInterval' => 'Mensual',
-                    'createAlert' => true,
-                    'coloringDay' => true,
+                    'repeat_event' => true,
+                    'repeat_interval' => 'Mensual',
+                    'create_alert' => true,
+                    'coloring_day' => true,
                     'description' => 'Descripción del evento 1',
                     'comments' => 'Comentarios del evento 1',
-                    'createdBy' => "Ana Luna"
+                    'created_by' => "Ana Luna"
                 ],
                 'event_category_id' => 1,
                 'location_id' => 1
@@ -42,13 +42,13 @@ class EventSeeder extends Seeder
                 'end' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeatEvent' => true,
-                    'repeatInterval' => 'Mensual',
-                    'createAlert' => true,
-                    'coloringDay' => true,
+                    'repeat_event' => true,
+                    'repeat_interval' => 'Mensual',
+                    'create_alert' => true,
+                    'coloring_day' => true,
                     'description' => 'Descripción del evento 2',
                     'comments' => 'Comentarios del evento 2',
-                    'createdBy' => "Ana Luna"
+                    'created_by' => "Ana Luna"
                 ],
                 'event_category_id' => 1,
                 'location_id' => 2
@@ -63,13 +63,13 @@ class EventSeeder extends Seeder
                 'end' => '2026-01-30T23:00:00',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeatEvent' => true,
-                    'repeatInterval' => 'Mensual',
-                    'createAlert' => true,
-                    'coloringDay' => true,
+                    'repeat_event' => true,
+                    'repeat_interval' => 'Mensual',
+                    'create_alert' => true,
+                    'coloring_day' => true,
                     'description' => 'Descripción del evento 3',
                     'comments' => 'Comentarios del evento 3',
-                    'createdBy' => "Ana Luna"
+                    'created_by' => "Ana Luna"
                 ],
                 'event_category_id' => 1,
                 'location_id' => 3
@@ -83,9 +83,9 @@ class EventSeeder extends Seeder
                 'end' => now()->addHours(84)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'coloringDay' => true,
+                    'coloring_day' => true,
                     'comments' => 'Comentario del evento 4',
-                    'createdBy' => "Ana Luna"
+                    'created_by' => "Ana Luna"
                 ],
                 'event_category_id' => 2,
                 'location_id' => 2
@@ -100,13 +100,13 @@ class EventSeeder extends Seeder
                 'end' => '2026-05-30T23:00:00',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeatEvent' => true,
-                    'repeatInterval' => 'Mensual',
-                    'createAlert' => true,
-                    'coloringDay' => true,
+                    'repeat_event' => true,
+                    'repeat_interval' => 'Mensual',
+                    'create_alert' => true,
+                    'coloring_day' => true,
                     'description' => 'Descripción del evento 5',
                     'comments' => 'Comentarios del evento 5',
-                    'createdBy' => "Ana Luna"
+                    'created_by' => "Ana Luna"
                 ],
                 'event_category_id' => 3,
                 'location_id' => 3
@@ -120,13 +120,13 @@ class EventSeeder extends Seeder
                 'end' => '2026-12-30T23:00:00',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeatEvent' => true,
-                    'repeatInterval' => 'Mensual',
-                    'createAlert' => true,
-                    'coloringDay' => true,
+                    'repeat_event' => true,
+                    'repeat_interval' => 'Mensual',
+                    'create_alert' => true,
+                    'coloring_day' => true,
                     'description' => 'Descripción del evento 6',
                     'comments' => 'Comentarios del evento 6',
-                    'createdBy' => "Ana Luna"
+                    'created_by' => "Ana Luna"
                 ],
                 'event_category_id' => 4,
             ]
@@ -140,9 +140,9 @@ class EventSeeder extends Seeder
                 'end' => now()->addHours(90)->format('Y-m-d\TH:i:s'),
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'coloringDay' => true,
+                    'coloring_day' => true,
                     'comments' => 'Comentario del evento 7',
-                    'createdBy' => "Riad Abdo"
+                    'created_by' => "Riad Abdo"
                 ],
                 'event_category_id' => 7,
                 'location_id' => null
@@ -157,13 +157,13 @@ class EventSeeder extends Seeder
                 'end' => '2026-12-30T23:00:00',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeatEvent' => true,
-                    'repeatInterval' => 'Mensual',
-                    'createAlert' => true,
-                    'coloringDay' => true,
+                    'repeat_event' => true,
+                    'repeat_interval' => 'Mensual',
+                    'create_alert' => true,
+                    'coloring_day' => true,
                     'description' => 'Descripción del evento 8',
                     'comments' => 'Comentarios del evento 8',
-                    'createdBy' => "Ana Luna"
+                    'created_by' => "Ana Luna"
                 ],
                 'event_category_id' => 8,
             ]

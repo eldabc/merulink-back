@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->dateTime('start'); 
+            $table->string('title')->nullable();
+            $table->dateTime('start')->nullable(); 
             $table->dateTime('end')->nullable();
             $table->boolean('all_day')->default(false);
             $table->json('extended_props');

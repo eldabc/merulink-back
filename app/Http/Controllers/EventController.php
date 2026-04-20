@@ -91,6 +91,8 @@ class EventController extends Controller
             if (filled($data['template_name']) && !$event->templateOrigin()->exists()) {
 
                 $clonEvent = $event->replicate();
+                $clonEvent->start = null;
+                $clonEvent->end = null;
                 $clonEvent->save();
 
                 // Registrar plantilla
@@ -134,6 +136,8 @@ class EventController extends Controller
         if (filled($data['template_name']) && !$event->templateOrigin()->exists()) {
 
             $clonEvent = $event->replicate();
+            $clonEvent->start = null;
+            $clonEvent->end = null;
             $clonEvent->save();
 
             // Registrar plantilla

@@ -18,13 +18,15 @@ class EventTemplateSeeder extends Seeder
 
         if ($eventForTemplateOne) {
 
-            $nuevoEvento = $eventForTemplateOne->replicate();
-            $nuevoEvento->save();
+            $clonEvent = $eventForTemplateOne->replicate();
+            $clonEvent->start = null;
+            $clonEvent->end = null;
+            $clonEvent->save();
 
             EventTemplate::firstOrCreate(
                 ['name' => 'Plantilla Uno'],
                 [
-                    'event_id' => $nuevoEvento->id,
+                    'event_id' => $clonEvent->id,
                     'origin_event_id' => $eventForTemplateOne->id,
                 ],
             );
@@ -34,13 +36,15 @@ class EventTemplateSeeder extends Seeder
 
         if ($eventForTemplateTwo) {
             
-            $nuevoEvento = $eventForTemplateTwo->replicate();
-            $nuevoEvento->save();
+            $clonEvent = $eventForTemplateTwo->replicate();
+            $clonEvent->start = null;
+            $clonEvent->end = null;
+            $clonEvent->save();
         
             EventTemplate::firstOrCreate(
                 ['name' => 'Plantilla Dos'],
                 [
-                    'event_id' => $nuevoEvento->id,
+                    'event_id' => $clonEvent->id,
                     'origin_event_id' => $eventForTemplateTwo->id,
                 ],
             );
