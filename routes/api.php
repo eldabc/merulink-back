@@ -39,6 +39,14 @@ use App\Http\Controllers\LocationController;
         'update', 'show'
     ]);
 
+    // Ruta solo con fin informativo
+    Route::get('/check-time', function () {
+    return [
+        'time_now' => date('Y-m-d H:i:s'),
+        'timezone' => date_default_timezone_get(),
+    ];
+});
+
     Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('departments', DepartmentController::class);
