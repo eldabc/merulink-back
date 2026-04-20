@@ -156,6 +156,16 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        //
+        if ($event->status->isConfirmed()) {
+            return response()->json([
+                'message' => 'No se puede eliminar un evento que está confirmado.'
+            ], 422);
+        }
+
+        $event->delete();
+
+        return response()->json([
+            'message' => "El evento {$event->title} ha sido eliminado correctamente."
+        ], 200);
     }
 }

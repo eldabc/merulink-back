@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\EventStatus;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Event extends Model
 {
@@ -59,4 +62,27 @@ class Event extends Model
     {
         return $query->has('templateOrigin');
     }
+
+    protected function status(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                // Extrae el valor del JSON
+                $value = $this->extended_props['status'] ?? null;
+                
+                // Si existe, intenta convertirlo a Enum
+                return $value ? EventStatus::tryFrom($value) : null;
+            },
+            set: function ($value) {
+                // Si le asigna un Enum o un string, guarda dentro de array
+                $currentProps = $this->extended_props ?? [];
+                $currentProps['status'] = $value instanceof EventStatus ? $value->value : $value;
+                
+                return [
+                    'extended_props' => $currentProps
+                ];
+            }
+        );
+    }
+    
 }

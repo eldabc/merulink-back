@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         $this->call(EventCategorySeeder::class);
         $this->call(LocationSeeder::class);
         $this->call(EventSeeder::class);
+        $this->call(EventTemplateSeeder::class);
         $this->call(UserSeeder::class);      
 
         User::factory()->create([

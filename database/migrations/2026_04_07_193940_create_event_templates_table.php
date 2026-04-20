@@ -20,8 +20,9 @@ return new class extends Migration
                   ->onDelete('cascade');
 
             $table->foreignId('origin_event_id')
+                  ->nullable()
                   ->constrained('events')
-                  ->onDelete('cascade');
+                  ->onDelete('set null');
 
             $table->timestamps();
         });
