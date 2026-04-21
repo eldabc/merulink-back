@@ -27,13 +27,13 @@ class EventResource extends JsonResource
                 
                 'status' => $props['status'] ?? null,
                 'repeatEvent' => $props['repeat_event'] ?? null,
-                'repeatInterval' => $props['repeat_interval'] ?? null,
+                'repeatInterval' => $props['repeat_interval'] ?? '',
                 'createAlert' => $props['create_alert'] ?? false,
                 'coloringDay' => $props['coloring_day'] ?? false,
-                'description' => $props['description'] ?? false,
-                'comments' => $props['comments'] ?? false,
+                'description' => $props['description'] ?? '',
+                'comments' => $props['comments'] ?? '',
                 'isFixed' => $props['is_fixed'] ?? false,
-                'createdBy' => $props['created_by'] ?? false,
+                'createdBy' => $props['created_by'] ?? '',
                 'isTemplate' => (bool) $this->templateRecord()->exists(),
                 'templateInfo' => $this->when($this->relationLoaded('templateOrigin') && $this->templateOrigin, function() {
                     return [
