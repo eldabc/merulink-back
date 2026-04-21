@@ -36,6 +36,9 @@ class StoreEventRequest extends FormRequest
                 'date',
                 'nullable',
             ],
+            'all_day' => [
+                'boolean',
+            ],
 
             'extended_props' => ['required', 'array', 'min:1'],
             'extended_props.status' => ['nullable', 'string', 'in:Tentativo,Confirmado'],

@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class EventResource extends JsonResource
 {
@@ -18,8 +19,8 @@ class EventResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'start' => $this->start,
-            'end' => $this->end,
+            'start' => $this->start ? Carbon::parse($this->start)->format('Y-m-d\TH:i:s') : null,
+            'end'   => $this->end ? Carbon::parse($this->end)->format('Y-m-d\TH:i:s') : null,
             'allDay' => $this->all_day,
             'extendedProps' => [
                 'category' => new EventCategoryResource($this->whenLoaded('eventCategory')),
