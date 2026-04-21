@@ -34,13 +34,13 @@ class EventResource extends JsonResource
                 'comments' => $props['comments'] ?? false,
                 'isFixed' => $props['is_fixed'] ?? false,
                 'createdBy' => $props['created_by'] ?? false,
-
+                'isTemplate' => (bool) $this->templateRecord()->exists(),
                 'templateInfo' => $this->when($this->relationLoaded('templateOrigin') && $this->templateOrigin, function() {
                     return [
                         'hasTemplate' => true,
                         'id' => $this->templateOrigin->event_id,
                         'name' => $this->templateOrigin->name,
-                        'routePath' => '/eventos/editar/' . $this->templateOrigin->event_id 
+                        'routePath' => '/eventos/ver/' . $this->templateOrigin->event_id 
                     ];
                 }),
             ],
