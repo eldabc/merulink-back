@@ -26,7 +26,7 @@ class EventResource extends JsonResource
                 'category' => new EventCategoryResource($this->whenLoaded('eventCategory')),
                 'location' => new LocationResource($this->whenLoaded('location')),
                 
-                'status' => $props['status'] ?? null,
+                'status' => $props['status'] ?? '',
                 'repeatEvent' => $props['repeat_event'] ?? null,
                 'repeatInterval' => $props['repeat_interval'] ?? '',
                 'createAlert' => $props['create_alert'] ?? false,
@@ -35,6 +35,10 @@ class EventResource extends JsonResource
                 'comments' => $props['comments'] ?? '',
                 'isFixed' => $props['is_fixed'] ?? false,
                 'createdBy' => $props['created_by'] ?? '',
+               'specialLabel' => $this->when(
+                    !empty($props['special_label'] ?? null),
+                    $props['special_label'] ?? null
+                ),
                 'isTemplate' => (bool) $this->templateRecord()->exists(),
                 'templateInfo' => $this->when($this->relationLoaded('templateOrigin') && $this->templateOrigin, function() {
                     return [

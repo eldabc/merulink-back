@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum EventStatus: string {
     
+    case CREATED = 'Creado';
     case TENTATIVE = 'Tentativo';
     case CONFIRMED = 'Confirmado';
     
