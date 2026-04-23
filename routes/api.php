@@ -53,6 +53,7 @@ use App\Http\Controllers\LocationController;
     Route::apiResource('subdepartments', SubDepartmentController::class);
     Route::apiResource('positions', PositionController::class);
     Route::apiResource('events', EventController::class);
+    Route::post('events/batch-banking', [EventController::class, 'batchBanking']);
     Route::apiResource('eventCategories', EventCategoryController::class);
     Route::apiResource('eventTemplates', EventTemplateController::class);
     Route::apiResource('locations', LocationController::class);

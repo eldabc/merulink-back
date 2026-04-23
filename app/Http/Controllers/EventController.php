@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\BirthdayEventService;
 use App\Http\Resources\EventResource;
 use App\Http\Requests\StoreEventRequest;
+use App\Http\Requests\BatchBankingEventRequest;
 
 class EventController extends Controller
 {
@@ -171,5 +172,30 @@ class EventController extends Controller
         return response()->json([
             'message' => "El evento {$event->title} ha sido eliminado correctamente."
         ], 200);
+    }
+
+    public function batchBanking(BatchBankingEventRequest $request) 
+    {   
+        $data = $request->validated(); // Array de objetos
+
+        return DB::transaction(function () use ($data) {
+            
+            // En este caso los eventos siempre tienen la misma categoría
+            $firstEvent = $data[0];        
+            $eventCategoryId = EventCategory::where('key', $firstEvent['category_key'])->value('id');
+
+            if ($eventCategoryId) {
+                Event::where('event_category_id', $eventCategoryId)->delete();
+            }
+
+            $createdEvents = collect();
+            foreach ($data as $eventData) {
+                $eventData['event_category_id'] = $eventCategoryId;
+                $event = Event::create($eventData);
+                $createdEvents->push($event);
+            }
+
+            return EventResource::collection($createdEvents);
+        });
     }
 }
