@@ -35,9 +35,8 @@ class EventController extends Controller
         $includeAll = in_array('all', $categoryKeys);
         $includeBirthdays = $includeAll || in_array('meru-birthdays', $categoryKeys);
         $includeEvents = $includeAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
-
         
-        $applyHistory = $request->boolean('history'); // !$includeAll && history SOLO aplica si NO es "all"
+        $applyHistory = $request->boolean('history');
         $anyDateInCategory = $request->boolean('anyDateInCategory');
 
         // colección base
@@ -55,7 +54,7 @@ class EventController extends Controller
                 });
             }
 
-            if ($request->boolean('history')) {
+            if ($applyHistory) {
                 $query->where('start', '<', now())
                     ->orderBy('start', 'desc');
             } elseif (!$includeAll && !$anyDateInCategory) {
@@ -72,7 +71,7 @@ class EventController extends Controller
 
         // CUMPLEAÑOS
         if ($includeBirthdays) {
-            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($request->boolean('history')));
+            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory));
         }
 
         return response()->json([ 'data' => $events->values()->all() ]);
