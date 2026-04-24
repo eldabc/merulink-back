@@ -11,6 +11,7 @@ use App\Services\BirthdayEventService;
 use App\Http\Resources\EventResource;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\BatchBankingEventRequest;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 class EventController extends Controller
 {
@@ -35,8 +36,9 @@ class EventController extends Controller
         $includeBirthdays = $includeAll || in_array('meru-birthdays', $categoryKeys);
         $includeEvents = $includeAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
 
-        // history SOLO aplica si NO es "all"
-        $applyHistory = !$includeAll && $request->boolean('history');
+        
+        $applyHistory = $request->boolean('history'); // !$includeAll && history SOLO aplica si NO es "all"
+        $anyDateInCategory = $request->boolean('anyDateInCategory');
 
         // colección base
         $events = collect();
@@ -56,7 +58,7 @@ class EventController extends Controller
             if ($request->boolean('history')) {
                 $query->where('start', '<', now())
                     ->orderBy('start', 'desc');
-            } elseif (!$includeAll) { // si es "all", no filtramos fechas
+            } elseif (!$includeAll && !$anyDateInCategory) {
                 $query->where('start', '>=', now())
                     ->orderBy('start', 'asc');
             }
@@ -181,21 +183,18 @@ class EventController extends Controller
         return DB::transaction(function () use ($data) {
             
             // En este caso los eventos siempre tienen la misma categoría
-            $firstEvent = $data[0];        
-            $eventCategoryId = EventCategory::where('key', $firstEvent['category_key'])->value('id');
+            $eventCategoryId = EventCategory::where('key', $data[0]['category_key'])->value('id');
 
-            if ($eventCategoryId) {
-                Event::where('event_category_id', $eventCategoryId)->delete();
-            }
+            if ($eventCategoryId) Event::where('event_category_id', $eventCategoryId)->delete();
 
-            $createdEvents = collect();
+            $createdEvents = new EloquentCollection;
             foreach ($data as $eventData) {
                 $eventData['event_category_id'] = $eventCategoryId;
                 $event = Event::create($eventData);
                 $createdEvents->push($event);
             }
 
-            return EventResource::collection($createdEvents);
+            return EventResource::collection($createdEvents->load(['eventCategory']));
         });
     }
 }
