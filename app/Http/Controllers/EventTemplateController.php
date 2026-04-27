@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventTemplate;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Resources\EventTemplateResource;
 
 class EventTemplateController extends Controller
@@ -57,13 +58,16 @@ class EventTemplateController extends Controller
      */
     public function destroy(EventTemplate $eventTemplate)
     {
-        $eventId = $eventTemplate->event_id;
+        return DB::transaction(function () use ($eventTemplate) {
 
-        Event::where('id', $eventId)->delete();
-        $eventTemplate->delete();
+            $eventId = $eventTemplate->event_id;
 
-        return response()->json([
-            'message' => "La plantilla {$eventTemplate->title} ha sido eliminada correctamente."
-        ], 200);
+            Event::where('id', $eventId)->delete();
+            $eventTemplate->delete();
+
+            return response()->json([
+                'message' => "La plantilla {$eventTemplate->title} ha sido eliminada correctamente."
+            ], 200);
+        });
     }
 }
