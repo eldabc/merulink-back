@@ -59,8 +59,6 @@ class EventTemplateController extends Controller
     {
         $eventId = $eventTemplate->event_id;
 
-        // Al borrar el evento, la plantilla se borraría sola por el cascade de la migración,
-        // pero para evitar conflictos de "record not found", borramos el evento directamente.
         Event::where('id', $eventId)->delete();
         $eventTemplate->delete();
 
