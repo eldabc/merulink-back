@@ -82,13 +82,15 @@ class StoreEmployeeRequest extends FormRequest
             'mobile_phone' => [
                 'required',
                 'string',
-                'regex:/^[0-9]{4}-[0-9]{7}$/'
+                'size:11',
+                'regex:/^\d+$/' // Solo números (0-9)
             ],
 
             'home_phone' => [
                 'nullable',
                 'string',
-                'regex:/^[0-9]{4}-[0-9]{7}$/'
+                'size:11',
+                'regex:/^\d+$/'
             ],
 
             'address' => [
