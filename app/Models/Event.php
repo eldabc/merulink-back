@@ -7,6 +7,7 @@ use App\Enums\EventStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Event extends Model
@@ -41,6 +42,11 @@ class Event extends Model
     public function templateOrigin(): HasOne
     {
         return $this->hasOne(EventTemplate::class, 'origin_event_id');
+    }
+
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(EventContact::class);
     }
 
     public function templateRecord()

@@ -57,6 +57,31 @@ class StoreEventRequest extends FormRequest
             'category_key' => ['required', 'string', 'exists:event_categories,key'],
             'location_id' => ['nullable', 'integer', 'exists:locations,id'],
             'template_name' => ['nullable', 'string'],
+            
+            // array de contactos es opcional (puede venir nulo o vacío)
+            'contacts' => 'nullable|array',
+            // Si hay un contacto, el nombre y apellido son obligatorios
+            'contacts.*.first_name' => 'required_with:contacts|string|max:30',
+            'contacts.*.last_name'  => 'required_with:contacts|string|max:30',
+            'contacts.*.email'     => 'nullable|email|max:100',
+            
+            // Si hay un contacto, el array de teléfonos DEBE existir y tener al menos uno
+            'contacts.*.phones' => 'required_with:contacts|array|min:1',
+            
+            // Si hay una fila de teléfono, el número es obligatorio
+            'contacts.*.phones.*.phone_number' => 'required|string|max:20',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'contacts' => 'lista de contactos',
+            'contacts.*.first_name'   => 'nombre del contacto',
+            'contacts.*.last_name'    => 'apellido del contacto',
+            'contacts.*.email'        => 'correo electrónico',
+            'contacts.*.phones'       => 'teléfonos',
+            'contacts.*.phones.*.phone_number' => 'número de teléfono',
         ];
     }
 

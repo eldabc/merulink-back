@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\EventCategory;
+use App\Models\EventContact;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\BirthdayEventService;
+use App\Services\EventTemplateService;
+use App\Services\EventContactService;
 use App\Http\Resources\EventResource;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\BatchBankingEventRequest;
@@ -81,28 +84,24 @@ class EventController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreEventRequest $request)
+    public function store(StoreEventRequest $request, EventTemplateService $templateService, EventContactService $eventContactService)
     {
+        // return $request->all();
         $data = $request->validated();
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $templateService, $eventContactService) {
 
             $data['event_category_id'] = EventCategory::where('key', $data['category_key'])->value('id');
             // return response()->json([ 'data' => $data ]);
             $event = Event::create($data);
 
             if (filled($data['template_name']) && !$event->templateOrigin()->exists()) {
-
-                $clonEvent = $event->replicate();
-                $clonEvent->start = null;
-                $clonEvent->end = null;
-                $clonEvent->save();
-
-                // Registrar plantilla
-                $event->templateOrigin()->create([
-                    'name' => $data['template_name'],
-                    'event_id' => $clonEvent->id,
-                ]);
+                $templateService->createFromEvent($event, $data['template_name']);
             }
+
+            if(filled($data['contacts'])) {
+                $eventContactService->syncContacts($event, $data['contacts']);
+            }
+
 
             return new EventResource($event->load([
                 'eventCategory',
@@ -128,33 +127,26 @@ class EventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(StoreEventRequest $request, Event $event)
+    public function update(StoreEventRequest $request, Event $event, EventTemplateService $templateService, EventContactService $eventContactService)
     {
         $data = $request->validated();
-        $data['event_category_id'] = EventCategory::where('key', $data['category_key'])->value('id');
+        return DB::transaction(function () use ($data, $event, $templateService, $eventContactService) {
 
-        $event->update($data);
+            $data['event_category_id'] = EventCategory::where('key', $data['category_key'])->value('id');
 
-        if (filled($data['template_name']) && !$event->templateOrigin()->exists()) {
+            $event->update($data);
 
-            $clonEvent = $event->replicate();
-            $clonEvent->start = null;
-            $clonEvent->end = null;
-            $clonEvent->save();
+            if (filled($data['template_name']) && !$event->templateOrigin()->exists()) {
+                $templateService->createFromEvent($event, $data['template_name']);
+            }
 
-            // Registrar plantilla
-            $event->templateOrigin()->create([
-                'name' => $data['template_name'],
-                'event_id' => $clonEvent->id,
-            ]);
-        }
-        
+            return new EventResource($event->load([
+                'eventCategory',
+                'location',
+                'templateOrigin'
+            ]));
+        });
 
-        return new EventResource($event->load([
-            'eventCategory',
-            'location',
-            'templateOrigin'
-        ]));
     }
 
     /**
