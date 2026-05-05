@@ -49,7 +49,8 @@ class EventResource extends JsonResource
                     ];
                 }),
             ],
-            
+
+           'contacts' => ContactResource::collection($this->whenLoaded('contacts')),
         ];
     }
 }

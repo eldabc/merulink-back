@@ -106,7 +106,8 @@ class EventController extends Controller
             return new EventResource($event->load([
                 'eventCategory',
                 // 'templateOrigin', 
-                'location'
+                'location',
+                'contacts.phones'
             ]));
         });
 
@@ -120,7 +121,8 @@ class EventController extends Controller
         return new EventResource($event->load([
             'eventCategory', 
             'location', 
-            'templateOrigin'
+            'templateOrigin',
+            'contacts.phones'
         ]));
     }
 
@@ -143,7 +145,8 @@ class EventController extends Controller
             return new EventResource($event->load([
                 'eventCategory',
                 'location',
-                'templateOrigin'
+                'templateOrigin',
+                'contacts.phones'
             ]));
         });
 
