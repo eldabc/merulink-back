@@ -142,6 +142,10 @@ class EventController extends Controller
                 $templateService->createFromEvent($event, $data['template_name']);
             }
 
+            if(filled($data['contacts'])) {
+                $eventContactService->syncContacts($event, $data['contacts']);
+            }
+
             return new EventResource($event->load([
                 'eventCategory',
                 'location',
