@@ -42,6 +42,7 @@ class StoreEventRequest extends FormRequest
 
             'extended_props' => ['required', 'array', 'min:1'],
             'extended_props.status' => ['nullable', 'string', 'in:Creado,Tentativo,Confirmado'],
+            'extended_props.event_type' => ['nullable', 'string', 'in:paid,courtesy'],
             'extended_props.repeat_event' => ['nullable', 'boolean'],
             'extended_props.repeat_interval' => ['nullable', 'string'],
             'extended_props.create_alert' => ['nullable', 'boolean'],
@@ -99,8 +100,10 @@ class StoreEventRequest extends FormRequest
             'extended_props.min'      => 'Debe incluir al menos una propiedad en el evento.',
             
             // 'extended_props.status.required'       => 'El estado del evento es obligatorio.',
-            'extended_props.status.string'         => 'El estado debe ser uja cadena de caracteres.',
+            'extended_props.status.string'         => 'El estado debe ser una cadena de caracteres.',
             'unlockSequence.status.in'             => 'El Estatus debe ser: Creado,Tentativo o Confirmado.',
+            'extended_props.eventType.string'         => 'El tipo de evento debe ser una cadena de caracteres.',
+            'unlockSequence.eventType.in'             => 'El tipo de evento debe ser: Pagado o Cortesía.',
             'extended_props.repeat_event.boolean'   => 'El campo repetir evento debe ser sí o no.',
             'extended_props.create_alert.boolean'   => 'El campo crear alerta debe ser sí o no.',
             'extended_props.coloring_day.boolean'   => 'El campo resaltar día debe ser sí o no.',

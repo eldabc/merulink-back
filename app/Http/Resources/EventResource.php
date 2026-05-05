@@ -27,6 +27,7 @@ class EventResource extends JsonResource
                 'location' => new LocationResource($this->whenLoaded('location')),
                 
                 'status' => $props['status'] ?? '',
+                'eventType' => $props['event_type'] ?? null,
                 'repeatEvent' => $props['repeat_event'] ?? null,
                 'repeatInterval' => $props['repeat_interval'] ?? '',
                 'createAlert' => $props['create_alert'] ?? false,
