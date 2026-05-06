@@ -35,12 +35,15 @@ class EventController extends Controller
     {
         $categoryKeys = explode(',', $request->categoryKeys);
 
-        $includeAll = in_array('all', $categoryKeys);
-        $includeBirthdays = $includeAll || in_array('meru-birthdays', $categoryKeys);
-        $includeEvents = $includeAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
-        
+        $isAll = in_array('all', $categoryKeys);
+        $includeBirthdays = $isAll || in_array('meru-birthdays', $categoryKeys);
+        $includeEvents = $isAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
+
         $applyHistory = $request->boolean('history');
         $anyDateInCategory = $request->boolean('anyDateInCategory');
+        $year = $request->integer('year');
+        $referenceDate = now()->setYear($year);
+        // return response()->json([ 'PRINT' => $referenceDate ]);
 
         // colección base
         $events = collect();
@@ -51,23 +54,22 @@ class EventController extends Controller
             $query = Event::with(['eventCategory', 'location'])->onlyEventOrigin();
 
             // Sino es all filtrar por categorías
-            if (!$includeAll && !empty($categoryKeys)) {
+            if (!$isAll) {
                 $query->whereHas('eventCategory', function($q) use ($categoryKeys) {
                     $q->whereIn('key', $categoryKeys);
                 });
             }
 
             if ($applyHistory) {
-                $query->where('start', '<', now())
+                $query->where('start', '<', $referenceDate)
                     ->orderBy('start', 'desc');
-            } elseif (!$includeAll && !$anyDateInCategory) {
-                $query->where('start', '>=', now())
+            } elseif (!$isAll && !$anyDateInCategory) {
+                $query->where('start', '>=', $referenceDate)
                     ->orderBy('start', 'asc');
             }
             
 
             $eventResults = EventResource::collection($query->get())->resolve();
-            // return response()->json([ 'PRINT' => $query->get() ]);
 
             $events = $events->concat($eventResults);
         }
@@ -86,7 +88,6 @@ class EventController extends Controller
      */
     public function store(StoreEventRequest $request, EventTemplateService $templateService, EventContactService $eventContactService)
     {
-        // return $request->all();
         $data = $request->validated();
         return DB::transaction(function () use ($data, $templateService, $eventContactService) {
 
