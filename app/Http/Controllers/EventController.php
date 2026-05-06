@@ -41,9 +41,11 @@ class EventController extends Controller
 
         $applyHistory = $request->boolean('history');
         $anyDateInCategory = $request->boolean('anyDateInCategory');
-        $year = $request->integer('year');
-        $referenceDate = now()->setYear($year);
-        // return response()->json([ 'PRINT' => $referenceDate ]);
+        $today = now();
+        $year = $request->integer('year') ?: $today->year;
+        $referenceDate = $today;
+        $startOfYear = now()->setYear($year)->startOfYear();
+        $endOfYear = now()->setYear($year)->endOfYear();
 
         // colección base
         $events = collect();
@@ -61,8 +63,13 @@ class EventController extends Controller
             }
 
             if ($applyHistory) {
-                $query->where('start', '<', $referenceDate)
-                    ->orderBy('start', 'desc');
+                if ($year !== $today->year) {
+                    $query->whereBetween('start', [$startOfYear, $endOfYear])
+                        ->orderBy('start', 'desc');
+                } else {
+                    $query->where('start', '<', $referenceDate)
+                        ->orderBy('start', 'desc');
+                }
             } elseif (!$isAll && !$anyDateInCategory) {
                 $query->where('start', '>=', $referenceDate)
                     ->orderBy('start', 'asc');
@@ -76,7 +83,7 @@ class EventController extends Controller
 
         // CUMPLEAÑOS
         if ($includeBirthdays) {
-            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory));
+            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory, $year));
         }
 
         return response()->json([ 'data' => $events->values()->all() ]);
