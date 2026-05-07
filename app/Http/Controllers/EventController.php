@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\BirthdayEventService;
 use App\Services\EventTemplateService;
 use App\Services\EventContactService;
+use App\Services\GoogleCalendarService;
 use App\Http\Resources\EventResource;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\BatchBankingEventRequest;
@@ -31,13 +32,14 @@ class EventController extends Controller
     
     // use Illuminate\Support\Facades\DB;
 
-    public function index(Request $request)
+    public function index(Request $request, GoogleCalendarService $googleCalendarService)
     {
         $categoryKeys = explode(',', $request->categoryKeys);
 
         $isAll = in_array('all', $categoryKeys);
         $includeBirthdays = $isAll || in_array('meru-birthdays', $categoryKeys);
         $includeEvents = $isAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
+        $includeGoogleEvents = in_array('google-calendar', $categoryKeys);
 
         $applyHistory = $request->boolean('history');
         $anyDateInCategory = $request->boolean('anyDateInCategory');
@@ -45,7 +47,7 @@ class EventController extends Controller
         $year = $request->integer('year') ?: $today->year;
         $referenceDate = $today;
         $startOfYear = now()->setYear($year)->startOfYear();
-        $endOfYear = now()->setYear($year)->endOfYear();
+        $endOfYear = now()->setYear($year)->endOfYear();      
 
         // colección base
         $events = collect();
@@ -79,6 +81,29 @@ class EventController extends Controller
             $eventResults = EventResource::collection($query->get())->resolve();
 
             $events = $events->concat($eventResults);
+
+            if ($includeGoogleEvents) {
+                $googleEvents = $googleCalendarService->fetchHolidays($year);
+
+                $registeredDates = collect($eventResults)
+                    ->filter(fn($event) =>
+                        $event['extendedProps']['category']['key'] === 'google-calendar'
+                    )
+                    ->map(fn($event) =>
+                        \Carbon\Carbon::parse($event['start'])->toDateString()
+                    )
+                    ->values()
+                    ->toArray();
+
+                $googleEvents = collect($googleEvents)->filter(function ($event) use ($registeredDates) {
+
+                    $eventDate = \Carbon\Carbon::parse($event['start'])->toDateString();
+
+                    return !in_array($eventDate, $registeredDates);
+                });
+                $events = $events->concat($googleEvents);
+                // return response()->json([ 'data' => $googleEvents ]); 
+            }
         }
 
         // CUMPLEAÑOS
@@ -86,6 +111,21 @@ class EventController extends Controller
             $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory, $year));
         }
 
+        // if ($includeGoogleEvents) {
+        //     $googleEvents = $googleCalendarService->fetchHolidays($year);
+
+        //     $registeredDates = collect($eventResults)
+        //         ->filter(fn($event) =>
+        //             $event['extendedProps']['category']['key'] === 'google-calendar'
+        //         )
+        //         ->map(fn($event) =>
+        //             \Carbon\Carbon::parse($event['start'])->toDateString()
+        //         )
+        //         ->values()
+        //         ->toArray();
+        //     $events = $events->concat($googleEvents);
+        //     // return response()->json([ 'data' => $googleEvents ]); 
+        // }
         return response()->json([ 'data' => $events->values()->all() ]);
     }
 
