@@ -23,8 +23,6 @@ class BirthdayEventResource extends JsonResource
 
         $birthday = $birthdate->copy()->year($this->today->year);
 
-        $nextAge = $this->today->year - $birthdate->year;
-
         return [
             'id' => 'birthday-' . $this->id,
             'title' => '🎂 ' . $this->first_name . ' ' . $this->last_name,
@@ -35,7 +33,7 @@ class BirthdayEventResource extends JsonResource
             'extendedProps' => [
                 'type' => 'birthday',
                 'employee_id' => $this->id,
-                'nextAge' => $nextAge,
+                'nextAge' => $this->age_in_year ?? 0,
                 'department' => $this->position?->department ? [
                     'id' => $this->position->department->id,
                     'name' => $this->position->department->name,

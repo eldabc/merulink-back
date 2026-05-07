@@ -45,6 +45,8 @@ public function calculateBirthdayEvents($history = false, $year = null)
         ->map(function ($employee) use ($today) {
             $birthdate = \Carbon\Carbon::parse($employee->birthdate);
             $employee->next_birthday = $birthdate->copy()->year($today->year)->startOfDay();
+            // Calcular la edad que cumple en el año seleccionado
+            $employee->age_in_year = $today->year - $birthdate->year;
             return $employee;
         })
         ->sortBy('next_birthday', SORT_REGULAR, $history)
