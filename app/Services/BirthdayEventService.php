@@ -14,7 +14,7 @@ class BirthdayEventService {
     /**
      * Lógica centralizada para calcular eventos de cumpleaños.
     */
-public function calculateBirthdayEvents($history = false, $year = null)
+public function calculateBirthdayEvents($history = false, $year = null, $isAll = false)
 {
     $currentYear = \Carbon\Carbon::today()->year;
     $selectedYear = $year ?: $currentYear;
@@ -22,15 +22,13 @@ public function calculateBirthdayEvents($history = false, $year = null)
     $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
 
     // Define los límites "MMDD" para base de datos
-    if ($history) {
-        if ($selectedYear !== $currentYear) {
-            $startLimit = "0101";
-            $endLimit = "1231";
-        } else {
-            // Desde el 1 de enero hasta ayer
-            $startLimit = "0101";
-            $endLimit = $today->copy()->subDay()->format('md');
-        }
+    if ($isAll || ($selectedYear !== $currentYear)) {
+        $startLimit = "0101";
+        $endLimit = "1231";
+    } elseif ($history) {
+        // Desde el 1 de enero hasta ayer
+        $startLimit = "0101";
+        $endLimit = $today->copy()->subDay()->format('md');
     } else {
         // Desde hoy hasta el 31 de diciembre
         $startLimit = $today->format('md');
