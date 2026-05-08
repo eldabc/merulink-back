@@ -17,6 +17,11 @@ return new class extends Migration
             $table->dateTime('start')->nullable(); 
             $table->dateTime('end')->nullable();
             $table->boolean('all_day')->default(false);
+            
+            $table->text('rrule')->nullable();
+            $table->string('external_source')->nullable();
+            $table->string('external_id')->nullable();
+
             $table->json('extended_props');
 
             $table->foreignId('event_category_id')

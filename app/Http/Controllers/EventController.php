@@ -83,26 +83,34 @@ class EventController extends Controller
             $events = $events->concat($eventResults);
 
             if ($includeGoogleEvents) {
-                $googleEvents = $googleCalendarService->fetchHolidays($year);
 
-                $registeredDates = collect($eventResults)
-                    ->filter(fn($event) =>
-                        $event['extendedProps']['category']['key'] === 'google-calendar'
-                    )
-                    ->map(fn($event) =>
-                        \Carbon\Carbon::parse($event['start'])->toDateString()
-                    )
-                    ->values()
-                    ->toArray();
+                // Google IDs en BD
+                $internalStoreGoogleEvents = Event::query()
+                    ->whereHas('eventCategory', function($q) {
+                        $q->where('key', 'google-calendar');
+                    })
+                    ->whereYear('start', $year)
+                    ->pluck('external_id')
+                    ->filter()
+                    ->flip();
 
-                $googleEvents = collect($googleEvents)->filter(function ($event) use ($registeredDates) {
+                // eventos desde Google
+                $googleEvents = collect(
+                    $googleCalendarService->fetchHolidays($year)
+                );
 
-                    $eventDate = \Carbon\Carbon::parse($event['start'])->toDateString();
+                // filtrar duplicados
+                $googleEvents = $googleEvents
+                    ->filter(function ($event) use ($internalStoreGoogleEvents) {
 
-                    return !in_array($eventDate, $registeredDates);
-                });
+                        // compara google.id VS bd.external_id
+                        return !isset(
+                            $internalStoreGoogleEvents[$event['id']]
+                        );
+                    })
+                    ->values();
+
                 $events = $events->concat($googleEvents);
-                // return response()->json([ 'data' => $googleEvents ]); 
             }
         }
 
@@ -111,21 +119,6 @@ class EventController extends Controller
             $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory, $year));
         }
 
-        // if ($includeGoogleEvents) {
-        //     $googleEvents = $googleCalendarService->fetchHolidays($year);
-
-        //     $registeredDates = collect($eventResults)
-        //         ->filter(fn($event) =>
-        //             $event['extendedProps']['category']['key'] === 'google-calendar'
-        //         )
-        //         ->map(fn($event) =>
-        //             \Carbon\Carbon::parse($event['start'])->toDateString()
-        //         )
-        //         ->values()
-        //         ->toArray();
-        //     $events = $events->concat($googleEvents);
-        //     // return response()->json([ 'data' => $googleEvents ]); 
-        // }
         return response()->json([ 'data' => $events->values()->all() ]);
     }
 

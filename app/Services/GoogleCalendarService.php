@@ -88,8 +88,6 @@ class GoogleCalendarService
 
             'display' => 'block',
 
-            // 'className' => 'g-calendar-ve-holidays',
-
             'extendedProps' => [
 
                 'category' => [
@@ -107,8 +105,8 @@ class GoogleCalendarService
                 'repeatEvent' => true,
 
                 'repeatInterval' => $isFixed
-                    ? 'Anual'
-                    : 'Rotativo',
+                    ? 'YEARLY'
+                    : 'ROTATIVE',
 
                 'isFixed' => $isFixed,
 

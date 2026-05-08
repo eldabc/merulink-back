@@ -22,6 +22,7 @@ class EventResource extends JsonResource
             'start' => $this->start ? Carbon::parse($this->start)->format('Y-m-d\TH:i:s') : null,
             'end'   => $this->end ? Carbon::parse($this->end)->format('Y-m-d\TH:i:s') : null,
             'allDay' => $this->all_day,
+            'rrule' => $this->rrule,
             'extendedProps' => [
                 'category' => new EventCategoryResource($this->whenLoaded('eventCategory')),
                 'location' => new LocationResource($this->whenLoaded('location')),
@@ -36,9 +37,9 @@ class EventResource extends JsonResource
                 'comments' => $props['comments'] ?? '',
                 'isFixed' => $props['is_fixed'] ?? false,
                 'createdBy' => $props['created_by'] ?? '',
-               'specialLabel' => $this->when(
-                    !empty($props['special_label'] ?? null),
-                    $props['special_label'] ?? null
+                'specialLabel' => $this->when(
+                        !empty($props['special_label'] ?? null),
+                        $props['special_label'] ?? null
                 ),
                 'isTemplate' => (bool) $this->templateRecord()->exists(),
                 'templateInfo' => $this->when($this->relationLoaded('templateOrigin') && $this->templateOrigin, function() {
