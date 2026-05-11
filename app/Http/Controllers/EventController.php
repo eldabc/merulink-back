@@ -39,160 +39,85 @@ class EventController extends Controller
 
         $isAll = in_array('all', $categoryKeys);
         $includeBirthdays = $isAll || in_array('meru-birthdays', $categoryKeys);
-        $includeEvents = $isAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
+        $includeRegularEvents = $isAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
         $includeGoogleEvents = in_array('google-calendar', $categoryKeys);
+
         $applyHistory = $request->boolean('history');
         $anyDateInCategory = $request->boolean('anyDateInCategory');
         $today = now();
         $year = $request->integer('year') ?: $today->year;
-        $startOfYear = now()->setYear($year)->startOfYear();
-        $endOfYear = now()->setYear($year)->endOfYear();
+        $month = $request->filled('month')
+            ? $request->integer('month')
+            : null;
+        $getAllYear = $isAll || $anyDateInCategory;// || ($year !== $today->year);    
 
-        $getAllYear = $isAll || $anyDateInCategory || ($year !== $today->year);
+        if ($month) {
+            // rango del mes
+            $startDate = now()
+                ->setYear($year)
+                ->setMonth($month)
+                ->startOfMonth();
 
+            $endDate = now()
+                ->setYear($year)
+                ->setMonth($month)
+                ->endOfMonth();
+
+        } elseif ($getAllYear) {
+
+            // rango del año
+            $startDate = now()
+                ->setYear($year)
+                ->startOfYear();
+
+            $endDate = now()
+                ->setYear($year)
+                ->endOfYear();
+
+        } elseif ($applyHistory) {
+
+            // historial
+            $startDate = null;
+            $endDate = $today;
+
+        } else {
+
+            // futuro
+            $startDate = $today;
+            $endDate = null;
+        }
+
+        // colección base
         $events = collect();
 
-        if ($includeEvents) {
+        // EVENTOS Regulares
+        if ($includeRegularEvents) {
 
-            $normalQuery = Event::with(['eventCategory', 'location'])
-                ->onlyEventOrigin()
-                ->whereNull('rrule');
+            $query = Event::with(['eventCategory', 'location'])->onlyEventOrigin();//->whereYear('start', $year);
 
-            // categorías
+            // Sino es all filtrar por categorías
             if (!$isAll) {
-                $normalQuery->whereHas('eventCategory', function($q) use ($categoryKeys) {
+                $query->whereHas('eventCategory', function($q) use ($categoryKeys) {
                     $q->whereIn('key', $categoryKeys);
                 });
             }
 
-            // filtros fecha
-            if ($getAllYear) {
-                $normalQuery->whereBetween('start', [$startOfYear, $endOfYear])
-                    ->orderBy('start', 'desc');
-            } elseif ($applyHistory) {
-                $normalQuery->where('start', '<', $today)
-                    ->orderBy('start', 'desc');
-            } else {
-                $normalQuery->where('start', '>=', $today)
-                    ->orderBy('start', 'asc');
+            if ($startDate && $endDate) {
+                $query->whereBetween('start', [$startDate, $endDate]);
+            } elseif ($startDate) {
+                $query->where('start', '>=', $startDate);
+            } elseif ($endDate) {
+                $query->where('start', '<', $endDate);
             }
+     
+            $query->orderBy('start', $applyHistory ? 'desc' : 'asc'); 
 
-            $normalEvents = EventResource::collection(
-                $normalQuery->get()
-            )->resolve();
+            $eventResults = EventResource::collection($query->get())->resolve();
+            $events = $events->concat($eventResults);
 
-            $events = $events->concat($normalEvents);
-
-            // RECURRENTES
-            $recurrentQuery = Event::with(['eventCategory', 'location'])
-                ->onlyEventOrigin()
-                ->whereNotNull('rrule');
-
-            if (!$isAll) {
-                $recurrentQuery->whereHas('eventCategory', function($q) use ($categoryKeys) {
-                    $q->whereIn('key', $categoryKeys);
-                });
-            }
-
-            $recurrentBaseEvents = $recurrentQuery->get();
-            // return response()->json([ 'recurrentBaseEvents' => $recurrentBaseEvents ]);
-
-            $expandedRecurringEvents = $recurrentBaseEvents->flatMap(function ($event) use (
-    $startOfYear,
-    $endOfYear
-) {
-
-    try {
-
-        $rrule = new \RRule\RRule([
-            'RRULE' => $event->rrule,
-            'DTSTART' => new \DateTime($event->start),
-        ]);
-
-        $occurrences = $rrule->getOccurrencesBetween(
-            $startOfYear,
-            $endOfYear
-        );
-
-        return collect($occurrences)->map(function ($occurrence) use ($event) {
-
-            return [
-
-                'id' => $event->id . '_' . $occurrence->format('Ymd'),
-
-                'title' => $event->title,
-
-                'start' => $occurrence->format('Y-m-d H:i:s'),
-
-                'end' => $occurrence->format('Y-m-d H:i:s'),
-
-                'allDay' => $event->all_day,
-
-                'rrule' => $event->rrule,
-
-                'extendedProps' => [
-
-                    'category' => [
-                        'id' => $event->eventCategory?->id,
-                        'key' => $event->eventCategory?->key,
-                        'label' => $event->eventCategory?->label,
-                        'color' => $event->eventCategory?->color,
-                    ],
-
-                    'repeatInterval' => $event->repeat_interval,
-
-                    'isRecurring' => true,
-                ]
-            ];
-        });
-
-    } catch (\Exception $e) {
-
-        dump([
-            'EVENT_ID' => $event->id,
-            'RRULE' => $event->rrule,
-            'ERROR' => $e->getMessage(),
-        ]);
-
-        return collect();
-    }
-});
-
-
-            // filtros recurrentes
-            $expandedRecurringEvents = $expandedRecurringEvents
-                ->filter(function ($event) use (
-                    $getAllYear,
-                    $applyHistory,
-                    $today,
-                    $startOfYear,
-                    $endOfYear
-                ) {
-
-                    $eventDate = \Carbon\Carbon::parse($event['start']);
-
-                    if ($getAllYear) {
-                        return $eventDate->between($startOfYear, $endOfYear);
-                    }
-
-                    if ($applyHistory) {
-                        return $eventDate->lt($today);
-                    }
-
-                    return $eventDate->gte($today);
-                })
-
-                ->sortBy(function ($event) {
-                    return \Carbon\Carbon::parse($event['start'])->timestamp;
-                }, SORT_REGULAR, $applyHistory)
-
-                ->values();
-
-            $events = $events->concat($expandedRecurringEvents);
-
-            // GOOGLE CALENDAR
             if ($includeGoogleEvents || $isAll) {
 
+                // Google IDs en BD
                 $internalStoreGoogleEvents = Event::query()
                     ->whereHas('eventCategory', function($q) {
                         $q->where('key', 'google-calendar');
@@ -202,44 +127,45 @@ class EventController extends Controller
                     ->filter()
                     ->flip();
 
-                $googleEvents = collect(
-                    $googleCalendarService->fetchHolidays($year)
-                );
+                // eventos desde Google
+                $googleEvents = collect($googleCalendarService->fetchHolidays($year));
 
-                $googleFilterEvents = $googleEvents
-
+                // filtrar duplicados y ordenar según flags
+               $googleFilterEvents = $googleEvents
                     ->filter(function ($event) use ($internalStoreGoogleEvents) {
-
                         return !isset(
                             $internalStoreGoogleEvents[$event['id']]
                         );
                     })
 
-                    ->filter(function ($event) use (
-                        $getAllYear,
-                        $applyHistory,
-                        $today,
-                        $startOfYear,
-                        $endOfYear
-                    ) {
+                    // filtro fecha
+                    ->filter(function ($event) use ( $getAllYear, $applyHistory, $today, $startDate, $endDate ) {
 
                         $eventDate = \Carbon\Carbon::parse($event['start']);
 
+                        // traer TODO el año
                         if ($getAllYear) {
-                            return $eventDate->between($startOfYear, $endOfYear);
+                            return $eventDate->between(
+                                $startDate,
+                                $endDate
+                            );
                         }
 
+                        // historial
                         if ($applyHistory) {
                             return $eventDate->lt($today);
                         }
 
+                        // futuros
                         return $eventDate->gte($today);
                     })
 
-                    ->sortBy(function ($event) {
-                        return \Carbon\Carbon::parse($event['start'])->timestamp;
-                    }, SORT_REGULAR, $applyHistory)
+                    // ordenar
+                    ->sortBy(function ($event) use ($applyHistory) {
 
+                        return \Carbon\Carbon::parse($event['start'])->timestamp;
+
+                    }, SORT_REGULAR, $applyHistory) // reverse si history
                     ->values();
 
                 $events = $events->concat($googleFilterEvents);
@@ -248,7 +174,7 @@ class EventController extends Controller
 
         // CUMPLEAÑOS
         if ($includeBirthdays) {
-            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory,$year,$isAll));
+            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory, $year, $isAll));
         }
 
         return response()->json([ 'data' => $events->values()->all() ]);
