@@ -52,6 +52,7 @@ class EventController extends Controller
         $startOfYear = now()->setYear($year)->startOfYear();
         $endOfYear = now()->setYear($year)->endOfYear(); 
         $getAllYear = $getAllCategories || $anyDateInCategory;
+        
         [
             $startDate,
             $endDate
@@ -63,7 +64,6 @@ class EventController extends Controller
             $today
         );
 
-
         // colección base
         $events = collect();
 
@@ -72,24 +72,24 @@ class EventController extends Controller
 
             $query = Event::with(['eventCategory', 'location'])->onlyEventOrigin();
 
-            // Sino es all filtrar por categorías
+            // Filtrar por categorías
             if (!$getAllCategories) {
                 $query->whereHas('eventCategory', function($q) use ($categoryKeys) {
                     $q->whereIn('key', $categoryKeys);
                 });
             }
 
-            if ($month || $getAllYear) { //$startDate && $endDate
+            if ($month || $getAllYear) { 
                 $query->whereBetween('start', [$startDate, $endDate]);
             } elseif ($applyHistory) {
 
-                if ($year !== $today->year) {
+                if ($year !== $today->year) { // historial de años anteriores
                     $query->whereBetween('start', [$startOfYear, $endOfYear]);
                 } else {
                     $query->whereBetween('start', [$startOfYear, $today]);
                 }
 
-            } else { // if ($startDate)
+            } else { // flujo por default
                 $query->where('start', '>=', $startDate);
             }
      
