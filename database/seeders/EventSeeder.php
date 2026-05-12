@@ -23,7 +23,7 @@ class EventSeeder extends Seeder
                 'extended_props' => [
                     'status' => 'Tentativo',
                     'repeat_event' => true,
-                    'repeat_interval' => 'Mensual',
+                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 1',
@@ -43,7 +43,7 @@ class EventSeeder extends Seeder
                 'extended_props' => [
                     'status' => 'Tentativo',
                     'repeat_event' => true,
-                    'repeat_interval' => 'Mensual',
+                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 2',
@@ -64,7 +64,7 @@ class EventSeeder extends Seeder
                 'extended_props' => [
                     'status' => 'Tentativo',
                     'repeat_event' => true,
-                    'repeat_interval' => 'Mensual',
+                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 3',
@@ -101,7 +101,7 @@ class EventSeeder extends Seeder
                 'extended_props' => [
                     'status' => 'Tentativo',
                     'repeat_event' => true,
-                    'repeat_interval' => 'Mensual',
+                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 5',
@@ -121,7 +121,7 @@ class EventSeeder extends Seeder
                 'extended_props' => [
                     'status' => 'Tentativo',
                     'repeat_event' => true,
-                    'repeat_interval' => 'Mensual',
+                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 6',
@@ -158,7 +158,7 @@ class EventSeeder extends Seeder
                 'extended_props' => [
                     'status' => 'Tentativo',
                     'repeat_event' => true,
-                    'repeat_interval' => 'Mensual',
+                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 8',
