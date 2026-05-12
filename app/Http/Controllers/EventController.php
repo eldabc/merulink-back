@@ -8,11 +8,13 @@ use App\Models\EventCategory;
 use App\Models\EventContact;
 
 use Illuminate\Http\Request;
+use App\Support\EventDateRange;
 use Illuminate\Support\Facades\DB;
 use App\Services\BirthdayEventService;
 use App\Services\EventTemplateService;
 use App\Services\EventContactService;
-use App\Services\GoogleCalendarService;
+use App\Services\GoogleCalendarEventService;
+
 use App\Http\Resources\EventResource;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\BatchBankingEventRequest;
@@ -33,59 +35,34 @@ class EventController extends Controller
     
     // use Illuminate\Support\Facades\DB;
 
-    public function index(Request $request, GoogleCalendarService $googleCalendarService)
+    public function index(Request $request, GoogleCalendarEventService $googleCalendarEventService)
     {
         $categoryKeys = explode(',', $request->categoryKeys);
-
-        $isAll = in_array('all', $categoryKeys);
-        $includeBirthdays = $isAll || in_array('meru-birthdays', $categoryKeys);
-        $includeRegularEvents = $isAll || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;
-        $includeGoogleEvents = in_array('google-calendar', $categoryKeys);
-
         $applyHistory = $request->boolean('history');
         $anyDateInCategory = $request->boolean('anyDateInCategory');
+
+        $getAllCategories = in_array('all', $categoryKeys);
+        $includeBirthdays = $getAllCategories || in_array('meru-birthdays', $categoryKeys);
+        $includeGoogleEvents = in_array('google-calendar', $categoryKeys);
+        $includeRegularEvents = $getAllCategories || count(array_diff($categoryKeys, ['meru-birthdays'])) > 0;     
+
         $today = now();
         $year = $request->integer('year') ?: $today->year;
-        $month = $request->filled('month')
-            ? $request->integer('month')
-            : null;
-        $getAllYear = $isAll || $anyDateInCategory;// || ($year !== $today->year);    
+        $month = $request->filled('month') ? $request->integer('month') : null;
+        $startOfYear = now()->setYear($year)->startOfYear();
+        $endOfYear = now()->setYear($year)->endOfYear(); 
+        $getAllYear = $getAllCategories || $anyDateInCategory;
+        [
+            $startDate,
+            $endDate
+        ] = EventDateRange::resolve(
+            $year,
+            $month,
+            $getAllYear,
+            $applyHistory,
+            $today
+        );
 
-        if ($month) {
-            // rango del mes
-            $startDate = now()
-                ->setYear($year)
-                ->setMonth($month)
-                ->startOfMonth();
-
-            $endDate = now()
-                ->setYear($year)
-                ->setMonth($month)
-                ->endOfMonth();
-
-        } elseif ($getAllYear) {
-
-            // rango del año
-            $startDate = now()
-                ->setYear($year)
-                ->startOfYear();
-
-            $endDate = now()
-                ->setYear($year)
-                ->endOfYear();
-
-        } elseif ($applyHistory) {
-
-            // historial
-            $startDate = null;
-            $endDate = $today;
-
-        } else {
-
-            // futuro
-            $startDate = $today;
-            $endDate = null;
-        }
 
         // colección base
         $events = collect();
@@ -93,21 +70,27 @@ class EventController extends Controller
         // EVENTOS Regulares
         if ($includeRegularEvents) {
 
-            $query = Event::with(['eventCategory', 'location'])->onlyEventOrigin();//->whereYear('start', $year);
+            $query = Event::with(['eventCategory', 'location'])->onlyEventOrigin();
 
             // Sino es all filtrar por categorías
-            if (!$isAll) {
+            if (!$getAllCategories) {
                 $query->whereHas('eventCategory', function($q) use ($categoryKeys) {
                     $q->whereIn('key', $categoryKeys);
                 });
             }
 
-            if ($startDate && $endDate) {
+            if ($month || $getAllYear) { //$startDate && $endDate
                 $query->whereBetween('start', [$startDate, $endDate]);
-            } elseif ($startDate) {
+            } elseif ($applyHistory) {
+
+                if ($year !== $today->year) {
+                    $query->whereBetween('start', [$startOfYear, $endOfYear]);
+                } else {
+                    $query->whereBetween('start', [$startOfYear, $today]);
+                }
+
+            } else { // if ($startDate)
                 $query->where('start', '>=', $startDate);
-            } elseif ($endDate) {
-                $query->where('start', '<', $endDate);
             }
      
             $query->orderBy('start', $applyHistory ? 'desc' : 'asc'); 
@@ -115,66 +98,25 @@ class EventController extends Controller
             $eventResults = EventResource::collection($query->get())->resolve();
             $events = $events->concat($eventResults);
 
-            if ($includeGoogleEvents || $isAll) {
+            if ($includeGoogleEvents || $getAllCategories) {
 
-                // Google IDs en BD
-                $internalStoreGoogleEvents = Event::query()
-                    ->whereHas('eventCategory', function($q) {
-                        $q->where('key', 'google-calendar');
-                    })
-                    ->whereYear('start', $year)
-                    ->pluck('external_id')
-                    ->filter()
-                    ->flip();
+                $googleEvents = $googleCalendarEventService
+                    ->getFilteredEvents(
+                        $year,
+                        $startDate,
+                        $endDate,
+                        $applyHistory,
+                        $today
+                    );
 
-                // eventos desde Google
-                $googleEvents = collect($googleCalendarService->fetchHolidays($year));
+                $events = $events->concat($googleEvents);
 
-                // filtrar duplicados y ordenar según flags
-               $googleFilterEvents = $googleEvents
-                    ->filter(function ($event) use ($internalStoreGoogleEvents) {
-                        return !isset(
-                            $internalStoreGoogleEvents[$event['id']]
-                        );
-                    })
-
-                    // filtro fecha
-                    ->filter(function ($event) use ( $getAllYear, $applyHistory, $today, $startDate, $endDate ) {
-
-                        $eventDate = \Carbon\Carbon::parse($event['start']);
-
-                        // traer TODO el año
-                        if ($getAllYear) {
-                            return $eventDate->between(
-                                $startDate,
-                                $endDate
-                            );
-                        }
-
-                        // historial
-                        if ($applyHistory) {
-                            return $eventDate->lt($today);
-                        }
-
-                        // futuros
-                        return $eventDate->gte($today);
-                    })
-
-                    // ordenar
-                    ->sortBy(function ($event) use ($applyHistory) {
-
-                        return \Carbon\Carbon::parse($event['start'])->timestamp;
-
-                    }, SORT_REGULAR, $applyHistory) // reverse si history
-                    ->values();
-
-                $events = $events->concat($googleFilterEvents);
             }
         }
 
         // CUMPLEAÑOS
         if ($includeBirthdays) {
-            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory, $year, $isAll));
+            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory, $year, $getAllCategories));
         }
 
         return response()->json([ 'data' => $events->values()->all() ]);
