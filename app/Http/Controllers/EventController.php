@@ -119,6 +119,21 @@ class EventController extends Controller
             $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($startDate, $endDate, $year, $applyHistory));
         }
 
+        // ordenar cronológicamente ve-holidays y google-calendar events
+        if (in_array('ve-holidays', $categoryKeys)) {
+            $events = $events
+                ->sortBy(function ($event) {
+                    return \Carbon\Carbon::parse(
+                        $event['start']
+                    )->timestamp;
+
+                }, SORT_REGULAR, $applyHistory)
+                ->values();
+
+            return response()->json([
+                'data' => $events->all()
+            ]);
+        }
         return response()->json([ 'data' => $events->values()->all() ]);
     }
 
