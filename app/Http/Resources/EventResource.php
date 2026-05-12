@@ -41,6 +41,7 @@ class EventResource extends JsonResource
                         !empty($props['special_label'] ?? null),
                         $props['special_label'] ?? null
                 ),
+                'routePath' => '/eventos/ver/' . $this->id,
                 'isTemplate' => (bool) $this->templateRecord()->exists(),
                 'templateInfo' => $this->when($this->relationLoaded('templateOrigin') && $this->templateOrigin, function() {
                     return [
