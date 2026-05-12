@@ -9,49 +9,104 @@ use App\Enums\LockerStatus;
 use App\Http\Resources\BirthdayEventResource;
 use Carbon\Carbon;
 
-class BirthdayEventService {
-
-    /**
-     * Lógica centralizada para calcular eventos de cumpleaños.
-    */
-public function calculateBirthdayEvents($history = false, $year = null, $isAll = false)
+class BirthdayEventService
 {
-    $currentYear = \Carbon\Carbon::today()->year;
-    $selectedYear = $year ?: $currentYear;
-    $today = \Carbon\Carbon::today()->year($selectedYear)->startOfDay();
-    $eventCategory = EventCategory::where('key', 'meru-birthdays')->first();
+    /**
+     * Calcular cumpleaños según rango de fechas.
+     */
+    public function calculateBirthdayEvents(
+        $startDate,
+        $endDate,
+        int $year,
+        bool $history = false
+    ) {
 
-    // Define los límites "MMDD" para base de datos
-    if ($isAll || ($selectedYear !== $currentYear)) {
-        $startLimit = "0101";
-        $endLimit = "1231";
-    } elseif ($history) {
-        // Desde el 1 de enero hasta ayer
-        $startLimit = "0101";
-        $endLimit = $today->copy()->subDay()->format('md');
-    } else {
-        // Desde hoy hasta el 31 de diciembre
-        $startLimit = $today->format('md');
-        $endLimit = "1231";
+        $today = \Carbon\Carbon::today()
+            ->year($year)
+            ->startOfDay();
+
+        $eventCategory = EventCategory::where(
+            'key',
+            'meru-birthdays'
+        )->first();
+
+        $employees = Employee::with('position.department')
+            ->whereNotNull('birthdate')
+            ->where('status', true)
+            ->get()
+
+            ->map(function ($employee) use ($year) {
+
+                $birthdate = \Carbon\Carbon::parse(
+                    $employee->birthdate
+                );
+
+                $birthdayThisYear = $birthdate
+                    ->copy()
+                    ->year($year)
+                    ->startOfDay();
+
+                $employee->next_birthday = $birthdayThisYear;
+
+                $employee->age_in_year =
+                    $year - $birthdate->year;
+
+                return $employee;
+            })
+
+            ->filter(function ($employee) use (
+                $startDate,
+                $endDate
+            ) {
+
+                $birthday = $employee->next_birthday;
+
+                // rango completo
+                if ($startDate && $endDate) {
+
+                    return $birthday->between(
+                        $startDate,
+                        $endDate
+                    );
+                }
+
+                // historial
+                if (!$startDate && $endDate) {
+
+                    return $birthday->lt($endDate);
+                }
+
+                // futuros
+                if ($startDate && !$endDate) {
+
+                    return $birthday->gte($startDate);
+                }
+
+                return true;
+            })
+
+            ->sortBy(
+                'next_birthday',
+                SORT_REGULAR,
+                $history
+            )
+
+            ->values();
+
+        return $employees->map(function (
+            $employee
+        ) use (
+            $today,
+            $eventCategory
+        ) {
+
+            return (
+                new BirthdayEventResource(
+                    $employee,
+                    $today,
+                    $eventCategory
+                )
+            )->resolve();
+        });
     }
-
-    $employees = Employee::with('position.department')
-        ->whereNotNull('birthdate')
-        ->where('status', true)
-        ->whereRaw("to_char(birthdate, 'MMDD') BETWEEN ? AND ?", [$startLimit, $endLimit])
-        ->get()
-        ->map(function ($employee) use ($today) {
-            $birthdate = \Carbon\Carbon::parse($employee->birthdate);
-            $employee->next_birthday = $birthdate->copy()->year($today->year)->startOfDay();
-            // Calcular la edad que cumple en el año seleccionado
-            $employee->age_in_year = $today->year - $birthdate->year;
-            return $employee;
-        })
-        ->sortBy('next_birthday', SORT_REGULAR, $history)
-        ->values();
-
-    return $employees->map(function ($employee) use ($today, $eventCategory) {
-        return (new BirthdayEventResource($employee, $today, $eventCategory))->resolve();
-    });
-}
 }

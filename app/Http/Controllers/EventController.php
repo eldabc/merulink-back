@@ -67,7 +67,7 @@ class EventController extends Controller
         // colección base
         $events = collect();
 
-        // EVENTOS Regulares
+        // Eventos Regulares
         if ($includeRegularEvents) {
 
             $query = Event::with(['eventCategory', 'location'])->onlyEventOrigin();
@@ -114,9 +114,9 @@ class EventController extends Controller
             }
         }
 
-        // CUMPLEAÑOS
+        // Cumpleaños
         if ($includeBirthdays) {
-            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($applyHistory, $year, $getAllCategories));
+            $events = $events->concat($this->birthdayEventService->calculateBirthdayEvents($startDate, $endDate, $year, $applyHistory));
         }
 
         return response()->json([ 'data' => $events->values()->all() ]);
