@@ -19,6 +19,7 @@ class Event extends Model
         'all_day',
         'repeat_event',
         'repeat_interval',
+        'parent_event_id',
         'external_source',
         'external_id',
         'extended_props',
@@ -62,11 +63,6 @@ class Event extends Model
     {
         return $query->doesntHave('templateRecord');
     }
-
-    // public function scopeOnlyTemplates($query)
-    // {
-    //     return $query->has('templateRecord');
-    // }
 
     public function scopeHasGeneratedTemplate($query)
     {
