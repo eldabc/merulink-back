@@ -111,6 +111,8 @@ class GoogleCalendarService
                 'isFixed' => $isFixed,
 
                 'createdBy' => 'Calendario Google',
+
+                'routePath' => '/eventos/ver/' . $event['id'],
             ],
         ];
     }

@@ -18,9 +18,17 @@ return new class extends Migration
             $table->dateTime('end')->nullable();
             $table->boolean('all_day')->default(false);
             
-            $table->text('rrule')->nullable();
-            $table->string('external_source')->nullable();
-            $table->string('external_id')->nullable();
+            $table->string('external_source')->nullable(); //
+            $table->string('external_id')->nullable(); //
+
+            $table->boolean('repeat_event')->default(false);
+            $table->string('repeat_interval')->nullable();
+
+            $table->foreignId('parent_event_id')
+                ->nullable()
+                ->after('id')
+                ->constrained('events')
+                ->nullOnDelete();
 
             $table->json('extended_props');
 

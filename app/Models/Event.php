@@ -17,7 +17,8 @@ class Event extends Model
         'start',
         'end',
         'all_day',
-        'rrule',
+        'repeat_event',
+        'repeat_interval',
         'external_source',
         'external_id',
         'extended_props',
@@ -70,6 +71,22 @@ class Event extends Model
     public function scopeHasGeneratedTemplate($query)
     {
         return $query->has('templateOrigin');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(
+            Event::class,
+            'parent_event_id'
+        );
+    }
+
+    public function children()
+    {
+        return $this->hasMany(
+            Event::class,
+            'parent_event_id'
+        );
     }
 
     protected function status(): Attribute

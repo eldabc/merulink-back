@@ -22,15 +22,13 @@ class EventResource extends JsonResource
             'start' => $this->start ? Carbon::parse($this->start)->format('Y-m-d\TH:i:s') : null,
             'end'   => $this->end ? Carbon::parse($this->end)->format('Y-m-d\TH:i:s') : null,
             'allDay' => $this->all_day,
-            'rrule' => $this->rrule,
+            'repeatEvent' => $this->repeat_event ?? null,
+            'repeatInterval' => $this->repeat_interval ?? '',
             'extendedProps' => [
                 'category' => new EventCategoryResource($this->whenLoaded('eventCategory')),
                 'location' => new LocationResource($this->whenLoaded('location')),
-                
                 'status' => $props['status'] ?? '',
                 'eventType' => $props['event_type'] ?? null,
-                'repeatEvent' => $props['repeat_event'] ?? null,
-                'repeatInterval' => $props['repeat_interval'] ?? '',
                 'createAlert' => $props['create_alert'] ?? false,
                 'coloringDay' => $props['coloring_day'] ?? false,
                 'description' => $props['description'] ?? '',
