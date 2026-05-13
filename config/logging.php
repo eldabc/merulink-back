@@ -129,7 +129,7 @@ return [
 
         'recurring_events' => [
             'driver' => 'daily',
-            'path' => storage_path('logs/recurring-events.log'),
+            'path' => storage_path('logs/events/recurring-events.log'),
             'level' => 'info',
             'days' => 30,
         ],
