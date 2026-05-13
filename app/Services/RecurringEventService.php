@@ -29,18 +29,18 @@ class RecurringEventService
             return;
         }
 
-        
-        /*
-        | Clonar última ocurrencia
-        */
+        // Evitar duplicados
+        if (Carbon::parse($lastOccurrence->start)->isFuture()) {
+            return;
+        }
 
+        
+        // Clonar última ocurrencia
         $nextStart = Carbon::parse($lastOccurrence->start);
         $nextEnd = Carbon::parse($lastOccurrence->end);
+        
 
-        /*
-        | Aplicar intervalo
-        */
-
+        // Aplicar intervalo
         switch ($event->repeat_interval) {
 
             case 'WEEKLY':
@@ -71,16 +71,12 @@ class RecurringEventService
                 return;
         }
 
-        /*
-        | Fechas originales del evento raíz
-        */
-
+        // Fechas originales del evento raíz
         $originalStart = Carbon::parse($event->start);
         $originalEnd = Carbon::parse($event->end);
 
-        /*
-        | Mantener hora original del evento raíz
-        */
+
+        //Mantener hora original del evento raíz
         $nextStart->setTime(
             $originalStart->hour,
             $originalStart->minute,
@@ -93,24 +89,6 @@ class RecurringEventService
             $originalEnd->second
         );
 
-        /*
-        | Evitar duplicados
-        */
-        $hasFutureOccurrence = Event::query()
-            ->where(function ($q) use ($event) {
-
-                $q->where('id', $event->id)
-                ->orWhere(
-                    'parent_event_id',
-                    $event->id
-                );
-            })
-            ->where('start', '>', now())
-            ->exists();
-
-        if ($hasFutureOccurrence) {
-            return;
-        }
 
         /*
         | Crear nueva ocurrencia
