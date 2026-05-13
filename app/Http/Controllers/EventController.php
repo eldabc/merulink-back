@@ -1,8 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use RRule\RRule;    
+  
 use App\Models\Event;
 use App\Models\EventCategory;
 use App\Models\EventContact;
@@ -53,10 +52,7 @@ class EventController extends Controller
         $endOfYear = now()->setYear($year)->endOfYear(); 
         $getAllYear = $getAllCategories || $anyDateInCategory;
         
-        [
-            $startDate,
-            $endDate
-        ] = EventDateRange::resolve(
+        [$startDate, $endDate] = EventDateRange::resolve(
             $year,
             $month,
             $getAllYear,
@@ -108,7 +104,6 @@ class EventController extends Controller
                         $applyHistory,
                         $today
                     );
-
                 $events = $events->concat($googleEvents);
 
             }

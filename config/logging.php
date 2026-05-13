@@ -127,6 +127,13 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'recurring_events' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/recurring-events.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+
     ],
 
 ];
