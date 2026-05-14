@@ -77,15 +77,16 @@ class RecurringEventService
                         ]);
                     return;
             }
-
+            
 
             // Hasta cuando generar recurrentes
             if (
                 empty(!$event->repeat_until) && $nextStart->gt($event?->repeat_until) ||
-                !$event->repeat_always ||
+                // !$event->repeat_always ||
                 !$event->is_repeat_active ||
                 $event->templateRecord()->exists()
             ) {
+                // dump(['id' => $event->id, 'aqui' =>$event->templateRecord()->exists() ]);
                 return;
             }
 
@@ -113,7 +114,7 @@ class RecurringEventService
             */
             $newEvent = Event::create([
 
-                'title' => $event->title. " automátización",
+                'title' => $event->title. " (automátización)",
                 'start' => $nextStart,
                 'end' => $nextEnd,
                 'all_day' => $event->all_day,
