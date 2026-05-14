@@ -55,8 +55,17 @@ class StoreEventRequest extends FormRequest
                         !$this->repeat_always;
                 }),
             ],
-            'repeat_always' => ['nullable', 'boolean'],
-            'is_repeat_active' => ['nullable', 'boolean'],           
+            'repeat_always' => 'boolean',
+            'is_repeat_active' => 'boolean',    
+            
+            // Cuando se editan datos del parentEvent
+            'parentEvent'                 => 'nullable|array',
+            'parentEvent.id'              => 'nullable|integer',
+            'parentEvent.repeat_event'    => 'boolean',
+            'parentEvent.repeat_interval' => 'nullable|string',
+            'parentEvent.repeat_until'    => 'nullable|date',
+            'parentEvent.repeat_always'   => 'boolean',
+            'parentEvent.is_repeat_active'  => 'boolean',
 
             'extended_props' => ['required', 'array', 'min:1'],
             'extended_props.status' => ['nullable', 'string', 'in:Creado,Tentativo,Confirmado'],
@@ -94,9 +103,19 @@ class StoreEventRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            $intervalRaw = $this->input('repeat_interval');
+            
             $startStr = $this->input('start');
-            $untilStr = $this->input('repeat_until');
+            $intervalRaw =
+                data_get(
+                    $this->all(),
+                    'parentEvent.repeat_interval'
+                ) ?? $this->input('repeat_interval');
+
+            $untilStr =
+                data_get(
+                    $this->all(),
+                    'parentEvent.repeat_until'
+                ) ?? $this->input('repeat_until');
 
             if (!$intervalRaw || !$startStr || !$untilStr) return;
 

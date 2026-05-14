@@ -170,6 +170,7 @@ class EventController extends Controller
     public function show(Event $event)
     {
         return new EventResource($event->load([
+            'parent',
             'eventCategory', 
             'location', 
             'templateOrigin',
@@ -188,6 +189,22 @@ class EventController extends Controller
             $data['event_category_id'] = EventCategory::where('key', $data['category_key'])->value('id');
 
             $event->update($data);
+
+            // Verifica si parentEvent trajo datos y actualizar el parentEvent
+            if (!empty($data['parentEvent']) && isset($data['parentEvent']['id'])) {
+                
+                $parentEvent = Event::find($data['parentEvent']['id']);
+
+                if ($parentEvent) {
+                    $parentEvent->update([
+                        'repeat_event'    => $data['parentEvent']['repeat_event'],
+                        'repeat_interval' => $data['parentEvent']['repeat_interval'],
+                        'repeat_until'    => $data['parentEvent']['repeat_until'],
+                        'repeat_always'    => $data['parentEvent']['repeat_always'],
+                        'is_repeat_active' => $data['parentEvent']['is_repeat_active']
+                    ]);
+                }
+            }
 
             if (filled($data['template_name']) && !$event->templateOrigin()->exists()) {
                 $templateService->createFromEvent($event, $data['template_name']);

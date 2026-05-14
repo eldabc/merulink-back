@@ -27,6 +27,10 @@ class EventResource extends JsonResource
             'repeatUntil' => $this->repeat_until ? Carbon::parse($this->repeat_until)->format('Y-m-d\TH:i:s') : null,
             'repeatAlways' => $this->repeat_always ?? false,
             'isRepeatActive' => $this->is_repeat_active ?? false,
+            'parentEvent' => $this->when(
+                !empty($this->recurrence_data),
+                $this->recurrence_data
+            ),
             'extendedProps' => [
                 'category' => new EventCategoryResource($this->whenLoaded('eventCategory')),
                 'location' => new LocationResource($this->whenLoaded('location')),

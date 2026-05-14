@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\EventStatus;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -32,11 +33,13 @@ class Event extends Model
         'location_id',
     ];
 
+    protected $appends = [
+        'recurrence_data'
+    ];
+
     protected $casts = [
         'extended_props' => 'array',
         'all_day' => 'boolean',
-        // 'start' => 'datetime:Y-m-d\TH:i:s',
-        // 'end'   => 'datetime:Y-m-d\TH:i:s',
     ];
 
     public function eventCategory(): BelongsTo
@@ -76,18 +79,34 @@ class Event extends Model
 
     public function parent()
     {
-        return $this->belongsTo(
-            Event::class,
-            'parent_event_id'
-        );
+        return $this->belongsTo(Event::class, 'parent_event_id');
     }
 
     public function children()
     {
-        return $this->hasMany(
-            Event::class,
-            'parent_event_id'
-        );
+        return $this->hasMany(Event::class, 'parent_event_id');
+    }
+
+    public function getRecurrenceOwnerAttribute()
+    {
+        return $this->parent ?: $this;
+    }
+
+    public function getRecurrenceDataAttribute()
+    {
+        $owner = $this->recurrence_owner;
+
+        if (!$owner->repeat_event) return null;
+
+        return [
+            'id' => $owner->id,
+            'repeatEvent' => $owner->repeat_event,
+            'repeatInterval' => $owner->repeat_interval,
+            'repeatAlways' => $owner->repeat_always,
+            'repeatUntil' => $owner->repeat_until ? Carbon::parse($owner->repeat_until)->format('Y-m-d\TH:i:s') : null,
+            'isRepeatActive' => $owner->is_repeat_active,
+            'isChild' => !!$this->parent_event_id
+        ];
     }
 
     protected function status(): Attribute
