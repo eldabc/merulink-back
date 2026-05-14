@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreEventRequest extends FormRequest
@@ -26,8 +27,6 @@ class StoreEventRequest extends FormRequest
                 'required',
                 'string',
             ],
-            // 'start' => $this->input('is_template') ? 'nullable|date' : 'required|date',
-            // 'end'   => $this->input('is_template') ? 'nullable|date' : 'required|date|after_or_equal:start',
             'start' => [
                 'date',
                 'required',
@@ -44,6 +43,19 @@ class StoreEventRequest extends FormRequest
             'external_id' => ['nullable', 'string', 'max:255'],
             'repeat_event' => ['nullable', 'boolean'],
             'repeat_interval' => ['nullable', 'string', 'in:WEEKLY,WEEKLY_2,MONTHLY,YEARLY'],
+            'repeat_until' => [
+                'nullable',
+                'date',
+                'after:start',
+                Rule::requiredIf(function () {
+
+                    return
+                        $this->repeat_event &&
+                        !$this->repeat_always;
+                }),
+            ],
+            'repeat_always' => ['nullable', 'boolean'],
+            'is_repeat_active' => ['nullable', 'boolean'],           
 
             'extended_props' => ['required', 'array', 'min:1'],
             'extended_props.status' => ['nullable', 'string', 'in:Creado,Tentativo,Confirmado'],

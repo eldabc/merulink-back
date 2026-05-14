@@ -20,10 +20,10 @@ class EventSeeder extends Seeder
             [
                 'start' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
                 'end' => now()->addHours(82)->format('Y-m-d\TH:i:s'),
+                'repeat_event' => true,
+                'repeat_interval' => 'YEARLY',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeat_event' => true,
-                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 1',
@@ -40,10 +40,10 @@ class EventSeeder extends Seeder
             [
                 'start' => now()->addHours(78)->format('Y-m-d\TH:i:s'),
                 'end' => now()->addHours(80)->format('Y-m-d\TH:i:s'),
+                'repeat_event' => true,
+                'repeat_interval' => 'MONTHLY',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeat_event' => true,
-                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 2',
@@ -61,10 +61,10 @@ class EventSeeder extends Seeder
             [
                 'start' => '2026-01-30T20:00:00',
                 'end' => '2026-01-30T23:00:00',
+                // 'repeat_event' => true,
+                // 'repeat_interval' => 'MONTHLY',
                 'extended_props' => [
-                    'status' => 'Tentativo',
-                    'repeat_event' => true,
-                    'repeat_interval' => 'MONTHLY',
+                    'status' => 'Tentativo',    
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 3',
@@ -98,10 +98,10 @@ class EventSeeder extends Seeder
             [
                 'start' => '2026-05-30T20:00:00',
                 'end' => '2026-05-30T23:00:00',
+                // 'repeat_event' => true,
+                // 'repeat_interval' => 'MONTHLY',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeat_event' => true,
-                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 5',
@@ -118,10 +118,10 @@ class EventSeeder extends Seeder
             [
                 'start' => '2026-12-30T20:00:00',
                 'end' => '2026-12-30T23:00:00',
+                // 'repeat_event' => true,
+                // 'repeat_interval' => 'MONTHLY',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeat_event' => true,
-                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 6',
@@ -157,8 +157,6 @@ class EventSeeder extends Seeder
                 'end' => '2026-12-30T23:00:00',
                 'extended_props' => [
                     'status' => 'Tentativo',
-                    'repeat_event' => true,
-                    'repeat_interval' => 'MONTHLY',
                     'create_alert' => true,
                     'coloring_day' => true,
                     'description' => 'Descripción del evento 8',

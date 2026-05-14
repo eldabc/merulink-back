@@ -17,9 +17,14 @@ class Event extends Model
         'start',
         'end',
         'all_day',
+
         'repeat_event',
         'repeat_interval',
+        'repeat_until',
+        'repeat_always',
+        'is_repeat_active',
         'parent_event_id',
+        
         'external_source',
         'external_id',
         'extended_props',
