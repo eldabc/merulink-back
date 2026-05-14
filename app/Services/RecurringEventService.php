@@ -78,6 +78,17 @@ class RecurringEventService
                     return;
             }
 
+
+            // Hasta cuando generar recurrentes
+            if (
+                empty(!$event->repeat_until) && $nextStart->gt($event?->repeat_until) ||
+                !$event->repeat_always ||
+                !$event->is_repeat_active ||
+                $event->templateRecord()->exists()
+            ) {
+                return;
+            }
+
             // Fechas originales del evento raíz
             $originalStart = Carbon::parse($event->start);
             $originalEnd = Carbon::parse($event->end);
@@ -102,7 +113,7 @@ class RecurringEventService
             */
             $newEvent = Event::create([
 
-                'title' => $event->title,
+                'title' => $event->title. " automátización",
                 'start' => $nextStart,
                 'end' => $nextEnd,
                 'all_day' => $event->all_day,

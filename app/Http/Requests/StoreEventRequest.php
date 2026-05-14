@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Carbon\Carbon;
+use App\Enums\RepeatInterval;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -48,7 +50,6 @@ class StoreEventRequest extends FormRequest
                 'date',
                 'after:start',
                 Rule::requiredIf(function () {
-
                     return
                         $this->repeat_event &&
                         !$this->repeat_always;
@@ -85,6 +86,37 @@ class StoreEventRequest extends FormRequest
             // Si hay una fila de teléfono, el número es obligatorio
             'contacts.*.phones.*.phone_number' => 'required|string|max:20',
         ];
+    }
+
+    /**
+     * Validador para revisar fechas de intervalos
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $intervalRaw = $this->input('repeat_interval');
+            $startStr = $this->input('start');
+            $untilStr = $this->input('repeat_until');
+
+            if (!$intervalRaw || !$startStr || !$untilStr) return;
+
+            // Transformar el string a Enum
+            $interval = RepeatInterval::tryFrom($intervalRaw);
+            if (!$interval) return;
+
+            $start = Carbon::parse($startStr);
+            $until = Carbon::parse($untilStr);
+
+            // Llama los métodos del Enum
+            $minRequiredDate = $interval->addInterval($start->copy());
+
+            if ($until->lt($minRequiredDate)) {
+                $validator->errors()->add(
+                    'repeat_until', 
+                    "Para repeticiones de tipo {$interval->translateName()}, el límite debe ser al menos {$interval->label()} después del inicio."
+                );
+            }
+        });
     }
 
     public function attributes(): array
