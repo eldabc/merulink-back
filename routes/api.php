@@ -15,6 +15,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventCategoryController;
 use App\Http\Controllers\EventTemplateController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\ShiftController;
 
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -57,6 +58,7 @@ use App\Http\Controllers\LocationController;
     Route::apiResource('eventCategories', EventCategoryController::class);
     Route::apiResource('eventTemplates', EventTemplateController::class);
     Route::apiResource('locations', LocationController::class);
+    Route::apiResource('shifts', ShiftController::class);
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {
