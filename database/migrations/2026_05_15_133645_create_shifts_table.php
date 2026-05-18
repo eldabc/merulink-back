@@ -16,15 +16,20 @@ return new class extends Migration
 
             $table->string('code')->unique();
             $table->string('description');
-            $table->string('active_period');
-            $table->string('rest_period');
-            $table->string('total_period');
+            $table->string('night_shift');
+            $table->string('type_shift');
             $table->string('check_in_time');
             $table->string('check_out_time');
-            $table->string('allow_check_out');
-            $table->string('re_scanned');
+            $table->string('time_rest_period');
+            $table->string('duration_unit_rest_period');
+            $table->string('time_active_period');
+            $table->string('duration_unit_active_period');
+            $table->string('time_total_period');
+            $table->string('duration_unit_total_period');
+
+            $table->string('allow_exit');
+            $table->string('allow_re_scanned');
             $table->string('available');
-            $table->string('night_shift');
             $table->string('observations');
 
             $table->foreignId('department_id')

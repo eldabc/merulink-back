@@ -29,18 +29,25 @@ class StoreShiftRequest extends FormRequest
                 Rule::unique('positions', 'code')->ignore($this->route('position')),
             ],
             'description' => 'required|string|max:100',
-            'active_period' => 'required|string',
-            'rest_period' => 'required|string',
-            'total_period' => 'required|string',
+            'night_shift' => 'boolean',
+            'department_id' => 'required|exists:departments,id',
+            'type_shift' => 'required|string',
             'check_in_time' => 'required|string',
             'check_out_time' => 'required|string',
-            'allow_check_out' => 'boolean',
-            're_scanned' => 'boolean',
+            'time_rest_period' => 'integer|string',
+            'duration_unit_rest_period' => 'required|string',
+            'time_active_period' => 'required|string',
+            'duration_unit_active_period' => 'required|string',
+            'time_total_period' => 'required|string',
+            'duration_unit_total_period' => 'required|string', 
+           
+            'allow_exit' => 'boolean',
+            'allow_re_scanned' => 'boolean',
             'available' => 'boolean',
-            'night_shift' => 'boolean',
-            'observations' => 'nullable|string',
+            
+            'observation' => 'nullable|string',
 
-            'department_id' => 'required|exists:departments,id',
+            
 
         ];
     }
@@ -55,8 +62,8 @@ class StoreShiftRequest extends FormRequest
             'total_period'        => 'Periodo Total',
             'check_in_time'       => 'Hora de entrada',
             'check_out_time' => 'Hora de salida',
-            'allow_check_out' => 'Permitir salida',
-            're_scanned' => 'Remarcaje',
+            'allow_exit' => 'Permitir salida',
+            'allow_re_scanned' => 'Remarcaje',
             'available' => 'Disponible',
             'night_shift' => 'Turno Nocturno',
             'observations' => 'Observaciones',
