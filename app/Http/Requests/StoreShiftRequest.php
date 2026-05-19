@@ -25,8 +25,8 @@ class StoreShiftRequest extends FormRequest
         return [
             'code' => [
                 'required',
-                'string',   
-                Rule::unique('positions', 'code')->ignore($this->route('position')),
+                'string',
+                Rule::unique('shifts', 'code')->ignore($this->route('shift')),
             ],
             'description' => 'required|string|max:100',
             'night_shift' => 'required|in:Diurno,Nocturno',

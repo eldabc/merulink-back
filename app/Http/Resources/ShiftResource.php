@@ -18,6 +18,8 @@ class ShiftResource extends JsonResource
             'id' => $this->id,
             'code' => $this->code,
             'description' => $this->description,
+            'nightShift' => $this->night_shift,
+            'typeShift' => $this->type_shift,
             'timeActivePeriod' => $this->time_active_period,
             'durationUnitActivePeriod' => $this->duration_unit_active_period,
             'timeRestPeriod' => $this->time_rest_period,
@@ -29,7 +31,6 @@ class ShiftResource extends JsonResource
             'allowExit' => $this->allow_exit,
             'allowReScanned' => $this->allow_re_scanned,
             'available' => $this->available,
-            'nightShift' => $this->night_shift,
             'observation' => $this->observation,
             'department' =>  new DepartmentResource($this->whenLoaded('department')),
         ];

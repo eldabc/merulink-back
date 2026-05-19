@@ -42,9 +42,12 @@ class ShiftController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Shift $shift)
+    public function update(StoreShiftRequest $request, Shift $shift)
     {
-        //
+        $data = $request->validated();
+        $shift->update($data);
+        return new ShiftResource($shift->load('department'));
+
     }
 
     /**
