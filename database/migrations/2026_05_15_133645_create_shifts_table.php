@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('allow_exit');
             $table->string('allow_re_scanned');
             $table->string('available');
-            $table->string('observations');
+            $table->string('observation')->nullable();
 
             $table->foreignId('department_id')
                   ->constrained()
