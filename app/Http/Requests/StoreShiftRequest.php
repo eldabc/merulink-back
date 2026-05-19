@@ -66,7 +66,7 @@ class StoreShiftRequest extends FormRequest
             'allow_re_scanned' => 'Remarcaje',
             'available' => 'Disponible',
             'night_shift' => 'Turno Nocturno',
-            'observations' => 'Observaciones',
+            'observation' => 'Observaciones',
             'department_id' => 'Id de Departamento',
         ];
     }

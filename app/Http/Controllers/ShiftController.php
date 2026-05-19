@@ -55,6 +55,16 @@ class ShiftController extends Controller
      */
     public function destroy(Shift $shift)
     {
-        //
+        if ($shift->schedules()->exists()) {
+            return response()->json([
+                'message' => 'No se puede eliminar: este turno tiene horarios asociados.'
+            ], 422);
+        }
+
+        $shift->delete();
+
+        return response()->json([
+            'message' => "El turno {$shift->description} ha sido eliminado correctamente."
+        ], 200);
     }
 }

@@ -33,6 +33,7 @@ class ShiftResource extends JsonResource
             'available' => $this->available,
             'observation' => $this->observation,
             'department' =>  new DepartmentResource($this->whenLoaded('department')),
+            'hasSchedule' => $this->schedules()->exists()
         ];
     }
 }
