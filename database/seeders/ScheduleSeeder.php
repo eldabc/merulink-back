@@ -15,7 +15,7 @@ class ScheduleSeeder extends Seeder
     public function run(): void
     {
         Shift::firstOrCreate(
-            ['code' => '1234'], 
+            ['code' => 'AD-01'], 
             [
                 'description' => 'Test Shift',
                 'night_shift' => 'Diurno',

@@ -59,6 +59,7 @@ use App\Http\Controllers\ShiftController;
     Route::apiResource('eventTemplates', EventTemplateController::class);
     Route::apiResource('locations', LocationController::class);
     Route::apiResource('shifts', ShiftController::class);
+    Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {
