@@ -18,7 +18,7 @@ class ScheduleSeeder extends Seeder
             ['code' => 'AD-01'], 
             [
                 'description' => 'Test Shift',
-                'night_shift' => 'Diurno',
+                'night_shift' => 'day',
                 'type_shift' => 'administrative',
                 'check_in_time' => '08:00:00',
                 'check_out_time' => '17:00:00',

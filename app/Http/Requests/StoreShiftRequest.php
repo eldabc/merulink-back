@@ -29,7 +29,7 @@ class StoreShiftRequest extends FormRequest
                 Rule::unique('shifts', 'code')->ignore($this->route('shift')),
             ],
             'description' => 'required|string|max:100',
-            'night_shift' => 'required|in:Diurno,Nocturno',
+            'night_shift' => 'required|in:day,night',
             'department_id' => 'required|exists:departments,id',
             'type_shift' => 'required|string|in:operative,administrative',
             'check_in_time' => 'required|string',
@@ -66,6 +66,7 @@ class StoreShiftRequest extends FormRequest
             'allow_re_scanned' => 'Remarcaje',
             'available' => 'Disponible',
             'night_shift' => 'Turno Nocturno',
+            'type_shift' => 'Tipo de Turno',
             'observation' => 'Observaciones',
             'department_id' => 'Id de Departamento',
         ];
