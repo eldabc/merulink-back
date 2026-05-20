@@ -13,8 +13,14 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
-            $table->string('observation')->nullable();
+            $table->date('date');
+            $table->string('observations')->nullable();
+            $table->string('status')->default('available');
             
+            $table->foreignId('employee_id')
+                  ->constrained()
+                  ->onDelete('cascade');
+
             $table->foreignId('shift_id')
                   ->constrained()
                   ->onDelete('cascade');

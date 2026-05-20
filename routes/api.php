@@ -16,6 +16,7 @@ use App\Http\Controllers\EventCategoryController;
 use App\Http\Controllers\EventTemplateController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\ScheduleController;
 
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -59,6 +60,7 @@ use App\Http\Controllers\ShiftController;
     Route::apiResource('eventTemplates', EventTemplateController::class);
     Route::apiResource('locations', LocationController::class);
     Route::apiResource('shifts', ShiftController::class);
+    Route::apiResource('schedules', ScheduleController::class);
     Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);
 
     // Rutas protegidas

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Schedule;
 use Illuminate\Http\Request;
+use App\Http\Resources\ScheduleResource;
 
 class ScheduleController extends Controller
 {
@@ -12,7 +13,8 @@ class ScheduleController extends Controller
      */
     public function index()
     {
-        //
+        $schedules = Schedule::with(['employee', 'shift'])->get();
+        return ScheduleResource::collection($schedules);
     }
 
     /**
