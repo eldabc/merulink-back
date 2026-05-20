@@ -74,4 +74,15 @@ class StoreShiftRequest extends FormRequest
             'department_id' => 'Id de Departamento',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'night_shift.in'      => 'El valor de Turno debe ser: Diurno o Nocturno.',
+            'type_shift.in'       => 'El tipo de Turno debe ser: Operativo o Administrativo.',
+            'allow_exit.in'       => 'El campo permitir salida debe ser: Sí o No.',
+            'allow_re_scanned.in' => 'El campo permitir remarcaje debe ser: Sí o No.',
+            'vailable.in'         => 'El campo disponible debe ser: Sí o No.',
+        ];
+    }
 }
