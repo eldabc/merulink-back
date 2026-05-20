@@ -20,12 +20,12 @@ return new class extends Migration
             $table->string('type_shift');
             $table->string('check_in_time');
             $table->string('check_out_time');
-            $table->string('time_rest_period');
-            $table->string('duration_unit_rest_period');
-            $table->string('time_active_period');
-            $table->string('duration_unit_active_period');
-            $table->string('time_total_period');
-            $table->string('duration_unit_total_period');
+            $table->string('rest_period_time');
+            $table->string('rest_period_unit_time');
+            $table->string('active_period_time');
+            $table->string('active_period_unit_time');
+            $table->string('total_period_time');
+            $table->string('total_period_unit_time');
 
             $table->string('allow_exit');
             $table->string('allow_re_scanned');
