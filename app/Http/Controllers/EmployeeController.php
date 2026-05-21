@@ -40,11 +40,34 @@ class EmployeeController extends Controller
             $query->whereDoesntHave('assignment'); 
         }
 
+        // Filtro por ID de departamento
+        if ($request->filled('departmentId')) {
+            $query->where('status', true) // añadir campo vacaciones para traer los que tengan ese campo activo pero no a los que no
+                  ->whereHas('position', function ($q) use ($request) {
+                    $q->where('department_id', $request->departmentId);
+            });
+        }
+
         $employees = $query->with([
             'position.department', 
             'position.subDepartment',
             'assignment'
         ])->get();
+
+        // agrupar por subdepartamento
+        if ($request->filled('departmentId')) {
+            $groupedEmployees = $employees->groupBy(function ($employee) {
+                // Fallback "Sin Subdepartamento" para la posición que no tiene asignado uno
+                return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
+            });
+
+            // Retorna el map agrupado
+            return response()->json(
+                $groupedEmployees->map(function ($group) {
+                    return EmployeeResource::collection($group);
+                })
+            );
+        }
 
         return EmployeeResource::collection($employees);
     }

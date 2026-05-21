@@ -15,9 +15,15 @@ class ShiftController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $shifts = Shift::with('department')->get();
+        $query = Shift::query();
+
+        if ($request->filled('departmentId')) {
+            $query->where('department_id', $request->departmentId)->where('available', 'yes');
+        }
+
+        $shifts = $query->with('department')->get();
         return ShiftResource::collection($shifts);
 
     }
