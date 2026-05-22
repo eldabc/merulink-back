@@ -37,8 +37,10 @@ class ScheduleSeeder extends Seeder
         );
 
         Schedule::firstOrCreate(
-            ['observation' => 'Test Schedule'], 
+            ['date' => '2026-06-01'], 
             [
+                'observations' => 'Test Schedule',
+                'employee_id' => 1,
                 'shift_id' => 1,
             ]
         );

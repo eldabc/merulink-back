@@ -49,6 +49,7 @@ use App\Http\Controllers\ScheduleController;
     ];
 });
 
+    Route::get('/employees/filter-schedule', [EmployeeController::class, 'filterSchedule']);
     Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('departments', DepartmentController::class);

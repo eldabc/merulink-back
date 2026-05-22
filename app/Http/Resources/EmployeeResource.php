@@ -14,6 +14,7 @@ class EmployeeResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $hasVacation = $this->relationLoaded('vacations') && $this->vacations->isNotEmpty();
         return [
             'id' => $this->id,
             'ci' => $this->ci,
@@ -56,6 +57,9 @@ class EmployeeResource extends JsonResource
             'useTransport' => $this->use_transport,
             'contacts' => EmergencyContactResource::collection($this->emergencyContacts),
             'assign' => new AssignResource($this->whenLoaded('assignment')),
+            $this->mergeWhen($hasVacation, [
+                'vacation' => new VacationResource($this->vacations->first())
+            ]),
         ];
     }
 }
