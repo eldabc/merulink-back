@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Shift;
 use App\Models\Department;
 use Illuminate\Support\Str;
+use App\Services\ShiftVisualIdentityService;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreShiftRequest;
 use App\Http\Resources\ShiftResource;
@@ -15,17 +16,25 @@ class ShiftController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, ShiftVisualIdentityService $scheduleShiftService)
     {
         $query = Shift::query();
 
         if ($request->filled('departmentId')) {
-            $query->where('department_id', $request->departmentId)->where('available', 'yes');
+
+            $shifts = $query->where('department_id', $request->departmentId)
+                ->where('available', 'yes')
+                ->orderBy('check_in_time')
+                ->with('department')
+                ->get();
+
+            $shifts = $scheduleShiftService->apply($shifts);
+            
+        } else {
+            $shifts = $query->with('department')->get();
         }
-
-        $shifts = $query->with('department')->get();
+        
         return ShiftResource::collection($shifts);
-
     }
 
     /**
@@ -34,6 +43,7 @@ class ShiftController extends Controller
     public function store(StoreShiftRequest $request)
     {
         $data = $request->validated();
+        $getRegistredShifts = Shift::where('department_id', $data['department_id'])->where('available', 'yes')->pluck('check_in_time');
         $shift = Shift::create($data);
 
         return new ShiftResource($shift->load('department'));
