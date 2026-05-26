@@ -15,15 +15,15 @@ return new class extends Migration
             $table->id();
             $table->date('date');
             $table->string('observations')->nullable();
-            $table->string('status')->default('available');
+            $table->string('status')->default('created');
             
             $table->foreignId('employee_id')
                   ->constrained()
                   ->onDelete('cascade');
 
-            $table->foreignId('shift_id')
-                  ->constrained()
-                  ->onDelete('cascade');
+            // $table->foreignId('shift_id')
+            //       ->constrained()
+            //       ->onDelete('cascade');
             
             $table->timestamps();
         });
