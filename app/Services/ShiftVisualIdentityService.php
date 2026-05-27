@@ -31,6 +31,16 @@ class ShiftVisualIdentityService
         $freeDayShift->letterShift = 'L';
         $freeDayShift->color = '#535759';
 
-        return $shifts->prepend($freeDayShift);
+        $absenceShift = new Shift();
+        $absenceShift->id = -1; // ID negativo único para que no choque con la BD
+        $absenceShift->description = 'Vacaciones';
+        $absenceShift->available = 'yes';
+        $absenceShift->letterShift = 'VAC'; // Más adelante serán varios tipos (ausencias)
+        $absenceShift->color = '#a6a7a9';
+
+        $shifts->prepend($freeDayShift);
+        $shifts->prepend($absenceShift);
+
+        return $shifts;
     }
 }
