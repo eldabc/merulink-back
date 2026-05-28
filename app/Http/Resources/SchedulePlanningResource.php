@@ -20,8 +20,8 @@ class SchedulePlanningResource extends JsonResource
             'end' => $this->end,
             'status' => $this->status,
             'observations' => $this->observations,
-            'department' => new ScheduleSnapshotResource($this->whenLoaded('department')),
-            'schedules' => $this->when(ScheduleResource::collection($this->whenLoaded('schedules'))),
+            'department' => new DepartmentResource($this->whenLoaded('department')),
+            'schedules'  => ScheduleResource::collection($this->whenLoaded('schedules')),
         ];
     }
 }
