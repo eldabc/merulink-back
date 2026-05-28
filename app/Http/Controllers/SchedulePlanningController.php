@@ -18,6 +18,7 @@ class SchedulePlanningController extends Controller
         
         // Filtro
         if ($request->filled('start') && $request->filled('end') && $request->filled('departmentId')) {
+            $query->where('department_id', $request->departmentId);
             $query->where('start', $request->start);
             $query->where('end', $request->end);
         }
