@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\SchedulePlanning;
+use App\Http\Requests\SchedulePlanningRequest;
+
 use Illuminate\Http\Request;
 use App\Http\Resources\SchedulePlanningResource;
 
@@ -30,19 +32,15 @@ class SchedulePlanningController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(SchedulePlanningRequest $request)
     {
-        //
+        $data = $request->validated();
+        return DB::transaction(function () use ($data) {
+
+        });
+
     }
 
     /**
