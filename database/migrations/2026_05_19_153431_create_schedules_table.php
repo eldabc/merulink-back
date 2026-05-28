@@ -14,16 +14,32 @@ return new class extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->string('observations')->nullable();
-            $table->string('status')->default('created');
-            
+
             $table->foreignId('employee_id')
                   ->constrained()
                   ->onDelete('cascade');
 
-            // $table->foreignId('shift_id')
-            //       ->constrained()
-            //       ->onDelete('cascade');
+            $table->foreignId('shift_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('letterShift')->nullable();
+            $table->string('color')->nullable();
+            $table->string('snapshot_code')->index();
+            $table->string('snapshot_type')->default('final_closure');
+            $table->string('code')->unique();
+            $table->string('night_shift');
+            $table->string('type_shift');
+            $table->string('check_in_time');
+            $table->string('check_out_time');
+            $table->string('rest_period_time');
+            $table->string('rest_period_unit_time');
+            $table->string('active_period_time');
+            $table->string('active_period_unit_time');
+            $table->string('total_period_time');
+            $table->string('total_period_unit_time');
+            $table->string('allow_exit');
+            $table->string('allow_re_scanned');
+
+
+            $table->foreignId('schedule_planning_id')->constrained('schedule_plannings')->onDelete('cascade');
             
             $table->timestamps();
         });

@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('schedule_snapshots', function (Blueprint $table) {
             $table->id();
 
+            $table->string('letterShift')->nullable();
+            $table->string('color')->nullable();
             $table->string('snapshot_code')->index();
             $table->string('snapshot_type')->default('final_closure');
 
@@ -31,10 +33,6 @@ return new class extends Migration
 
             $table->string('allow_exit');
             $table->string('allow_re_scanned');
-
-            $table->foreignId('department_id')
-                  ->constrained()
-                  ->onDelete('cascade');
 
             $table->foreignId('schedule_id')
                   ->constrained()
