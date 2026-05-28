@@ -11,9 +11,18 @@ class ScheduleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $schedules = Schedule::with(['employee', 'shift'])->get();
+        $query = Schedule::with(['employee', 'scheduleSnapshot']); 
+        
+        // Filtro
+        if ($request->filled('start') && $request->filled('end') && $request->filled('departmentId')) {
+            $query->whereBetween('date', [$request->start, $request->end]);
+        }
+
+        $query->orderBy('date', 'asc');
+        $schedules = $query->get();
+
         return ScheduleResource::collection($schedules);
     }
 

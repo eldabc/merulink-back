@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Shift;
 use App\Models\Schedule;
+use App\Models\SchedulePlanning;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -14,10 +15,21 @@ class ScheduleSeeder extends Seeder
      */
     public function run(): void
     {
-        Shift::firstOrCreate(
-            ['code' => 'AD-01'], 
+        $shift = Shift::first();
+        $schedulePlanning = SchedulePlanning::first();
+
+        Schedule::firstOrCreate(
+            ['date' => '2026-05-16'], 
             [
-                'description' => 'Test Shift',
+                'employee_id' => 1,
+
+                'shift_id' => $shift->id,
+                'letterShift' => 'A',
+                'color' => '#000000',
+                'snapshot_code' => 'SNAP-1',
+                'snapshot_type' => 'closed',
+
+                'code' => 'AD-01',
                 'night_shift' => 'day',
                 'type_shift' => 'administrative',
                 'check_in_time' => '08:00:00',
@@ -30,18 +42,8 @@ class ScheduleSeeder extends Seeder
                 'total_period_unit_time' => 'hours',
                 'allow_exit' => 'yes',
                 'allow_re_scanned' => 'no',
-                'available' => 'yes',
-                'observation' => 'Test Shift',
-                'department_id' => 1,
-            ]
-        );
 
-        Schedule::firstOrCreate(
-            ['date' => '2026-06-01'], 
-            [
-                'observations' => 'Test Schedule',
-                'employee_id' => 1,
-                'shift_id' => 1,
+                'schedule_planning_id' => $schedulePlanning->id,
             ]
         );
     }

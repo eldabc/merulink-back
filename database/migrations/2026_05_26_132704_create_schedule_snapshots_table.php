@@ -14,11 +14,17 @@ return new class extends Migration
         Schema::create('schedule_snapshots', function (Blueprint $table) {
             $table->id();
 
+            $table->date('date');
+
+            $table->foreignId('employee_id')
+                  ->constrained()
+                  ->onDelete('cascade');
+
+            $table->foreignId('shift_id')->nullable()->constrained()->onDelete('set null');
             $table->string('letterShift')->nullable();
             $table->string('color')->nullable();
             $table->string('snapshot_code')->index();
             $table->string('snapshot_type')->default('final_closure');
-
             $table->string('code')->unique();
             $table->string('night_shift');
             $table->string('type_shift');
@@ -30,9 +36,10 @@ return new class extends Migration
             $table->string('active_period_unit_time');
             $table->string('total_period_time');
             $table->string('total_period_unit_time');
-
             $table->string('allow_exit');
             $table->string('allow_re_scanned');
+
+            $table->foreignId('schedule_planning_id')->constrained('schedule_plannings')->onDelete('cascade');
 
             $table->foreignId('schedule_id')
                   ->constrained()

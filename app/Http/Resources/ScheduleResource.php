@@ -15,12 +15,13 @@ class ScheduleResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'date' => $this->date,
-            'status' => $this->status,
-            'observations' => $this->observations,
-            'employee' => $this->employee_id,
-            'shift' => $this->shift_id,
+            // 'id' => $this->id,
+            // 'date' => $this->date,
+            // 'status' => $this->status,
+            // 'observations' => $this->observations,
+            // 'employee' => $this->employee_id,
+            // 'shift_id' => $this->shift_id,
+            // 'snapshot' => new ScheduleSnapshotResource($this->whenLoaded('scheduleSnapshot')),
         ];
     }
 }

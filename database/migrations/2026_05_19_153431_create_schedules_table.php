@@ -38,7 +38,6 @@ return new class extends Migration
             $table->string('allow_exit');
             $table->string('allow_re_scanned');
 
-
             $table->foreignId('schedule_planning_id')->constrained('schedule_plannings')->onDelete('cascade');
             
             $table->timestamps();

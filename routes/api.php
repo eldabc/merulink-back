@@ -16,6 +16,7 @@ use App\Http\Controllers\EventCategoryController;
 use App\Http\Controllers\EventTemplateController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\SchedulePlanningController;
 use App\Http\Controllers\ScheduleController;
 
     Route::get('/user', function (Request $request) {
@@ -61,6 +62,7 @@ use App\Http\Controllers\ScheduleController;
     Route::apiResource('eventTemplates', EventTemplateController::class);
     Route::apiResource('locations', LocationController::class);
     Route::apiResource('shifts', ShiftController::class);
+    Route::apiResource('schedule-plannings', SchedulePlanningController::class);
     Route::apiResource('schedules', ScheduleController::class);
     Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);
 

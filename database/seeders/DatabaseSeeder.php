@@ -33,6 +33,8 @@ class DatabaseSeeder extends Seeder
         $this->call(EventSeeder::class);
         $this->call(EventTemplateSeeder::class);
         $this->call(UserSeeder::class);  
+        $this->call(ShiftSeeder::class);  
+        $this->call(SchedulePlanningSeeder::class);  
         $this->call(ScheduleSeeder::class);  
 
         User::factory()->create([
