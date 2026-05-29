@@ -20,23 +20,23 @@ return new class extends Migration
                   ->onDelete('cascade');
 
             $table->foreignId('shift_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('letterShift')->nullable();
-            $table->string('color')->nullable();
+            $table->string('letter_shift');
+            $table->string('color');
             // $table->string('snapshot_code')->index(); // tentativos** para control
             // $table->string('snapshot_type')->default('final_closure'); // tentativos** para control
-            $table->string('code')->unique();
-            $table->string('night_shift');
-            $table->string('type_shift');
-            $table->string('check_in_time');
-            $table->string('check_out_time');
-            $table->string('rest_period_time');
-            $table->string('rest_period_unit_time');
-            $table->string('active_period_time');
-            $table->string('active_period_unit_time');
-            $table->string('total_period_time');
-            $table->string('total_period_unit_time');
-            $table->string('allow_exit');
-            $table->string('allow_re_scanned');
+            $table->string('code');
+            $table->string('night_shift')->nullable();
+            $table->string('type_shift')->nullable();
+            $table->string('check_in_time')->nullable();
+            $table->string('check_out_time')->nullable();
+            $table->string('rest_period_time')->nullable();
+            $table->string('rest_period_unit_time')->nullable();
+            $table->string('active_period_time')->nullable();
+            $table->string('active_period_unit_time')->nullable();
+            $table->string('total_period_time')->nullable();
+            $table->string('total_period_unit_time')->nullable();
+            $table->string('allow_exit')->nullable();
+            $table->string('allow_re_scanned')->nullable();
 
             $table->foreignId('schedule_planning_id')->constrained('schedule_plannings')->onDelete('cascade');
             

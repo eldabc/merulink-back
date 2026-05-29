@@ -8,6 +8,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SchedulePlanning extends Model
 {
+    protected $fillable = [
+        'start',
+        'end',
+        'status',
+        'observations',
+        'department_id',
+    ];
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);

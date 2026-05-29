@@ -8,6 +8,28 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Schedule extends Model
 {
+    protected $fillable = [
+        'date',
+        'employee_id',
+        'shift_id',
+        'letter_shift',
+        'color',
+        'code',
+        'night_shift',
+        'type_shift',
+        'check_in_time',
+        'check_out_time',
+        'rest_period_time',
+        'rest_period_unit_time',
+        'active_period_time',
+        'active_period_unit_time',
+        'total_period_time',
+        'total_period_unit_time',
+        'allow_exit',
+        'allow_re_scanned',
+        'schedule_planning_id',
+    ];
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
@@ -23,8 +45,4 @@ class Schedule extends Model
         return $this->belongsTo(SchedulePlanning::class);
     }
 
-    // public function scheduleSnapshot(): HasOne 
-    // {
-    //     return $this->hasOne(ScheduleSnapshot::class);
-    // }
 }

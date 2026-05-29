@@ -27,6 +27,9 @@ class SchedulePlanningRequest extends FormRequest
             'status' => 'required|in:created,reviewed,approved,closed',
             'observations' => 'nullable|string',
             'department_id' => 'required|exists:departments,id',
+            'schedules'     => 'required|array',
+            'schedules.*.employeeId' => 'required|integer',
+            'schedules.*.dates'      => 'required|array',
         ];
     }
 
@@ -38,6 +41,9 @@ class SchedulePlanningRequest extends FormRequest
             'status'   => 'Estatus del Horario',
             'observations' => 'Observaciones',
             'department_id' => 'Id de Departamento',
+            'schedules' => 'Horarios',
+            'schedules.*.employeeId' => 'Id de Empleado',
+            'schedules.*.dates' => 'Días en el horario'
         ];
     }
 

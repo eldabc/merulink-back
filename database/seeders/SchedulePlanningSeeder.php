@@ -14,9 +14,8 @@ class SchedulePlanningSeeder extends Seeder
     public function run(): void
     {
          SchedulePlanning::firstOrCreate(
-            ['id' => 1], 
+            ['start' => '2026-05-16'], 
             [
-                'start' => '2026-05-16',
                 'end' => '2026-05-31',
                 'status' => 'created',
                 'observations' => '',

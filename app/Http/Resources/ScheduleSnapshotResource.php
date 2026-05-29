@@ -16,8 +16,8 @@ class ScheduleSnapshotResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'snapshot_code' => $this->snapshot_code,
-            'snapshot_type' => $this->snapshot_type,
+            // 'snapshot_code' => $this->snapshot_code,
+            // 'snapshot_type' => $this->snapshot_type,
             'code' => $this->code,
             'description' => $this->description,
             'nightShift' => $this->night_shift,
@@ -36,7 +36,7 @@ class ScheduleSnapshotResource extends JsonResource
             'observation' => $this->observation,
             'department' =>  new DepartmentResource($this->whenLoaded('department')),
             'hasSchedule' => $this->schedules()->exists(),
-            'letterShift' => $this->letterShift ?? null,
+            'letterShift' => $this->letter_shift ?? null,
             'color' => $this->color ?? null,
         ];
     }

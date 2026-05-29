@@ -24,10 +24,10 @@ class ScheduleSeeder extends Seeder
                 'employee_id' => 1,
 
                 'shift_id' => $shift->id,
-                'letterShift' => 'A',
+                'letter_shift' => 'A',
                 'color' => '#000000',
-                'snapshot_code' => 'SNAP-1',
-                'snapshot_type' => 'closed',
+                // 'snapshot_code' => 'SNAP-1',
+                // 'snapshot_type' => 'closed',
 
                 'code' => 'AD-01',
                 'night_shift' => 'day',

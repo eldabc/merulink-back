@@ -20,10 +20,10 @@ class ScheduleResource extends JsonResource
             'employee' => $this->employee_id,
             'shift_id' => $this->shift_id,
 
-            'letterShift' => $this->letterShift ?? null,
+            'letter_shift' => $this->letter_shift ?? null,
             'color' => $this->color ?? null,
-            'snapshot_code' => $this->snapshot_code,
-            'snapshot_type' => $this->snapshot_type,
+            // 'snapshot_code' => $this->snapshot_code,
+            // 'snapshot_type' => $this->snapshot_type,
             
             'code' => $this->code,
             'nightShift' => $this->night_shift,

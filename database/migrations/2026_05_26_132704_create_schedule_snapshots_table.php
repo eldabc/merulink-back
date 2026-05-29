@@ -21,7 +21,7 @@ return new class extends Migration
                   ->onDelete('cascade');
 
             $table->foreignId('shift_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('letterShift')->nullable();
+            $table->string('letter_shift')->nullable();
             $table->string('color')->nullable();
             $table->string('snapshot_code')->index();
             $table->string('snapshot_type')->default('final_closure');
