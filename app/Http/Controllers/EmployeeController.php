@@ -178,73 +178,72 @@ class EmployeeController extends Controller
     /**
      * Trae los empleados para schedule
      */
-    public function filterSchedule(Request $request)
-    {
-        $query = Employee::query();
-        $isFiltering = $request->filled('departmentId') && $request->filled('start') && $request->filled('end');
+    // public function filterSchedule(Request $request)
+    // {
+    //     $query = Employee::query();
+    //     $isFiltering = $request->filled('departmentId') && $request->filled('start') && $request->filled('end');
 
-        // Filtro por ID de departamento para schedule
-        if ($isFiltering){
-            // Rango de la quincena
-            $start = $request->start;
-            $end = $request->end;
+    //     // Filtro por ID de departamento para schedule
+    //     if ($isFiltering){
+    //         // Rango de la quincena
+    //         $start = $request->start;
+    //         $end = $request->end;
 
-            $query->whereHas('position', function ($q) use ($request) {
-                $q->where('department_id', $request->departmentId);
-            });
+    //         $query->whereHas('position', function ($q) use ($request) {
+    //             $q->where('department_id', $request->departmentId);
+    //         });
 
-            $query->where(function ($q) use ($start, $end) {
-                // Empleados activos normales
-                $q->where('status', true)
-                // Empleados inactivos que están de vacaciones en el rango
-                ->orWhere(function ($sub) use ($start, $end) {
-                    $sub->where('status', false)
-                        ->whereHas('vacations', function ($v) use ($start, $end) {
-                            $v->where(function ($vQuery) use ($start, $end) {
-                                $vQuery->whereBetween('start', [$start, $end])
-                                        ->orWhereBetween('end', [$start, $end])
-                                        ->orWhere(function ($deep) use ($start, $end) {
-                                            $deep->where('start', '<=', $start) // Empezó antes o igual que la quincena
-                                                ->where('end', '>=', $end); // Termina después o igual que la quincena
-                                        });
-                            });
-                        });
-                });
-            });
-        }
+    //         $query->where(function ($q) use ($start, $end) {
+    //             // Empleados activos normales
+    //             $q->where('status', true)
+    //             // Empleados inactivos que están de vacaciones en el rango
+    //             ->orWhere(function ($sub) use ($start, $end) {
+    //                 $sub->where('status', false)
+    //                     ->whereHas('vacations', function ($v) use ($start, $end) {
+    //                         $v->where(function ($vQuery) use ($start, $end) {
+    //                             $vQuery->whereBetween('start', [$start, $end])
+    //                                     ->orWhereBetween('end', [$start, $end])
+    //                                     ->orWhere(function ($deep) use ($start, $end) {
+    //                                         $deep->where('start', '<=', $start) // Empezó antes o igual que la quincena
+    //                                             ->where('end', '>=', $end); // Termina después o igual que la quincena
+    //                                     });
+    //                         });
+    //                     });
+    //             });
+    //         });
+    //     }
 
-        $employees = $query->with([
-            'position.department', 
-            'position.subDepartment',
-            'assignment',
-            // Filtro para traer solo si esta de vacaciones
-            'vacations' => function ($q) use ($start, $end) {
-                $q->where(function ($vQuery) use ($start, $end) {
-                    $vQuery->whereBetween('start', [$start, $end])
-                        ->orWhereBetween('end', [$start, $end])
-                        ->orWhere(function ($deep) use ($start, $end) {
-                            $deep->where('start', '<=', $start)
-                                    ->where('end', '>=', $end);
-                        });
-                });
-            }
-        ])->get();
+    //     $employees = $query->with([
+    //         'position.department', 
+    //         'position.subDepartment',
+    //         // Filtro para traer solo si esta de vacaciones
+    //         'vacations' => function ($q) use ($start, $end) {
+    //             $q->where(function ($vQuery) use ($start, $end) {
+    //                 $vQuery->whereBetween('start', [$start, $end])
+    //                     ->orWhereBetween('end', [$start, $end])
+    //                     ->orWhere(function ($deep) use ($start, $end) {
+    //                         $deep->where('start', '<=', $start)
+    //                                 ->where('end', '>=', $end);
+    //                     });
+    //             });
+    //         }
+    //     ])->get();
 
-        // agrupar por subdepartamento
-        if ($request->filled('departmentId')) {
-            $groupedEmployees = $employees->groupBy(function ($employee) {
-                // Fallback "Sin Subdepartamento" para la posición que no tiene asignado uno
-                return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
-            });
+    //     // agrupar por subdepartamento
+    //     if ($request->filled('departmentId')) {
+    //         $groupedEmployees = $employees->groupBy(function ($employee) {
+    //             // Fallback "Sin Subdepartamento" para la posición que no tiene asignado uno
+    //             return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
+    //         });
 
-            // Retorna el map agrupado
-            return response()->json(
-                $groupedEmployees->map(function ($group) {
-                    return EmployeeResource::collection($group);
-                })
-            );
-        }
-    }
+    //         // Retorna el map agrupado
+    //         return response()->json(
+    //             $groupedEmployees->map(function ($group) {
+    //                 return EmployeeFilterScheduleResource::collection($group);
+    //             })
+    //         );
+    //     }
+    // }
 
     /**
      * Remove the specified resource from storage.

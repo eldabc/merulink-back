@@ -50,7 +50,6 @@ use App\Http\Controllers\ScheduleController;
     ];
 });
 
-    Route::get('/employees/filter-schedule', [EmployeeController::class, 'filterSchedule']);
     Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('departments', DepartmentController::class);
@@ -62,6 +61,7 @@ use App\Http\Controllers\ScheduleController;
     Route::apiResource('eventTemplates', EventTemplateController::class);
     Route::apiResource('locations', LocationController::class);
     Route::apiResource('shifts', ShiftController::class);
+    Route::get('/schedule-plannings/filter-schedule', [SchedulePlanningController::class, 'filterSchedule']);
     Route::apiResource('schedule-plannings', SchedulePlanningController::class);
     Route::apiResource('schedules', ScheduleController::class);
     Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);

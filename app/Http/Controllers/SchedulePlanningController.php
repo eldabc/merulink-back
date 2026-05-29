@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Schedule;
+use App\Models\Employee;
 use App\Models\SchedulePlanning;
 
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\SchedulePlanningResource;
+use App\Http\Resources\EmployeeResource;
+use App\Http\Resources\EmployeeFilterScheduleResource;
 use App\Http\Requests\SchedulePlanningRequest;
 
 
@@ -21,10 +26,14 @@ class SchedulePlanningController extends Controller
         $query = SchedulePlanning::with(['department', 'schedules']); 
         
         // Filtro
-        if ($request->filled('start') && $request->filled('end') && $request->filled('departmentId')) {
-            $query->where('department_id', $request->departmentId);
+        if ($request->filled('start') && $request->filled('end')) {
             $query->where('start', $request->start);
             $query->where('end', $request->end);
+
+        }
+
+        if ($request->filled('departmentId')) {
+            $query->where('department_id', $request->departmentId);
         }
 
         // $query->orderBy('date', 'asc');
@@ -63,12 +72,10 @@ class SchedulePlanningController extends Controller
                     }
 
                     // Si es Vacación (ID -1) shift_id va como null para saltar el constraint
-                    $shiftId = (int) $shift['id'] === -1 ? null :  $shift['id'];
+                    $shiftId = (int) $shift['id']; // === -1 ? null :  $shift['id'];
 
                     // Ignorar días Libres
-                    if ($shiftId === 0) {
-                        continue;
-                    }
+                    if ($shiftId === 0 || $shiftId === -1) continue;
 
                     // Generar código único
                     $uniqueCode = 'SCH-' . $employeeId . '-' . $date;
@@ -122,14 +129,6 @@ class SchedulePlanningController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(SchedulePlanning $schedulePlanning)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, SchedulePlanning $schedulePlanning)
@@ -143,5 +142,74 @@ class SchedulePlanningController extends Controller
     public function destroy(SchedulePlanning $schedulePlanning)
     {
         //
+    }
+
+    /**
+     * Trae los empleados para schedule
+     */
+    public function filterSchedule(Request $request)
+    {
+        if (!$request->filled(['departmentId', 'start', 'end'])) {
+            return response()->json([
+                'message' => 'Los parámetros departmentId, start y end son obligatorios.'
+            ], 400); 
+        }
+
+        $start = $request->input('start');
+        $end = $request->input('end');
+        $query = Employee::query();
+
+        // Filtro por departamento a través de la posición
+        $query->whereHas('position', function ($q) use ($request) {
+            $q->where('department_id', $request->departmentId);
+        });
+
+        // Filtro de estados y vacaciones en el rango (Tu lógica impecable)
+        $query->where(function ($q) use ($start, $end) {
+            $q->where('status', true)
+                ->orWhere(function ($sub) use ($start, $end) {
+                    $sub->where('status', false)
+                        ->whereHas('vacations', function ($v) use ($start, $end) {
+                            $v->where(function ($vQuery) use ($start, $end) {
+                                $vQuery->whereBetween('start', [$start, $end])
+                                    ->orWhereBetween('end', [$start, $end])
+                                    ->orWhere(function ($deep) use ($start, $end) {
+                                        $deep->where('start', '<=', $start)
+                                                ->where('end', '>=', $end);
+                                    });
+                            });
+                        });
+                });
+        });
+
+        // Eager Loading seguro
+        $employees = $query->with([
+            'position.department', 
+            'position.subDepartment',
+            'schedules' => function ($q) use ($start, $end) {
+                $q->whereBetween('date', [$start, $end]);
+            },
+            'vacations' => function ($q) use ($start, $end) {
+                $q->where(function ($vQuery) use ($start, $end) {
+                    $vQuery->whereBetween('start', [$start, $end])
+                        ->orWhereBetween('end', [$start, $end])
+                        ->orWhere(function ($deep) use ($start, $end) {
+                            $deep->where('start', '<=', $start)
+                                    ->where('end', '>=', $end);
+                        });
+                });
+            }
+        ])->get();
+
+        // Agrupación por Subdepartamento y Retorno
+        $groupedEmployees = $employees->groupBy(function ($employee) {
+            return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
+        });
+
+        return response()->json(
+            $groupedEmployees->map(function ($group) {
+                return EmployeeFilterScheduleResource::collection($group);
+            })
+        );
     }
 }
