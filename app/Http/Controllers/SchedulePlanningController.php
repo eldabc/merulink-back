@@ -254,11 +254,14 @@ class SchedulePlanningController extends Controller
         });
 
         return response()->json([
-            'planning' => [
-                'id' => $planning?->id,
-                'status' => $planning?->status,
-                'isClosed' => $isClosedPlanning,
-            ],
+            'id' => $planning?->id,
+            'status' => $planning?->status,
+            'isClosed' => $isClosedPlanning,
+            'departmentId' => $planning?->department_id,
+            'start' => $planning?->start,
+            'end' => $planning?->end,
+            'monthNumber' => $planning->month_number,
+            'fortnightNumber' => $plannig->fortnight_number,
             'shifts' => $shifts,
             'employees' => $groupedEmployees->map(function ($group) {
                 return EmployeeFilterScheduleResource::collection($group);

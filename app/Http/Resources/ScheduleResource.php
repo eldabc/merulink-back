@@ -17,14 +17,10 @@ class ScheduleResource extends JsonResource
         return [
             'id' => $this->id,
             'date' => $this->date,
-            'employee' => $this->employee_id,
+            'employee' => EmployeeResource::collection($this->whenLoaded('employee')),//$this->employee_id,
             'shift_id' => $this->shift_id,
-
             'letter_shift' => $this->letter_shift ?? null,
             'color' => $this->color ?? null,
-            // 'snapshot_code' => $this->snapshot_code,
-            // 'snapshot_type' => $this->snapshot_type,
-            
             'code' => $this->code,
             'nightShift' => $this->night_shift,
             'typeShift' => $this->type_shift,

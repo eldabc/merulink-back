@@ -16,6 +16,8 @@ return new class extends Migration
                     
             $table->date('start');
             $table->date('end');
+            $table->tinyInteger('month_number');
+            $table->tinyInteger('fortnight_number');
             $table->string('status')->default('created'); // created, reviewed, approved, closed
             $table->text('observations')->nullable();
 
