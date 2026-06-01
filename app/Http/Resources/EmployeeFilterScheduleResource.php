@@ -45,7 +45,7 @@ class EmployeeFilterScheduleResource extends JsonResource
                         'shift' => [
                             'id' => $schedule->shift_id,
                             'code' => $schedule->code,
-                            'description' => $schedule->letter_shift,
+                            'letterShift' => $schedule->letter_shift,
                             'color' => $schedule->color,
                             'nightShift' => $schedule->night_shift,
                             'typeShift' => $schedule->type_shift,
@@ -60,7 +60,7 @@ class EmployeeFilterScheduleResource extends JsonResource
                         'shift' => [
                             'id' => -1,
                             'code' => 'VAC',
-                            'description' => 'Vacaciones',
+                            'letterShift' => 'VAC',
                             'color' => '#2563eb', 
                             'nightShift' => null,
                             'typeShift' => null,
@@ -75,7 +75,7 @@ class EmployeeFilterScheduleResource extends JsonResource
                         'shift' => [
                             'id' => 0,
                             'code' => 'L',
-                            'description' => 'Libre',
+                            'letterShift' => 'L',
                             'color' => '#535759',
                             'nightShift' => null,
                             'typeShift' => null,

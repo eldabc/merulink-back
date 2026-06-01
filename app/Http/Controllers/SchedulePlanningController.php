@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Schedule;
+use App\Models\Shift;
 use App\Models\Employee;
 use App\Models\SchedulePlanning;
 
@@ -10,11 +11,13 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\ShiftResource;
 use App\Http\Resources\SchedulePlanningResource;
 use App\Http\Resources\EmployeeResource;
 use App\Http\Resources\EmployeeFilterScheduleResource;
 use App\Http\Requests\SchedulePlanningRequest;
 
+use App\Services\ShiftVisualIdentityService;
 
 class SchedulePlanningController extends Controller
 {
@@ -92,14 +95,14 @@ class SchedulePlanningController extends Controller
                         'type_shift'           => $shift['typeShift'],
                         'check_in_time'            => $shift['checkInTime'],
                         'check_out_time'           => $shift['checkOutTime'],
-                        'rest_period_time'         => $shift['restPeriodTime'],
-                        'rest_period_unit_time'    => $shift['restPeriodUnitTime'],
-                        'active_period_time'       => $shift['activePeriodTime'],
-                        'active_period_unit_time'  => $shift['activePeriodUnitTime'],
-                        'total_period_time'        => $shift['totalPeriodTime'],
-                        'total_period_unit_time'   => $shift['totalPeriodUnitTime'],
-                        'allow_exit'               => $shift['allowExit'],
-                        'allow_re_scanned'         => $shift['allowReScanned'],
+                        'rest_period_time'         => $shift['restPeriodTime'] ?? null,
+                        'rest_period_unit_time'    => $shift['restPeriodUnitTime'] ?? null,
+                        'active_period_time'       => $shift['activePeriodTime'] ?? null,
+                        'active_period_unit_time'  => $shift['activePeriodUnitTime'] ?? null,
+                        'total_period_time'        => $shift['totalPeriodTime'] ?? null,
+                        'total_period_unit_time'   => $shift['totalPeriodUnitTime'] ?? null,
+                        'allow_exit'               => $shift['allowExit'] ?? null,
+                        'allow_re_scanned'         => $shift['allowReScanned'] ?? null,
                     ]);
                 }
             }
@@ -147,7 +150,7 @@ class SchedulePlanningController extends Controller
     /**
      * Trae los empleados para schedule
      */
-    public function filterSchedule(Request $request)
+    public function filterSchedule(Request $request, ShiftVisualIdentityService $scheduleShiftService)
     {
         if (!$request->filled(['departmentId', 'start', 'end'])) {
             return response()->json([
@@ -157,6 +160,15 @@ class SchedulePlanningController extends Controller
 
         $start = $request->input('start');
         $end = $request->input('end');
+
+        $planning = SchedulePlanning::query()
+            ->where('department_id', $request->departmentId)
+            ->whereDate('start', $start)
+            ->whereDate('end', $end)
+            ->first();
+
+        $isClosedPlanning = $planning && $planning->status === 'closed';
+
         $query = Employee::query();
 
         // Filtro por departamento a través de la posición
@@ -201,15 +213,56 @@ class SchedulePlanningController extends Controller
             }
         ])->get();
 
+        if ($isClosedPlanning) {
+            $shifts = Schedule::query()
+                ->where('schedule_planning_id', $planning->id)
+                ->select([
+                    'shift_id as id',
+                    'code',
+                    'letter_shift as letterShift',
+                    'color',
+                    'night_shift as nightShift',
+                    'type_shift as typeShift',
+                    'check_in_time as checkInTime',
+                    'check_out_time as checkOutTime',
+                    'active_period_time as activePeriodTime',
+                    'active_period_unit_time as activePeriodUnitTime',
+                    'rest_period_time as restPeriodTime',
+                    'rest_period_unit_time as restPeriodUnitTime',
+                    'total_period_time as totalPeriodTime',
+                    'total_period_unit_time as totalPeriodUnitTime',
+                    'allow_exit as allowExit',
+                    'allow_re_scanned as allowReScanned',
+                ])
+                ->distinct()
+                ->get()
+                ->unique('shift_id')
+                ->values();
+
+        } else {
+
+            $departmentShifts = Shift::where('department_id', $request->departmentId)->where('available', 'yes')->orderBy('check_in_time')->with('department')->get();
+
+            $shifts = ShiftResource::collection(
+                $scheduleShiftService->apply($departmentShifts)
+            );
+        }
+
         // Agrupación por Subdepartamento y Retorno
         $groupedEmployees = $employees->groupBy(function ($employee) {
             return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
         });
 
-        return response()->json(
-            $groupedEmployees->map(function ($group) {
+        return response()->json([
+            'planning' => [
+                'id' => $planning?->id,
+                'status' => $planning?->status,
+                'isClosed' => $isClosedPlanning,
+            ],
+            'shifts' => $shifts,
+            'employees' => $groupedEmployees->map(function ($group) {
                 return EmployeeFilterScheduleResource::collection($group);
-            })
-        );
+            }),
+        ]);
     }
 }
