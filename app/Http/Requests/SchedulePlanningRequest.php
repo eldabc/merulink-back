@@ -24,6 +24,7 @@ class SchedulePlanningRequest extends FormRequest
         return [
             'start' => 'required|string',
             'end' => 'required|string',
+            'month_number' => 'required|integer|min:1|max:12',
             'status' => 'required|in:created,reviewed,approved,closed',
             'observations' => 'nullable|string',
             'department_id' => 'required|exists:departments,id',
@@ -38,6 +39,7 @@ class SchedulePlanningRequest extends FormRequest
         return [
             'start' => 'Fecha Inicio quincena',
             'end' => 'Fecha Fin quincena',
+            'month_number' => 'Número de Mes',
             'status'   => 'Estatus del Horario',
             'observations' => 'Observaciones',
             'department_id' => 'Id de Departamento',

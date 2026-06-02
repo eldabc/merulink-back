@@ -12,7 +12,7 @@ class SchedulePlanning extends Model
         'start',
         'end',
         'month_number',
-        'fortnight_number',
+        // 'fortnight_number',
         'status',
         'observations',
         'department_id',

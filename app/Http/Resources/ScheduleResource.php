@@ -17,7 +17,7 @@ class ScheduleResource extends JsonResource
         return [
             'id' => $this->id,
             'date' => $this->date,
-            'employee' => EmployeeResource::collection($this->whenLoaded('employee')),//$this->employee_id,
+            'employee' => new EmployeeResource($this->whenLoaded('employee')),//$this->employee_id,
             'shift_id' => $this->shift_id,
             'letter_shift' => $this->letter_shift ?? null,
             'color' => $this->color ?? null,

@@ -19,16 +19,12 @@ class ScheduleSeeder extends Seeder
         $schedulePlanning = SchedulePlanning::first();
 
         Schedule::firstOrCreate(
-            ['date' => '2026-05-16'], 
+            ['date' => '2026-06-16'], 
             [
-                'employee_id' => 1,
-
+                'employee_id' => 2,
                 'shift_id' => $shift->id,
                 'letter_shift' => 'A',
                 'color' => '#000000',
-                // 'snapshot_code' => 'SNAP-1',
-                // 'snapshot_type' => 'closed',
-
                 'code' => 'AD-01',
                 'night_shift' => 'day',
                 'type_shift' => 'administrative',

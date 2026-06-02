@@ -19,7 +19,7 @@ class SchedulePlanningResource extends JsonResource
             'start' => $this->start,
             'end' => $this->end,
             'monthNumber' => $this->month_number,
-            'fortnightNumber' => $this->fortnight_number,
+            // 'fortnightNumber' => $this->fortnight_number,
             'status' => $this->status,
             'observations' => $this->observations,
             'department' => new DepartmentResource($this->whenLoaded('department')),

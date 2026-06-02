@@ -22,8 +22,6 @@ return new class extends Migration
             $table->foreignId('shift_id')->nullable()->constrained()->onDelete('set null');
             $table->string('letter_shift');
             $table->string('color');
-            // $table->string('snapshot_code')->index(); // tentativos** para control
-            // $table->string('snapshot_type')->default('final_closure'); // tentativos** para control
             $table->string('code');
             $table->string('night_shift')->nullable();
             $table->string('type_shift')->nullable();

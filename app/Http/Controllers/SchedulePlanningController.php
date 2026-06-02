@@ -26,7 +26,7 @@ class SchedulePlanningController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SchedulePlanning::with(['department', 'schedules']); 
+        $query = SchedulePlanning::with(['department', 'schedules', 'schedules.employee']); 
         
         // Filtro
         if ($request->filled('start') && $request->filled('end')) {
@@ -58,6 +58,7 @@ class SchedulePlanningController extends Controller
             $planning = SchedulePlanning::create([
                 'start' => $data['start'],
                 'end' => $data['end'],
+                'month_number' => $data['month_number'],
                 'status' => $data['status'],
                 'department_id' => $data['department_id'],
                 'observations' => $data['observations'],
@@ -87,7 +88,7 @@ class SchedulePlanningController extends Controller
                         'date'                 => $date,
                         'employee_id'          => $employeeId,
                         'schedule_planning_id' => $planning->id,
-                        'code'                 => $uniqueCode,
+                        'code'                 => $shift['code'],
                         'shift_id'             => $shiftId,
                         'letter_shift'         => $shift['letterShift'],
                         'color'                => $shift['color'],
@@ -167,7 +168,15 @@ class SchedulePlanningController extends Controller
             ->whereDate('end', $end)
             ->first();
 
-        $isClosedPlanning = $planning && $planning->status === 'closed';
+        $today = Carbon::now()->startOfDay();
+        $periodEnd = Carbon::parse($end)->startOfDay();
+        $isClosedInDB = $planning && $planning->status === 'closed';
+
+        // Valida si fecha actual es mayor que el fin de la quincena
+        $isExpiredByDate = $today->greaterThan($periodEnd);
+
+        // El periodo se trata como cerrado si se cumple cualquiera de las dos
+        $isClosed = $isClosedInDB || $isExpiredByDate;
 
         $query = Employee::query();
 
@@ -213,7 +222,7 @@ class SchedulePlanningController extends Controller
             }
         ])->get();
 
-        if ($isClosedPlanning) {
+        if ($isClosed) {
             $shifts = Schedule::query()
                 ->where('schedule_planning_id', $planning->id)
                 ->select([
@@ -256,12 +265,12 @@ class SchedulePlanningController extends Controller
         return response()->json([
             'id' => $planning?->id,
             'status' => $planning?->status,
-            'isClosed' => $isClosedPlanning,
+            'isClosed' => $isClosed,
             'departmentId' => $planning?->department_id,
             'start' => $planning?->start,
             'end' => $planning?->end,
-            'monthNumber' => $planning->month_number,
-            'fortnightNumber' => $plannig->fortnight_number,
+            'monthNumber' => $planning?->month_number,
+            // 'fortnightNumber' => $planning?->fortnight_number,
             'shifts' => $shifts,
             'employees' => $groupedEmployees->map(function ($group) {
                 return EmployeeFilterScheduleResource::collection($group);
