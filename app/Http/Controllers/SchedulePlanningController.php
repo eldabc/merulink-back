@@ -54,7 +54,8 @@ class SchedulePlanningController extends Controller
 
         try {
             DB::beginTransaction();
-            // Crear la cabecera en schedule_plannings
+            
+            // Crear la cabecera
             $planning = SchedulePlanning::create([
                 'start' => $data['start'],
                 'end' => $data['end'],
@@ -64,49 +65,8 @@ class SchedulePlanningController extends Controller
                 'observations' => $data['observations'],
             ]);
 
-            // Recorrer los empleados y sus fechas asignadas
-            foreach ($data['schedules'] as $employeeSchedule) {
-                $employeeId = $employeeSchedule['employeeId'];
-
-                foreach ($employeeSchedule['dates'] as $date => $dateData) {
-                    $shift = $dateData['shift'] ?? null;
-
-                    if (!$shift) {
-                        continue;
-                    }
-
-                    // Si es Vacación (ID -1) shift_id va como null para saltar el constraint
-                    $shiftId = (int) $shift['id']; // === -1 ? null :  $shift['id'];
-
-                    // Ignorar días Libres
-                    if ($shiftId === 0 || $shiftId === -1) continue;
-
-                    // Generar código único
-                    $uniqueCode = 'SCH-' . $employeeId . '-' . $date;
-
-                    Schedule::create([
-                        'date'                 => $date,
-                        'employee_id'          => $employeeId,
-                        'schedule_planning_id' => $planning->id,
-                        'code'                 => $shift['code'],
-                        'shift_id'             => $shiftId,
-                        'letter_shift'         => $shift['letterShift'],
-                        'color'                => $shift['color'],
-                        'night_shift'          => $shift['nightShift'],
-                        'type_shift'           => $shift['typeShift'],
-                        'check_in_time'            => $shift['checkInTime'],
-                        'check_out_time'           => $shift['checkOutTime'],
-                        'rest_period_time'         => $shift['restPeriodTime'] ?? null,
-                        'rest_period_unit_time'    => $shift['restPeriodUnitTime'] ?? null,
-                        'active_period_time'       => $shift['activePeriodTime'] ?? null,
-                        'active_period_unit_time'  => $shift['activePeriodUnitTime'] ?? null,
-                        'total_period_time'        => $shift['totalPeriodTime'] ?? null,
-                        'total_period_unit_time'   => $shift['totalPeriodUnitTime'] ?? null,
-                        'allow_exit'               => $shift['allowExit'] ?? null,
-                        'allow_re_scanned'         => $shift['allowReScanned'] ?? null,
-                    ]);
-                }
-            }
+            // Recorrer los empleados y sus fechas asignadas para registrar
+            $this->saveSchedulesBatch($data['schedules'], $planning);
 
             DB::commit();
             return response()->json([
@@ -135,9 +95,40 @@ class SchedulePlanningController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, SchedulePlanning $schedulePlanning)
+    public function update(SchedulePlanningRequest $request, SchedulePlanning $schedulePlanning)
     {
-        //
+        $data = $request->validated();
+        try {
+            DB::beginTransaction();
+            
+            // Actualizar cabecera
+            $schedulePlanning->update([
+                'start' => $data['start'],
+                'end' => $data['end'],
+                'month_number' => $data['month_number'],
+                'status' => $data['status'],
+                'department_id' => $data['department_id'],
+                'observations' => $data['observations'],
+            ]);
+
+            $schedulePlanning->schedules()->delete();
+
+            // Recorrer los empleados y sus fechas asignadas para registrar
+            $this->saveSchedulesBatch($data['schedules'], $schedulePlanning);
+
+            DB::commit();
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Planificación e historial de turnos guardados exitosamente.'
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al guardar la planificación: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -295,5 +286,49 @@ class SchedulePlanningController extends Controller
                 return EmployeeFilterScheduleResource::collection($group);
             }),
         ]);
+    }
+
+    private function saveSchedulesBatch(array $schedulesData, SchedulePlanning $planning)
+    {
+        foreach ($schedulesData as $employeeSchedule) {
+            $employeeId = $employeeSchedule['employeeId'];
+
+            foreach ($employeeSchedule['dates'] as $date => $dateData) {
+                $shift = $dateData['shift'] ?? null;
+
+                if (!$shift) {
+                    continue;
+                }
+
+                $shiftId = (int) $shift['id'];
+
+                // Ignorar días Libres (0) o Vacaciones (-1)
+                if ($shiftId === 0 || $shiftId === -1) {
+                    continue;
+                }
+
+                Schedule::create([
+                    'date'                    => $date,
+                    'employee_id'             => $employeeId,
+                    'schedule_planning_id'    => $planning->id,
+                    'code'                    => $shift['code'],
+                    'shift_id'                => $shiftId,
+                    'letter_shift'            => $shift['letterShift'],
+                    'color'                   => $shift['color'],
+                    'night_shift'             => $shift['nightShift'],
+                    'type_shift'              => $shift['typeShift'],
+                    'check_in_time'           => $shift['checkInTime'],
+                    'check_out_time'          => $shift['checkOutTime'],
+                    'rest_period_time'        => $shift['restPeriodTime'] ?? null,
+                    'rest_period_unit_time'   => $shift['restPeriodUnitTime'] ?? null,
+                    'active_period_time'      => $shift['activePeriodTime'] ?? null,
+                    'active_period_unit_time' => $shift['activePeriodUnitTime'] ?? null,
+                    'total_period_time'       => $shift['totalPeriodTime'] ?? null,
+                    'total_period_unit_time'  => $shift['totalPeriodUnitTime'] ?? null,
+                    'allow_exit'              => $shift['allowExit'] ?? null,
+                    'allow_re_scanned'        => $shift['allowReScanned'] ?? null,
+                ]);
+            }
+        }
     }
 }

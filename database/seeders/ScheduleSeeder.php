@@ -27,7 +27,7 @@ class ScheduleSeeder extends Seeder
                 'employee_id' => 1,
                 'shift_id' => $shift->id,
                 'letter_shift' => 'A',
-                'color' => '#000000',
+                'color' => '#FBBD08',
                 'code' => 'AD-01',
                 'night_shift' => 'day',
                 'type_shift' => 'administrative',
