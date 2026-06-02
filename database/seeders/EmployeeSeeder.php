@@ -1,6 +1,7 @@
 <?php
 
 namespace Database\Seeders;
+use Carbon\Carbon;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -13,6 +14,7 @@ class EmployeeSeeder extends Seeder
      */
     public function run(): void
     {
+        $today = Carbon::now()->startOfDay();
         $first_employee = Employee::firstOrCreate(
             ['ci' => '21378987'], 
             [
@@ -42,6 +44,7 @@ class EmployeeSeeder extends Seeder
                 'use_hid_card' => true,
                 'use_locker' => true,
                 'use_transport' => true,
+                'retire_date' => $today,
                 
             ]
         );

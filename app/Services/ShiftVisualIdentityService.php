@@ -38,7 +38,7 @@ class ShiftVisualIdentityService
         $absenceShift->available = 'yes';
         $absenceShift->code = 'VAC'; // Más adelante serán varios tipos (ausencias)
         $absenceShift->letter_shift = 'VAC';
-        $absenceShift->color = '#a6a7a9';
+        $absenceShift->color = '#d0d5d6';
 
         $shifts->prepend($freeDayShift);
         $shifts->prepend($absenceShift);

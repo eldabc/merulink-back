@@ -169,6 +169,10 @@ class StoreEmployeeRequest extends FormRequest
                 'integer',
                 'exists:assigns,id',
             ],
+            'retire_date' => [
+                'nullable',
+                'date',
+            ],
         ];
     }
 

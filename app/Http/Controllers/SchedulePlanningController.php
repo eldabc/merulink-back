@@ -185,22 +185,40 @@ class SchedulePlanningController extends Controller
             $q->where('department_id', $request->departmentId);
         });
 
-        // Filtro de estados y vacaciones en el rango (Tu lógica impecable)
-        $query->where(function ($q) use ($start, $end) {
-            $q->where('status', true)
-                ->orWhere(function ($sub) use ($start, $end) {
-                    $sub->where('status', false)
-                        ->whereHas('vacations', function ($v) use ($start, $end) {
-                            $v->where(function ($vQuery) use ($start, $end) {
-                                $vQuery->whereBetween('start', [$start, $end])
-                                    ->orWhereBetween('end', [$start, $end])
-                                    ->orWhere(function ($deep) use ($start, $end) {
-                                        $deep->where('start', '<=', $start)
-                                                ->where('end', '>=', $end);
-                                    });
-                            });
+        // ESTRATEGIA DE EMPLEADOS HISTÓRICOS VS ACTIVOS O RETIROS A MITAD DE QUINCENA
+        // Agrupar las condiciones dinámicas de estatus / históricos
+        $query->where(function ($mainGroup) use ($isClosed, $start, $end) {
+
+            if ($isClosed) {
+                // Si ya está cerrado o expiró se listan todos los empleados que tengan turnos en esta quincena específica
+                $mainGroup->whereHas('schedules', function ($q) use ($start, $end) {
+                    $q->whereBetween('date', [$start, $end]);
+                });
+            } else {
+                // HORARIO ABIERTO/NUEVO: El empleado califica si está activo en el sistema,
+                // O si está inactivo PERO su fecha de retiro ocurrió durante la quincena
+                $mainGroup->where(function ($q) use ($start) {
+                    $q->where('status', true)
+                    ->orWhere(function ($sub) use ($start) {
+                        $sub->where('status', false)
+                            ->whereNotNull('retire_date')
+                            ->where('retire_date', '>=', $start);
+                    });
+                });
+
+                
+            }
+            $mainGroup->orWhereHas('vacations', function ($v) use ($start, $end) {
+                $v->where(function ($vQuery) use ($start, $end) {
+                    $vQuery->whereBetween('start', [$start, $end])
+                        ->orWhereBetween('end', [$start, $end])
+                        ->orWhere(function ($deep) use ($start, $end) {
+                            $deep->where('start', '<=', $start)
+                                    ->where('end', '>=', $end);
                         });
                 });
+            });
+
         });
 
         // Eager Loading seguro
@@ -216,7 +234,7 @@ class SchedulePlanningController extends Controller
                         ->orWhereBetween('end', [$start, $end])
                         ->orWhere(function ($deep) use ($start, $end) {
                             $deep->where('start', '<=', $start)
-                                    ->where('end', '>=', $end);
+                                 ->where('end', '>=', $end);
                         });
                 });
             }
@@ -247,10 +265,12 @@ class SchedulePlanningController extends Controller
                 ->get()
                 ->unique('shift_id')
                 ->values();
-
         } else {
-
-            $departmentShifts = Shift::where('department_id', $request->departmentId)->where('available', 'yes')->orderBy('check_in_time')->with('department')->get();
+            $departmentShifts = Shift::where('department_id', $request->departmentId)
+                ->where('available', 'yes')
+                ->orderBy('check_in_time')
+                ->with('department')
+                ->get();
 
             $shifts = ShiftResource::collection(
                 $scheduleShiftService->apply($departmentShifts)
@@ -263,16 +283,15 @@ class SchedulePlanningController extends Controller
         });
 
         return response()->json([
-            'id' => $planning?->id,
-            'status' => $planning?->status,
-            'isClosed' => $isClosed,
+            'id'           => $planning?->id,
+            'status'       => $planning?->status,
+            'isClosed'     => $isClosed,
             'departmentId' => $planning?->department_id,
-            'start' => $planning?->start,
-            'end' => $planning?->end,
-            'monthNumber' => $planning?->month_number,
-            // 'fortnightNumber' => $planning?->fortnight_number,
-            'shifts' => $shifts,
-            'employees' => $groupedEmployees->map(function ($group) {
+            'start'        => $planning?->start ?? $start, // Fallback por si está creando nuevo
+            'end'          => $planning?->end ?? $end,     // Fallback por si está creando nuevo
+            'monthNumber'  => $planning?->month_number,
+            'shifts'       => $shifts,
+            'employees'    => $groupedEmployees->map(function ($group) {
                 return EmployeeFilterScheduleResource::collection($group);
             }),
         ]);

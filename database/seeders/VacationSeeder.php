@@ -1,6 +1,7 @@
 <?php
 
 namespace Database\Seeders;
+use Carbon\Carbon;
 
 use App\Models\Vacation;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -13,12 +14,17 @@ class VacationSeeder extends Seeder
      */
     public function run(): void
     {
+
+        $today = Carbon::now()->startOfDay();
+        $start = $today->copy()->addDays(1);
+        $end = $start->copy()->addDays(10);
+
         Vacation::firstOrCreate(
-            ['start' => '2026-05-16', 'end' => '2026-05-26'],
+            ['start' => $start, 'end' => $end],
             [
                 'type' => 'vacation',
                 'observations' => 'Test Vacation',
-                'employee_id' => 1,
+                'employee_id' => 2,
             ]
         );
     }

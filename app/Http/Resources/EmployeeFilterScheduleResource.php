@@ -61,7 +61,7 @@ class EmployeeFilterScheduleResource extends JsonResource
                             'id' => -1,
                             'code' => 'VAC',
                             'letterShift' => 'VAC',
-                            'color' => '#2563eb', 
+                            'color' => '#d0d5d6', 
                             'nightShift' => null,
                             'typeShift' => null,
                             'checkInTime' => null,

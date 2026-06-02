@@ -38,6 +38,7 @@ class Employee extends Model
         'use_hid_card',
         'use_locker',
         'use_transport',
+        'retire_date',
     ];
 
     public function assignment(): HasOne

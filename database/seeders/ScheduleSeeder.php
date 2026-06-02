@@ -1,6 +1,7 @@
 <?php
 
 namespace Database\Seeders;
+use Carbon\Carbon;
 
 use App\Models\Shift;
 use App\Models\Schedule;
@@ -18,10 +19,12 @@ class ScheduleSeeder extends Seeder
         $shift = Shift::first();
         $schedulePlanning = SchedulePlanning::first();
 
+        $today = Carbon::now()->startOfDay();
+
         Schedule::firstOrCreate(
-            ['date' => '2026-06-16'], 
+            ['date' => $today], 
             [
-                'employee_id' => 2,
+                'employee_id' => 1,
                 'shift_id' => $shift->id,
                 'letter_shift' => 'A',
                 'color' => '#000000',
