@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Shift;
 use Illuminate\Support\Collection;
+// use App\Enums\SystemShift;
 
 class ShiftVisualIdentityService
 {
@@ -11,6 +12,7 @@ class ShiftVisualIdentityService
         0 => ['code' => 'A', 'color' => '#FBBD08'],
         1 => ['code' => 'B', 'color' => '#ef4444'],
         2 => ['code' => 'C', 'color' => '#10b981'],
+        3 => ['code' => 'D', 'color' => '#8b5cf6'],
     ];
 
     public function apply(Collection $shifts): Collection
@@ -23,25 +25,27 @@ class ShiftVisualIdentityService
             $shift->color = $identity['color'];
         });
 
-        $freeDayShift = new Shift();
+        // $systemFreeShift = SystemShift::FREE->getData();
+        // $systemVacationShift = SystemShift::VACATIONS->getData();
 
-        $freeDayShift->id = 0;
-        $freeDayShift->description = 'Libre';
-        $freeDayShift->available = 'yes';
-        $freeDayShift->code = 'L';
-        $freeDayShift->letter_shift = 'L';
-        $freeDayShift->color = '#535759';
+        // $freeDayShift = new Shift();
 
-        $absenceShift = new Shift();
-        $absenceShift->id = -1; // ID negativo único para que no choque con la BD
-        $absenceShift->description = 'Vacaciones';
-        $absenceShift->available = 'yes';
-        $absenceShift->code = 'VAC'; // Más adelante serán varios tipos (ausencias)
-        $absenceShift->letter_shift = 'VAC';
-        $absenceShift->color = '#d0d5d6';
+        // $freeDayShift->id = $systemFreeShift['id'];        
+        // $freeDayShift->code = $systemFreeShift['code'];
+        // $freeDayShift->letter_shift = $systemFreeShift['letterShift'];
+        // $freeDayShift->color = $systemFreeShift['color'];
+        // $freeDayShift->description = $systemFreeShift['description'];
 
-        $shifts->prepend($freeDayShift);
-        $shifts->prepend($absenceShift);
+        // $absenceShift = new Shift();
+
+        // $absenceShift->id = $systemVacationShift['id'];
+        // $absenceShift->code = $systemVacationShift['code']; // Más adelante serán varios tipos (ausencias)
+        // $absenceShift->letter_shift = $systemVacationShift['letterShift'];
+        // $absenceShift->color = $systemVacationShift['color'];
+        // $absenceShift->description = $systemVacationShift['description'];
+
+        // $shifts->prepend($freeDayShift);
+        // $shifts->prepend($absenceShift);
 
         return $shifts;
     }

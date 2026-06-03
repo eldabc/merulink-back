@@ -19,11 +19,13 @@ enum SystemShift: string
                 'code' => 'L',
                 'letterShift' => 'L',
                 'color' => '#535759',
-                'description' => 'Día Libre',
+                'description' => 'Libre',
                 'nightShift' => null,
                 'typeShift' => null,
                 'checkInTime' => null,
                 'checkOutTime' => null,
+                'isSystemShift' => true,
+                'isNotShowShift' => false
             ],
             self::RETIREMENT => [
                 'id' => self::RETIREMENT->value,
@@ -35,6 +37,8 @@ enum SystemShift: string
                 'typeShift' => null,
                 'checkInTime' => null,
                 'checkOutTime' => null,
+                'isSystemShift' => true,
+                'isNotShowShift' => true
             ],
             self::VACATIONS => [
                 'id' => self::VACATIONS->value,
@@ -46,6 +50,8 @@ enum SystemShift: string
                 'typeShift' => null,
                 'checkInTime' => null,
                 'checkOutTime' => null,
+                'isSystemShift' => true,
+                'isNotShowShift' => true
             ],
         };
     }

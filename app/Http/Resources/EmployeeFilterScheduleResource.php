@@ -51,6 +51,7 @@ class EmployeeFilterScheduleResource extends JsonResource
                 }
                 // CASO 2: Si la fecha está registrada
                 elseif ($indexedSchedules->has($dateString)) {
+
                     $schedule = $indexedSchedules->get($dateString);
                     $datesMap[$dateString] = [
                         'shift' => [
@@ -64,10 +65,10 @@ class EmployeeFilterScheduleResource extends JsonResource
                             'checkOutTime' => $schedule->check_out_time,
                         ]
                     ];
+
                 } 
                 // CASO 3: Rango dentro de sus Vacaciones
                 elseif ($vacation && $date->between($vacationStart, $vacationEnd)) {
-
                     $datesMap[$dateString] = [
                         'shift' => SystemShift::VACATIONS->getData()
                     ];

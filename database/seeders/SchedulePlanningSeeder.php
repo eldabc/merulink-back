@@ -1,6 +1,7 @@
 <?php
 
 namespace Database\Seeders;
+use Carbon\Carbon;
 
 use App\Models\SchedulePlanning;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -13,10 +14,12 @@ class SchedulePlanningSeeder extends Seeder
      */
     public function run(): void
     {
+        $start = Carbon::now()->startOfMonth();
+        $end = $start->copy()->addDays(14);
+
          SchedulePlanning::firstOrCreate(
-            ['start' => '2026-06-16'], 
+            ['start' => $start, 'end' => $end], 
             [
-                'end' => '2026-06-30',
                 'month_number' => 6,
                 // 'fortnight_number' => 2,
                 'status' => 'created',

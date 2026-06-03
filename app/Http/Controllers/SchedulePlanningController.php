@@ -16,6 +16,7 @@ use App\Http\Resources\SchedulePlanningResource;
 use App\Http\Resources\EmployeeResource;
 use App\Http\Resources\EmployeeFilterScheduleResource;
 use App\Http\Requests\SchedulePlanningRequest;
+use App\Enums\SystemShift;
 
 use App\Services\ShiftVisualIdentityService;
 
@@ -263,9 +264,15 @@ class SchedulePlanningController extends Controller
                 ->with('department')
                 ->get();
 
-            $shifts = ShiftResource::collection(
+            $shiftsCollection = ShiftResource::collection(
                 $scheduleShiftService->apply($departmentShifts)
             );
+
+            // Inyectar shifts del sistema
+            $shifts = collect($shiftsCollection)
+                ->prepend(SystemShift::FREE->getData())
+                ->prepend(SystemShift::VACATIONS->getData());
+
         }
 
         // Agrupación por Subdepartamento y Retorno
@@ -302,8 +309,8 @@ class SchedulePlanningController extends Controller
 
                 $shiftId = (int) $shift['id'];
 
-                // Ignorar días Libres (0) o Vacaciones (-1)
-                if ($shiftId === 0 || $shiftId === -1) {
+                // Ignorar System Shifts
+                if (isset($shift['isSystemShift']) && $shift['isSystemShift'] === true) {
                     continue;
                 }
 

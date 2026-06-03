@@ -14,7 +14,8 @@ class EmployeeSeeder extends Seeder
      */
     public function run(): void
     {
-        $today = Carbon::now()->startOfDay();
+        $startMonth = Carbon::now()->startOfMonth();
+
         $first_employee = Employee::firstOrCreate(
             ['ci' => '21378987'], 
             [
@@ -44,7 +45,7 @@ class EmployeeSeeder extends Seeder
                 'use_hid_card' => true,
                 'use_locker' => true,
                 'use_transport' => true,
-                'retire_date' => $today,
+                'retire_date' => $startMonth,
                 
             ]
         );
