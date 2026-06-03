@@ -271,6 +271,7 @@ class SchedulePlanningController extends Controller
             // Inyectar shifts del sistema
             $shifts = collect($shiftsCollection)
                 ->prepend(SystemShift::FREE->getData())
+                ->prepend(SystemShift::RETIREMENT->getData())
                 ->prepend(SystemShift::VACATIONS->getData());
 
         }
