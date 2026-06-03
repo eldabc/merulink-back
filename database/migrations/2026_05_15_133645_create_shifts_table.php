@@ -26,7 +26,6 @@ return new class extends Migration
             $table->string('active_period_unit_time');
             $table->string('total_period_time');
             $table->string('total_period_unit_time');
-
             $table->string('allow_exit');
             $table->string('allow_re_scanned');
             $table->string('available');

@@ -163,7 +163,7 @@ class SchedulePlanningController extends Controller
         $periodEnd = Carbon::parse($end)->startOfDay();
         $isClosedInDB = $planning && $planning->status === 'closed';
 
-        // Valida si fecha actual es mayor que el fin de la quincena
+        // Valida si fecha actual es mayor que el fin de quincena
         $isExpiredByDate = $today->greaterThan($periodEnd);
 
         // El periodo se trata como cerrado si se cumple cualquiera de las dos
@@ -186,7 +186,7 @@ class SchedulePlanningController extends Controller
                     $q->whereBetween('date', [$start, $end]);
                 });
             } else {
-                // HORARIO ABIERTO/NUEVO: El empleado califica si está activo en el sistema,
+                // ABIERTO/NUEVO: Empleado califica si está activo en el sistema,
                 // O si está inactivo PERO su fecha de retiro ocurrió durante la quincena
                 $mainGroup->where(function ($q) use ($start) {
                     $q->where('status', true)

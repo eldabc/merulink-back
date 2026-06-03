@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\CarbonPeriod;
 use Carbon\Carbon;
+use App\Enums\SystemShift;
 
 class EmployeeFilterScheduleResource extends JsonResource
 {
@@ -32,14 +33,24 @@ class EmployeeFilterScheduleResource extends JsonResource
             $vacationStart = $vacation ? \Carbon\Carbon::parse($vacation->start)->startOfDay() : null;
             $vacationEnd = $vacation ? \Carbon\Carbon::parse($vacation->end)->startOfDay() : null;
 
+            // Fecha de retiro si el empleado la tiene
+            $retireDate = $this->retire_date ? \Carbon\Carbon::parse($this->retire_date)->startOfDay() : null;
+
             // Crea el periodo de fechas quincenales
             $period = \Carbon\CarbonPeriod::create($start, $end);
 
             foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
 
-                // CASO 1: Si la fecha esta registrada
-                if ($indexedSchedules->has($dateString)) {
+                // PRIORIDAD 1: ¿El empleado ya se había retirado en esta fecha?
+                if ($retireDate && $date->greaterThan($retireDate)) {
+
+                    $datesMap[$dateString] = [
+                        'shift' => SystemShift::RETIREMENT->getData()
+                    ];
+                }
+                // CASO 2: Si la fecha está registrada
+                elseif ($indexedSchedules->has($dateString)) {
                     $schedule = $indexedSchedules->get($dateString);
                     $datesMap[$dateString] = [
                         'shift' => [
@@ -54,34 +65,17 @@ class EmployeeFilterScheduleResource extends JsonResource
                         ]
                     ];
                 } 
-                // CASO 2: Rango dentro de sus Vacaciones
+                // CASO 3: Rango dentro de sus Vacaciones
                 elseif ($vacation && $date->between($vacationStart, $vacationEnd)) {
+
                     $datesMap[$dateString] = [
-                        'shift' => [
-                            'id' => -1,
-                            'code' => 'VAC',
-                            'letterShift' => 'VAC',
-                            'color' => '#d0d5d6', 
-                            'nightShift' => null,
-                            'typeShift' => null,
-                            'checkInTime' => null,
-                            'checkOutTime' => null,
-                        ]
+                        'shift' => SystemShift::VACATIONS->getData()
                     ];
-
-                } else { // CASO 3: Optimización de BD - Día Libre automático
-
+                } 
+                // CASO 4: Día Libre automático
+                else { 
                     $datesMap[$dateString] = [
-                        'shift' => [
-                            'id' => 0,
-                            'code' => 'L',
-                            'letterShift' => 'L',
-                            'color' => '#535759',
-                            'nightShift' => null,
-                            'typeShift' => null,
-                            'checkInTime' => null,
-                            'checkOutTime' => null,
-                        ]
+                        'shift' => SystemShift::FREE->getData()
                     ];
                 }
             }
@@ -107,10 +101,11 @@ class EmployeeFilterScheduleResource extends JsonResource
                 'name' => $this->position->name
             ],
             'status' => $this->status,
+            'retireDate' => $this->retire_date,
             $this->mergeWhen($hasVacation, [
                 'vacation' => new VacationResource($this->vacations->first())
             ]),
-            'dates' => $datesMap, // Retorna la estructura para tu Ag-Grid
+            'dates' => $datesMap,
         ];
     }
 }
