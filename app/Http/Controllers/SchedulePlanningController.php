@@ -284,6 +284,7 @@ class SchedulePlanningController extends Controller
         return response()->json([
             'id'           => $planning?->id,
             'status'       => $planning?->status,
+            'observations' => $planning?->observations,
             'isClosed'     => $isClosed,
             'departmentId' => $planning?->department_id,
             'start'        => $planning?->start ?? $start, // Fallback por si está creando nuevo
