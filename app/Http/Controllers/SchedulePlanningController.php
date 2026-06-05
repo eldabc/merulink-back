@@ -28,6 +28,7 @@ class SchedulePlanningController extends Controller
     public function index(Request $request)
     {
         $query = SchedulePlanning::with(['department', 'schedules', 'schedules.employee']); 
+        $currentYear = Carbon::now()->year;
         
         // Filtro
         if ($request->filled('start') && $request->filled('end')) {
@@ -40,7 +41,11 @@ class SchedulePlanningController extends Controller
             $query->where('department_id', $request->departmentId);
         }
 
-        // $query->orderBy('date', 'asc');
+        if ($request->filled('monthId')) {
+            $query->where('month_number', $request->input('monthId'));
+        }
+        
+        $query->whereYear('start', $currentYear)->orderBy('start', 'asc');
         $schedules = $query->get();
 
         return SchedulePlanningResource::collection($schedules);
