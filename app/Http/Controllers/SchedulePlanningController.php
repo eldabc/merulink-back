@@ -432,22 +432,22 @@ class SchedulePlanningController extends Controller
         $events = $eventToScheduleService->getHighlightedEventsForPeriod($start, $end);
         
         // Buscar cumpleaños que crucen con la quincena
-        $startMonthDay = Carbon::parse($start)->format('m-d');
-        $endMonthDay = Carbon::parse($end)->format('m-d');
+        // $startMonthDay = Carbon::parse($start)->format('m-d');
+        // $endMonthDay = Carbon::parse($end)->format('m-d');
 
-        $birthdays = $employees->filter(function ($emp) use ($startMonthDay, $endMonthDay) {
-            if (!$emp->birthdate) return false;
+        // $birthdays = $employees->filter(function ($emp) use ($startMonthDay, $endMonthDay) {
+        //     if (!$emp->birthdate) return false;
             
-            $currentMonthDay = Carbon::parse($emp->birthdate)->format('m-d');
-            // Valida si el MM-DD de cumpleaños está dentro de la quincena
-            return $currentMonthDay >= $startMonthDay && $currentMonthDay <= $endMonthDay;
-        })->map(function ($emp) {
-            return [
-                'id' => $emp->id,
-                'day_match' => Carbon::parse($emp->birthdate)->format('m-d'),
-                'title'  => trim("Cumpleaños {$emp->first_name} {$emp->last_name}"),
-            ];
-        });
+        //     $currentMonthDay = Carbon::parse($emp->birthdate)->format('m-d');
+        //     // Valida si el MM-DD de cumpleaños está dentro de la quincena
+        //     return $currentMonthDay >= $startMonthDay && $currentMonthDay <= $endMonthDay;
+        // })->map(function ($emp) {
+        //     return [
+        //         'id' => $emp->id,
+        //         'day_match' => Carbon::parse($emp->birthdate)->format('m-d'),
+        //         'title'  => trim("Cumpleaños {$emp->first_name} {$emp->last_name}"),
+        //     ];
+        // });
   
         return response()->json([
             'id'           => $planning?->id,
@@ -459,9 +459,9 @@ class SchedulePlanningController extends Controller
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
             'shifts'       => $shifts,
-            'employees'    => $groupedEmployees->map(function ($group) use ($events, $birthdays) {
-                return $group->map(function ($employee) use ($events, $birthdays) {
-                    return new EmployeeFilterScheduleResource($employee, $events, $birthdays);
+            'employees'    => $groupedEmployees->map(function ($group) use ($events) { //, $birthdays
+                return $group->map(function ($employee) use ($events) { //, $birthdays
+                    return new EmployeeFilterScheduleResource($employee, $events); //, $birthdays
                 });
             }),
         ]);

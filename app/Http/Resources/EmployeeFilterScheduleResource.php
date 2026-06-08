@@ -11,14 +11,14 @@ use App\Enums\SystemShift;
 class EmployeeFilterScheduleResource extends JsonResource
 {
     protected $events;
-    protected $globalBirthdays;
+    // protected $globalBirthdays;
 
     // Sobrescribir el constructor para poder recibir los eventos y cumpleaños
-    public function __construct($resource, $events = null, $globalBirthdays = null)
+    public function __construct($resource, $events = null) //, $globalBirthdays = null
     {
         parent::__construct($resource);
         $this->events = $events ?? collect();
-        $this->globalBirthdays = $globalBirthdays ?? collect();
+        // $this->globalBirthdays = $globalBirthdays ?? collect();
     }
 
     /**
@@ -35,6 +35,7 @@ class EmployeeFilterScheduleResource extends JsonResource
         $globalEvents = $this->events;
       
         $datesMap = [];
+        $dayBirthdays = [];
 
         if (!empty($start) && !empty($end)) {
             
@@ -98,18 +99,28 @@ class EmployeeFilterScheduleResource extends JsonResource
                 })->values()->all(); // Convertir en un array plano indexado
 
 
-                $currentMonthDay = $date->format('m-d');
+                $currentDateMonthDay = $date->format('m-d');
+                $startMonthDay = Carbon::parse($start)->format('m-d');
+                $endMonthDay = Carbon::parse($end)->format('m-d');
+                $currentMonthDay = Carbon::parse($this->birthdate)->format('m-d');
+            
+                if ($currentMonthDay && $currentMonthDay === $currentDateMonthDay) {
+                    // Valida si el MM-DD de cumpleaños está dentro de la quincena
+                    $dayBirthdays = [
+                       [ 'title' => trim("Cumpleaños {$this->first_name} {$this->last_name}")],
+                    ];
+                } else $dayBirthdays = [];
 
-                $dayBirthdays = collect($this->globalBirthdays)
-                    ->where('day_match', $currentMonthDay)
-                    ->where('id', $this->id)
-                    ->map(function ($birthday) {
-                        return [
-                            'title' => $birthday['title'],
-                        ];
-                    })
-                    ->values()
-                    ->all();
+                // $dayBirthdays = collect($this->globalBirthdays)
+                //     ->where('day_match', $currentMonthDay)
+                //     ->where('id', $this->id)
+                //     ->map(function ($birthday) {
+                //         return [
+                //             'title' => $birthday['title'],
+                //         ];
+                //     })
+                //     ->values()
+                //     ->all();
                 
                 $allDayEvents = array_merge($dayEvents, $dayBirthdays);
 
