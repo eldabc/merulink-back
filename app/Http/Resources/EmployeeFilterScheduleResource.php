@@ -11,12 +11,14 @@ use App\Enums\SystemShift;
 class EmployeeFilterScheduleResource extends JsonResource
 {
     protected $events;
+    protected $globalBirthdays;
 
-    // Sobrescribir el constructor para poder recibir los eventos
-    public function __construct($resource, $events = null)
+    // Sobrescribir el constructor para poder recibir los eventos y cumpleaños
+    public function __construct($resource, $events = null, $globalBirthdays = null)
     {
         parent::__construct($resource);
         $this->events = $events ?? collect();
+        $this->globalBirthdays = $globalBirthdays ?? collect();
     }
 
     /**
@@ -31,7 +33,7 @@ class EmployeeFilterScheduleResource extends JsonResource
         $hasVacation = $this->relationLoaded('vacations') && $this->vacations->isNotEmpty();
 
         $globalEvents = $this->events;
-
+      
         $datesMap = [];
 
         if (!empty($start) && !empty($end)) {
@@ -91,14 +93,30 @@ class EmployeeFilterScheduleResource extends JsonResource
                     return $dateString >= $eventStartDay && $dateString <= $eventEndDay;
                 })->map(function ($event) {
                     return [
-                        'title'       => $event['title'],
+                        'title' => $event['title'],
                     ];
                 })->values()->all(); // Convertir en un array plano indexado
+
+
+                $currentMonthDay = $date->format('m-d');
+
+                $dayBirthdays = collect($this->globalBirthdays)
+                    ->where('day_match', $currentMonthDay)
+                    ->where('id', $this->id)
+                    ->map(function ($birthday) {
+                        return [
+                            'title' => $birthday['title'],
+                        ];
+                    })
+                    ->values()
+                    ->all();
+                
+                $allDayEvents = array_merge($dayEvents, $dayBirthdays);
 
                 // Estructura final del día
                 $datesMap[$dateString] = [
                     'shift' => $shiftData,
-                    'events' => $dayEvents
+                    'events' => $allDayEvents,
                 ];
             }
         }
