@@ -83,22 +83,22 @@ class EmployeeFilterScheduleResource extends JsonResource
                     $shiftData = SystemShift::FREE->getData();
                 }
 
-                // Busca si hay evento con coloring_day activo para ESTA fecha
-                $dayEvent = collect($globalEvents)->first(function ($event) use ($currentDate) {
-                    $eventStart = \Carbon\Carbon::parse($event['start'])->startOfDay();
-                    $eventEnd = \Carbon\Carbon::parse($event['end'])->startOfDay();
-                    return $currentDate->between($eventStart, $eventEnd);
-                });
+                // Busca si hay eventos con coloring_day activo para ESTA fecha
+                $dayEvents = collect($globalEvents)->filter(function ($event) use ($dateString) {
+                    $eventStartDay = Carbon::parse($event['start'])->format('Y-m-d');
+                    $eventEndDay = Carbon::parse($event['end'])->format('Y-m-d');
+
+                    return $dateString >= $eventStartDay && $dateString <= $eventEndDay;
+                })->map(function ($event) {
+                    return [
+                        'title'       => $event['title'],
+                    ];
+                })->values()->all(); // Convertir en un array plano indexado
 
                 // Estructura final del día
                 $datesMap[$dateString] = [
                     'shift' => $shiftData,
-                    'event' => $dayEvent ? [
-                        'title' => $dayEvent['title'],
-                        'coloringDay' => $dayEvent['coloring_day'],
-                        'start' => $dayEvent['start'],
-                        'end' => $dayEvent['end']
-                    ] : null
+                    'events' => $dayEvents
                 ];
             }
         }
