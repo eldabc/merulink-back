@@ -10,7 +10,7 @@ class ShiftVisualIdentityService
 {
     private array $palette = [
         0 => ['code' => 'A', 'color' => '#FBBD08'],
-        1 => ['code' => 'B', 'color' => '#ef4444'],
+        1 => ['code' => 'B', 'color' => '#447cef'],
         2 => ['code' => 'C', 'color' => '#10b981'],
         3 => ['code' => 'D', 'color' => '#8b5cf6'],
     ];

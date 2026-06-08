@@ -19,6 +19,7 @@ use App\Http\Requests\SchedulePlanningRequest;
 use App\Enums\SystemShift;
 
 use App\Services\ShiftVisualIdentityService;
+use App\Services\EventToScheduleService;
 
 class SchedulePlanningController extends Controller
 {
@@ -289,7 +290,11 @@ class SchedulePlanningController extends Controller
     /**
      * Trae los empleados para schedule
      */
-    public function filterSchedule(Request $request, ShiftVisualIdentityService $scheduleShiftService)
+    public function filterSchedule(
+        Request $request, 
+        ShiftVisualIdentityService $scheduleShiftService,
+        EventToScheduleService $eventToScheduleService
+    )
     {
         if (!$request->filled(['departmentId', 'start', 'end'])) {
             return response()->json([
@@ -313,7 +318,7 @@ class SchedulePlanningController extends Controller
         // Valida si fecha actual es mayor que el fin de quincena
         $isExpiredByDate = $today->greaterThan($periodEnd);
 
-        // El periodo se trata como cerrado si se cumple cualquiera de las dos
+        // Se trata como cerrado si se cumple cualquiera de las dos
         $isClosed = $isClosedInDB || $isExpiredByDate;
 
         $query = Employee::query();
@@ -324,7 +329,6 @@ class SchedulePlanningController extends Controller
         });
 
         // ESTRATEGIA DE EMPLEADOS HISTÓRICOS VS ACTIVOS O RETIROS A MITAD DE QUINCENA
-        // Agrupar las condiciones dinámicas de estatus / históricos
         $query->where(function ($mainGroup) use ($isClosed, $start, $end) {
 
             if ($isClosed) {
@@ -343,8 +347,6 @@ class SchedulePlanningController extends Controller
                             ->where('retire_date', '>=', $start);
                     });
                 });
-
-                
             }
             $mainGroup->orWhereHas('vacations', function ($v) use ($start, $end) {
                 $v->where(function ($vQuery) use ($start, $end) {
@@ -352,7 +354,7 @@ class SchedulePlanningController extends Controller
                         ->orWhereBetween('end', [$start, $end])
                         ->orWhere(function ($deep) use ($start, $end) {
                             $deep->where('start', '<=', $start)
-                                    ->where('end', '>=', $end);
+                                 ->where('end', '>=', $end);
                         });
                 });
             });
@@ -419,13 +421,15 @@ class SchedulePlanningController extends Controller
                 ->prepend(SystemShift::FREE->getData())
                 ->prepend(SystemShift::RETIREMENT->getData())
                 ->prepend(SystemShift::VACATIONS->getData());
-
         }
 
-        // Agrupación por Subdepartamento y Retorno
+        // Agrupación por Subdepartamento
         $groupedEmployees = $employees->groupBy(function ($employee) {
             return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
         });
+
+        // Buscar eventos que crucen con la quincena y tengan coloring_day
+        $events = $eventToScheduleService->getHighlightedEventsForPeriod($start, $end);
 
         return response()->json([
             'id'           => $planning?->id,
@@ -433,12 +437,14 @@ class SchedulePlanningController extends Controller
             'observations' => $planning?->observations,
             'isClosed'     => $isClosed,
             'departmentId' => $planning?->department_id,
-            'start'        => $planning?->start ?? $start, // Fallback por si está creando nuevo
-            'end'          => $planning?->end ?? $end,     // Fallback por si está creando nuevo
+            'start'        => $planning?->start ?? $start,
+            'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
             'shifts'       => $shifts,
-            'employees'    => $groupedEmployees->map(function ($group) {
-                return EmployeeFilterScheduleResource::collection($group);
+            'employees'    => $groupedEmployees->map(function ($group) use ($events) {
+                return $group->map(function ($employee) use ($events) {
+                    return new EmployeeFilterScheduleResource($employee, $events);
+                });
             }),
         ]);
     }

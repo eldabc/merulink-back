@@ -10,6 +10,15 @@ use App\Enums\SystemShift;
 
 class EmployeeFilterScheduleResource extends JsonResource
 {
+    protected $events;
+
+    // Sobrescribir el constructor para poder recibir los eventos
+    public function __construct($resource, $events = null)
+    {
+        parent::__construct($resource);
+        $this->events = $events ?? collect();
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -20,6 +29,8 @@ class EmployeeFilterScheduleResource extends JsonResource
         $start = $request->input('start');
         $end = $request->input('end');
         $hasVacation = $this->relationLoaded('vacations') && $this->vacations->isNotEmpty();
+
+        $globalEvents = $this->events;
 
         $datesMap = [];
 
@@ -41,44 +52,54 @@ class EmployeeFilterScheduleResource extends JsonResource
 
             foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
+                $currentDate = $date->startOfDay();
+
+                $shiftData = null;
 
                 // PRIORIDAD 1: ¿El empleado ya se había retirado en esta fecha?
-                if ($retireDate && $date->greaterThan($retireDate)) {
-
-                    $datesMap[$dateString] = [
-                        'shift' => SystemShift::RETIREMENT->getData()
-                    ];
+                if ($retireDate && $currentDate->greaterThan($retireDate)) {
+                    $shiftData = SystemShift::RETIREMENT->getData();
                 }
                 // CASO 2: Si la fecha está registrada
                 elseif ($indexedSchedules->has($dateString)) {
-
                     $schedule = $indexedSchedules->get($dateString);
-                    $datesMap[$dateString] = [
-                        'shift' => [
-                            'id' => $schedule->shift_id,
-                            'code' => $schedule->code,
-                            'letterShift' => $schedule->letter_shift,
-                            'color' => $schedule->color,
-                            'nightShift' => $schedule->night_shift,
-                            'typeShift' => $schedule->type_shift,
-                            'checkInTime' => $schedule->check_in_time,
-                            'checkOutTime' => $schedule->check_out_time,
-                        ]
+                    $shiftData = [
+                        'id' => $schedule->shift_id,
+                        'code' => $schedule->code,
+                        'letterShift' => $schedule->letter_shift,
+                        'color' => $schedule->color,
+                        'nightShift' => $schedule->night_shift,
+                        'typeShift' => $schedule->type_shift,
+                        'checkInTime' => $schedule->check_in_time,
+                        'checkOutTime' => $schedule->check_out_time,
                     ];
-
                 } 
                 // CASO 3: Rango dentro de sus Vacaciones
-                elseif ($vacation && $date->between($vacationStart, $vacationEnd)) {
-                    $datesMap[$dateString] = [
-                        'shift' => SystemShift::VACATIONS->getData()
-                    ];
+                elseif ($vacation && $currentDate->between($vacationStart, $vacationEnd)) {
+                    $shiftData = SystemShift::VACATIONS->getData();
                 } 
                 // CASO 4: Día Libre automático
                 else { 
-                    $datesMap[$dateString] = [
-                        'shift' => SystemShift::FREE->getData()
-                    ];
+                    $shiftData = SystemShift::FREE->getData();
                 }
+
+                // Busca si hay evento con coloring_day activo para ESTA fecha
+                $dayEvent = collect($globalEvents)->first(function ($event) use ($currentDate) {
+                    $eventStart = \Carbon\Carbon::parse($event['start'])->startOfDay();
+                    $eventEnd = \Carbon\Carbon::parse($event['end'])->startOfDay();
+                    return $currentDate->between($eventStart, $eventEnd);
+                });
+
+                // Estructura final del día
+                $datesMap[$dateString] = [
+                    'shift' => $shiftData,
+                    'event' => $dayEvent ? [
+                        'title' => $dayEvent['title'],
+                        'coloringDay' => $dayEvent['coloring_day'],
+                        'start' => $dayEvent['start'],
+                        'end' => $dayEvent['end']
+                    ] : null
+                ];
             }
         }
 
