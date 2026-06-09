@@ -101,7 +101,7 @@ class SchedulePlanningController extends Controller
         $end = $schedulePlanning->end;
         $departmentId = $schedulePlanning->department_id;
 
-        // 🚀 TRUCO DE REUTILIZACIÓN: Forzamos los parámetros en el Request en tiempo de ejecución.
+        // Forzamos los parámetros en el Request en tiempo de ejecución.
         // Esto hace que el Resource lea 'start' y 'end' sin modificarle una sola línea de código.
         $request->merge([
             'start' => $start,
@@ -430,24 +430,6 @@ class SchedulePlanningController extends Controller
 
         // Buscar eventos que crucen con la quincena y tengan coloring_day
         $events = $eventToScheduleService->getHighlightedEventsForPeriod($start, $end);
-        
-        // Buscar cumpleaños que crucen con la quincena
-        // $startMonthDay = Carbon::parse($start)->format('m-d');
-        // $endMonthDay = Carbon::parse($end)->format('m-d');
-
-        // $birthdays = $employees->filter(function ($emp) use ($startMonthDay, $endMonthDay) {
-        //     if (!$emp->birthdate) return false;
-            
-        //     $currentMonthDay = Carbon::parse($emp->birthdate)->format('m-d');
-        //     // Valida si el MM-DD de cumpleaños está dentro de la quincena
-        //     return $currentMonthDay >= $startMonthDay && $currentMonthDay <= $endMonthDay;
-        // })->map(function ($emp) {
-        //     return [
-        //         'id' => $emp->id,
-        //         'day_match' => Carbon::parse($emp->birthdate)->format('m-d'),
-        //         'title'  => trim("Cumpleaños {$emp->first_name} {$emp->last_name}"),
-        //     ];
-        // });
   
         return response()->json([
             'id'           => $planning?->id,
@@ -459,9 +441,9 @@ class SchedulePlanningController extends Controller
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
             'shifts'       => $shifts,
-            'employees'    => $groupedEmployees->map(function ($group) use ($events) { //, $birthdays
-                return $group->map(function ($employee) use ($events) { //, $birthdays
-                    return new EmployeeFilterScheduleResource($employee, $events); //, $birthdays
+            'employees'    => $groupedEmployees->map(function ($group) use ($events) {
+                return $group->map(function ($employee) use ($events) {
+                    return new EmployeeFilterScheduleResource($employee, $events);
                 });
             }),
         ]);

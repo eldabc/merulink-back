@@ -104,23 +104,12 @@ class EmployeeFilterScheduleResource extends JsonResource
                 $endMonthDay = Carbon::parse($end)->format('m-d');
                 $currentMonthDay = Carbon::parse($this->birthdate)->format('m-d');
             
+                // Si MM-DD de cumpleaños está dentro de la quincena
                 if ($currentMonthDay && $currentMonthDay === $currentDateMonthDay) {
-                    // Valida si el MM-DD de cumpleaños está dentro de la quincena
                     $dayBirthdays = [
                        [ 'title' => trim("Cumpleaños {$this->first_name} {$this->last_name}")],
                     ];
                 } else $dayBirthdays = [];
-
-                // $dayBirthdays = collect($this->globalBirthdays)
-                //     ->where('day_match', $currentMonthDay)
-                //     ->where('id', $this->id)
-                //     ->map(function ($birthday) {
-                //         return [
-                //             'title' => $birthday['title'],
-                //         ];
-                //     })
-                //     ->values()
-                //     ->all();
                 
                 $allDayEvents = array_merge($dayEvents, $dayBirthdays);
 
