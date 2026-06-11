@@ -382,7 +382,7 @@ class SchedulePlanningController extends Controller
 
         if ($isClosed) {
             $shifts = Schedule::query()
-                ->where('schedule_planning_id', $planning->id)
+                ->where('schedule_planning_id', $planning?->id)
                 ->select([
                     'shift_id as id',
                     'code',
@@ -416,11 +416,8 @@ class SchedulePlanningController extends Controller
                 $scheduleShiftService->apply($departmentShifts)
             );
 
-            // Inyectar shifts del sistema
-            $shifts = collect($shiftsCollection)
-                ->prepend(SystemShift::FREE->getData())
-                ->prepend(SystemShift::RETIREMENT->getData())
-                ->prepend(SystemShift::VACATIONS->getData());
+            $shifts = $shiftsCollection;
+
         }
 
         // Agrupación por Subdepartamento
@@ -440,10 +437,10 @@ class SchedulePlanningController extends Controller
             'start'        => $planning?->start ?? $start,
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
-            'shifts'       => $shifts,
-            'employees'    => $groupedEmployees->map(function ($group) use ($events) {
-                return $group->map(function ($employee) use ($events) {
-                    return new EmployeeFilterScheduleResource($employee, $events);
+            'shifts'       => collect($shifts)->prepend(SystemShift::FREE->getData()), // Inyectar shift del sistema
+            'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed) {
+                return $group->map(function ($employee) use ($events, $shifts, $isClosed) {
+                    return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts);
                 });
             }),
         ]);

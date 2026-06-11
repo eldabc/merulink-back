@@ -11,16 +11,16 @@ use App\Enums\SystemShift;
 class EmployeeFilterScheduleResource extends JsonResource
 {
     protected $events;
-    // protected $globalBirthdays;
+    protected $isClosed;
+    protected $liveShifts;
 
-    // Sobrescribir el constructor para poder recibir los eventos y cumpleaños
-    public function __construct($resource, $events = null) //, $globalBirthdays = null
+    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null)
     {
         parent::__construct($resource);
         $this->events = $events ?? collect();
-        // $this->globalBirthdays = $globalBirthdays ?? collect();
+        $this->isClosed = $isClosed;
+        $this->liveShifts = $liveShifts ?? collect(); 
     }
-
     /**
      * Transform the resource into an array.
      *
@@ -31,11 +31,9 @@ class EmployeeFilterScheduleResource extends JsonResource
         $start = $request->input('start');
         $end = $request->input('end');
         $hasVacation = $this->relationLoaded('vacations') && $this->vacations->isNotEmpty();
-
         $globalEvents = $this->events;
       
         $datesMap = [];
-        $dayBirthdays = [];
 
         if (!empty($start) && !empty($end)) {
             
@@ -44,44 +42,68 @@ class EmployeeFilterScheduleResource extends JsonResource
             
             // Trae las vacaciones del empleado
             $vacation = $hasVacation ? $this->vacations->first() : null;
-            $vacationStart = $vacation ? \Carbon\Carbon::parse($vacation->start)->startOfDay() : null;
-            $vacationEnd = $vacation ? \Carbon\Carbon::parse($vacation->end)->startOfDay() : null;
+            $vacationStart = $vacation ? Carbon::parse($vacation->start)->startOfDay() : null;
+            $vacationEnd = $vacation ? Carbon::parse($vacation->end)->startOfDay() : null;
 
             // Fecha de retiro si el empleado la tiene
-            $retireDate = $this->retire_date ? \Carbon\Carbon::parse($this->retire_date)->startOfDay() : null;
+            $retireDate = $this->retire_date ? Carbon::parse($this->retire_date)->startOfDay() : null;
 
             // Crea el periodo de fechas quincenales
-            $period = \Carbon\CarbonPeriod::create($start, $end);
+            $period = CarbonPeriod::create($start, $end);
 
             foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
                 $currentDate = $date->startOfDay();
-
                 $shiftData = null;
 
-                // PRIORIDAD 1: ¿El empleado ya se había retirado en esta fecha?
+                // PRIORIDAD 1: Retiro
                 if ($retireDate && $currentDate->greaterThan($retireDate)) {
                     $shiftData = SystemShift::RETIREMENT->getData();
                 }
                 // CASO 2: Si la fecha está registrada
                 elseif ($indexedSchedules->has($dateString)) {
                     $schedule = $indexedSchedules->get($dateString);
-                    $shiftData = [
-                        'id' => $schedule->shift_id,
-                        'code' => $schedule->code,
-                        'letterShift' => $schedule->letter_shift,
-                        'color' => $schedule->color,
-                        'nightShift' => $schedule->night_shift,
-                        'typeShift' => $schedule->type_shift,
-                        'checkInTime' => $schedule->check_in_time,
-                        'checkOutTime' => $schedule->check_out_time,
-                    ];
-                } 
-                // CASO 3: Rango dentro de sus Vacaciones
+                    
+                    // COMPORTAMIENTO LIVE: Si está ABIERTA, busca en la colección
+                    if (!$this->isClosed && $this->liveShifts->isNotEmpty()) {
+                        
+                        // Buscar el turno en schedule
+                        $liveShift = $this->liveShifts->first(function($shift) use ($schedule) {
+                            return $shift->id == $schedule->shift_id;
+                        });
+
+                        if ($liveShift) {
+                            $shiftData = [
+                                'id'          => $liveShift->id,
+                                'code'        => $liveShift->code,
+                                'letterShift' => $liveShift->letter_shift, //$liveShift->letterShift ?? 
+                                'color'       => $liveShift->color,
+                                'nightShift'  => $liveShift->night_shift, //$liveShift->nightShift ?? 
+                                'typeShift'   => $liveShift->type_shift, //$liveShift->typeShift ?? 
+                                'checkInTime' => $liveShift->check_in_time, //$liveShift->checkInTime ?? 
+                                'checkOutTime'=> $liveShift->check_out_time, //$liveShift->checkOutTime ?? 
+                            ];
+                        }
+                    }
+                    // Si está CERRADA asigna data de schedule
+                    else {
+                        $shiftData = [
+                            'id' => $schedule->shift_id,
+                            'code' => $schedule->code,
+                            'letterShift' => $schedule->letter_shift,
+                            'color' => $schedule->color,
+                            'nightShift' => $schedule->night_shift,
+                            'typeShift' => $schedule->type_shift,
+                            'checkInTime' => $schedule->check_in_time,
+                            'checkOutTime' => $schedule->check_out_time,
+                        ];
+                    }
+                }
+                // CASO 3: Vacaciones
                 elseif ($vacation && $currentDate->between($vacationStart, $vacationEnd)) {
                     $shiftData = SystemShift::VACATIONS->getData();
                 } 
-                // CASO 4: Día Libre automático
+                // CASO 4: Día Libre
                 else { 
                     $shiftData = SystemShift::FREE->getData();
                 }
@@ -90,25 +112,15 @@ class EmployeeFilterScheduleResource extends JsonResource
                 $dayEvents = collect($globalEvents)->filter(function ($event) use ($dateString) {
                     $eventStartDay = Carbon::parse($event['start'])->format('Y-m-d');
                     $eventEndDay = Carbon::parse($event['end'])->format('Y-m-d');
-
                     return $dateString >= $eventStartDay && $dateString <= $eventEndDay;
-                })->map(function ($event) {
-                    return [
-                        'title' => $event['title'],
-                    ];
-                })->values()->all(); // Convertir en un array plano indexado
-
+                })->map(function ($event) { return ['title' => $event['title']]; })->values()->all();
 
                 $currentDateMonthDay = $date->format('m-d');
-                $startMonthDay = Carbon::parse($start)->format('m-d');
-                $endMonthDay = Carbon::parse($end)->format('m-d');
-                $currentMonthDay = Carbon::parse($this->birthdate)->format('m-d');
+                $currentMonthDay = $this->birthdate ? Carbon::parse($this->birthdate)->format('m-d') : null;
             
                 // Si MM-DD de cumpleaños está dentro de la quincena
                 if ($currentMonthDay && $currentMonthDay === $currentDateMonthDay) {
-                    $dayBirthdays = [
-                       [ 'title' => trim("Cumpleaños {$this->first_name} {$this->last_name}")],
-                    ];
+                    $dayBirthdays = [[ 'title' => trim("Cumpleaños {$this->first_name} {$this->last_name}")]];
                 } else $dayBirthdays = [];
                 
                 $allDayEvents = array_merge($dayEvents, $dayBirthdays);
