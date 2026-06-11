@@ -284,7 +284,28 @@ class SchedulePlanningController extends Controller
      */
     public function destroy(SchedulePlanning $schedulePlanning)
     {
-        //
+        if ($schedulePlanning->status === 'closed') {
+            return response()->json([
+                'message' => 'No se puede eliminar: este horario tiene estado cerrado.'
+            ], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($schedulePlanning) {            
+                $schedulePlanning->schedules()->delete();
+                $schedulePlanning->delete();
+            });
+
+            return response()->json([
+                'message' => "El horario ha sido eliminado correctamente."
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al intentar eliminar el horario.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
