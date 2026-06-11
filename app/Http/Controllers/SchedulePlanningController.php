@@ -25,29 +25,36 @@ class SchedulePlanningController extends Controller
 {
     /**
      * Display a listing of the resource.
-     */
+    */
     public function index(Request $request)
     {
         $query = SchedulePlanning::with(['department', 'schedules', 'schedules.employee']); 
-        $currentYear = $request->filled('year') ? $request->input('year') : Carbon::now()->year;
         
-        // Filtro
         if ($request->filled('start') && $request->filled('end')) {
-            $query->where('start', $request->start);
-            $query->where('end', $request->end);
-
+            $query->where('start', $request->start)
+                  ->where('end', $request->end);
         }
 
         if ($request->filled('departmentId')) {
             $query->where('department_id', $request->departmentId);
         }
 
+        // FILTRADO DE TIEMPO
         if ($request->filled('monthId')) {
-            $query->where('month_number', $request->input('monthId'));
+
+            $currentYear = $request->filled('year') ? $request->input('year') : Carbon::now()->year;            
+            $query->where('month_number', $request->input('monthId'))
+                  ->whereYear('start', $currentYear);
+        } else {
+
+            $dateEnd = Carbon::now()->endOfMonth()->format('Y-m-d'); 
+            $dateStart = Carbon::now()->subMonths(2)->startOfMonth()->format('Y-m-d');
+
+            // Filtro por el rango de fechas calculado
+            $query->whereBetween('start', [$dateStart, $dateEnd]);
         }
         
-        $query->whereYear('start', $currentYear)->orderBy('start', 'asc');
-        $schedules = $query->get();
+        $schedules = $query->orderBy('start', 'asc')->get();
 
         return SchedulePlanningResource::collection($schedules);
     }
