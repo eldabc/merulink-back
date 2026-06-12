@@ -13,13 +13,15 @@ class EmployeeFilterScheduleResource extends JsonResource
     protected $events;
     protected $isClosed;
     protected $liveShifts;
+    protected $rotativeHolidays;
 
-    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null)
+    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null, $rotativeHolidays = null)
     {
         parent::__construct($resource);
         $this->events = $events ?? collect();
         $this->isClosed = $isClosed;
-        $this->liveShifts = $liveShifts ?? collect(); 
+        $this->liveShifts = $liveShifts ?? collect();
+        $this->rotativeHolidays = $rotativeHolidays ?? collect();
     }
     /**
      * Transform the resource into an array.
@@ -34,6 +36,19 @@ class EmployeeFilterScheduleResource extends JsonResource
         $globalEvents = $this->events;
       
         $datesMap = [];
+
+        // Feriados fijos Venezuela
+        $fixedHolidays = [
+            '01-01' => 'Año Nuevo',
+            '05-01' => 'Día del Trabajador',
+            '06-24' => 'Batalla de Carabobo',
+            '07-05' => 'Día de la Independencia',
+            '07-24' => 'Natalicio de Simón Bolívar',
+            '10-12' => 'Día de la Resistencia Indígena',
+            '12-24' => 'Víspera de Navidad',
+            '12-25' => 'Navidad',
+            '12-31' => 'Fin de Año',
+        ];
 
         if (!empty($start) && !empty($end)) {
             
@@ -54,8 +69,8 @@ class EmployeeFilterScheduleResource extends JsonResource
             foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
                 $currentDate = $date->startOfDay();
+                $holidayEvents = [];
                 $shiftData = null;
-
                 // PRIORIDAD 1: Retiro
                 if ($retireDate && $currentDate->greaterThan($retireDate)) {
                     $shiftData = SystemShift::RETIREMENT->getData();
@@ -76,12 +91,12 @@ class EmployeeFilterScheduleResource extends JsonResource
                             $shiftData = [
                                 'id'          => $liveShift->id,
                                 'code'        => $liveShift->code,
-                                'letterShift' => $liveShift->letter_shift, //$liveShift->letterShift ?? 
+                                'letterShift' => $liveShift->letter_shift,
                                 'color'       => $liveShift->color,
-                                'nightShift'  => $liveShift->night_shift, //$liveShift->nightShift ?? 
-                                'typeShift'   => $liveShift->type_shift, //$liveShift->typeShift ?? 
-                                'checkInTime' => $liveShift->check_in_time, //$liveShift->checkInTime ?? 
-                                'checkOutTime'=> $liveShift->check_out_time, //$liveShift->checkOutTime ?? 
+                                'nightShift'  => $liveShift->night_shift,
+                                'typeShift'   => $liveShift->type_shift,
+                                'checkInTime' => $liveShift->check_in_time,
+                                'checkOutTime'=> $liveShift->check_out_time,
                             ];
                         }
                     }
@@ -115,15 +130,26 @@ class EmployeeFilterScheduleResource extends JsonResource
                     return $dateString >= $eventStartDay && $dateString <= $eventEndDay;
                 })->map(function ($event) { return ['title' => $event['title']]; })->values()->all();
 
-                $currentDateMonthDay = $date->format('m-d');
+                $currentDateMonthDay = $date->format('m-d'); // Formato MM-DD
                 $currentMonthDay = $this->birthdate ? Carbon::parse($this->birthdate)->format('m-d') : null;
             
                 // Si MM-DD de cumpleaños está dentro de la quincena
                 if ($currentMonthDay && $currentMonthDay === $currentDateMonthDay) {
                     $dayBirthdays = [[ 'title' => trim("Cumpleaños {$this->first_name} {$this->last_name}")]];
                 } else $dayBirthdays = [];
+
+                // Feriado fijo
+                if (array_key_exists($currentDateMonthDay, $fixedHolidays)) {
+                    $holidayEvents[] = ['title' => $fixedHolidays[$currentDateMonthDay]];
+                }
+
+                // Feriado rotativo (Google Calendar)
+                $googleHoliday = collect($this->rotativeHolidays)->firstWhere('date', $dateString);
+                if ($googleHoliday) {
+                    $holidayEvents[] = ['title' => $googleHoliday['title']];
+                }
                 
-                $allDayEvents = array_merge($dayEvents, $dayBirthdays);
+                $allDayEvents = array_merge($dayEvents, $dayBirthdays, $holidayEvents);
 
                 // Estructura final del día
                 $datesMap[$dateString] = [

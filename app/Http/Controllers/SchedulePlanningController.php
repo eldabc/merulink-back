@@ -9,6 +9,7 @@ use App\Models\SchedulePlanning;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ShiftResource;
@@ -20,6 +21,7 @@ use App\Enums\SystemShift;
 
 use App\Services\ShiftVisualIdentityService;
 use App\Services\EventToScheduleService;
+use App\Services\GoogleCalendarService;
 
 class SchedulePlanningController extends Controller
 {
@@ -321,7 +323,8 @@ class SchedulePlanningController extends Controller
     public function filterSchedule(
         Request $request, 
         ShiftVisualIdentityService $scheduleShiftService,
-        EventToScheduleService $eventToScheduleService
+        EventToScheduleService $eventToScheduleService,
+        GoogleCalendarService $googleCalendarService
     )
     {
         if (!$request->filled(['departmentId', 'start', 'end'])) {
@@ -455,7 +458,28 @@ class SchedulePlanningController extends Controller
 
         // Buscar eventos que crucen con la quincena y tengan coloring_day
         $events = $eventToScheduleService->getHighlightedEventsForPeriod($start, $end);
-  
+        $year = Carbon::parse($start)->year;
+
+        // Traer eventos rotativos de Google Calendar
+        $googleEvents = $googleCalendarService->fetchHolidays($year);
+        $rotativeHolidays = [];
+
+        if (!empty($googleEvents)) {
+            foreach ($googleEvents as $event) {
+                $titleLower = mb_strtolower($event['title'] ?? '', 'UTF-8');
+
+                if (str_contains($titleLower, 'carnaval') || 
+                    str_contains($titleLower, 'jueves santo') || 
+                    str_contains($titleLower, 'viernes santo')) {
+                    
+                    $rotativeHolidays[] = [
+                        'date'  => substr($event['start'], 0, 10),
+                        'title' => $event['title']
+                    ];
+                }
+            }
+        }
+
         return response()->json([
             'id'           => $planning?->id,
             'status'       => $planning?->status,
@@ -466,9 +490,9 @@ class SchedulePlanningController extends Controller
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
             'shifts'       => collect($shifts)->prepend(SystemShift::FREE->getData()), // Inyectar shift del sistema
-            'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed) {
-                return $group->map(function ($employee) use ($events, $shifts, $isClosed) {
-                    return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts);
+            'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed, $rotativeHolidays) {
+                return $group->map(function ($employee) use ($events, $shifts, $isClosed, $rotativeHolidays) {
+                    return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts, $rotativeHolidays);
                 });
             }),
         ]);
