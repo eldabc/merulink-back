@@ -71,6 +71,7 @@ class EmployeeFilterScheduleResource extends JsonResource
                 $currentDate = $date->startOfDay();
                 $holidayEvents = [];
                 $shiftData = null;
+
                 // PRIORIDAD 1: Retiro
                 if ($retireDate && $currentDate->greaterThan($retireDate)) {
                     $shiftData = SystemShift::RETIREMENT->getData();
@@ -140,13 +141,13 @@ class EmployeeFilterScheduleResource extends JsonResource
 
                 // Feriado fijo
                 if (array_key_exists($currentDateMonthDay, $fixedHolidays)) {
-                    $holidayEvents[] = ['title' => $fixedHolidays[$currentDateMonthDay]];
+                    $holidayEvents[] = ['title' => $fixedHolidays[$currentDateMonthDay], 'nonWorking' => true];
                 }
 
                 // Feriado rotativo (Google Calendar)
                 $googleHoliday = collect($this->rotativeHolidays)->firstWhere('date', $dateString);
                 if ($googleHoliday) {
-                    $holidayEvents[] = ['title' => $googleHoliday['title']];
+                    $holidayEvents[] = ['title' => $googleHoliday['title'], 'nonWorking' => true];
                 }
                 
                 $allDayEvents = array_merge($dayEvents, $dayBirthdays, $holidayEvents);
