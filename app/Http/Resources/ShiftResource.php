@@ -16,15 +16,15 @@ class ShiftResource extends JsonResource
     public function toArray(Request $request): array
     {
 
-        $notification = null;
+        $alert = null;
         $daysSinceUpdate = Carbon::now()->diffInDays($this->updated_at);
-        $formattedDate = $this->updated_at->format('d/m/Y');
+        $isModifiedInDifferentDay = !$this->updated_at->isSameDay($this->created_at);
 
-        if ($daysSinceUpdate < 15) {
-            $notification = [
+        if ($isModifiedInDifferentDay && $daysSinceUpdate < 15) {
+            $formattedDate = $this->updated_at->format('d/m/Y');
+            $alert = [
                 'type'     => 'new_modification',
                 'label'    => 'NUEVO',
-                'severity' => 'info',
                 'tooltip'  => "Este turno fue modificado en los últimos 15 días ($formattedDate).",
             ];
         }
@@ -51,7 +51,7 @@ class ShiftResource extends JsonResource
             'hasSchedule' => $this->schedules()->exists(),
             'letterShift' => $this->letter_shift ?? null,
             'color' => $this->color ?? null,
-            'notification' => $notification
+            'alert' => $alert
         ];
     }
 }
