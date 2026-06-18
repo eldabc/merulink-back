@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,20 @@ class ShiftResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
+        $notification = null;
+        $daysSinceUpdate = Carbon::now()->diffInDays($this->updated_at);
+        $formattedDate = $this->updated_at->format('d/m/Y');
+
+        if ($daysSinceUpdate < 15) {
+            $notification = [
+                'type'     => 'new_modification',
+                'label'    => 'NUEVO',
+                'severity' => 'info',
+                'tooltip'  => "Este turno fue modificado en los últimos 15 días ($formattedDate).",
+            ];
+        }
+
         return [
             'id' => $this->id,
             'code' => $this->code,
@@ -36,6 +51,7 @@ class ShiftResource extends JsonResource
             'hasSchedule' => $this->schedules()->exists(),
             'letterShift' => $this->letter_shift ?? null,
             'color' => $this->color ?? null,
+            'notification' => $notification
         ];
     }
 }
