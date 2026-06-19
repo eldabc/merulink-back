@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Schedule extends Model
 {
+    // protected $touches = ['schedulePlanning'];
     protected $fillable = [
         'date',
         'employee_id',

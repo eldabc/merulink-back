@@ -134,6 +134,13 @@ return [
             'days' => 30,
         ],
 
+        'close_clean_and_schedule_plannings' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/schedule_plannings/clean-and-close.log'),
+            'level' => 'info',
+            'days' => 60,
+        ],
+
     ],
 
 ];

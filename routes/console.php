@@ -12,3 +12,13 @@ Artisan::command('inspire', function () {
 Schedule::command(
     'events:generate-recurring'
 )->dailyAt('00:00');
+
+
+Schedule::command(
+    'schedule-plannings:close-and-clean'
+)->monthlyOn(1, '00:00');
+
+
+Schedule::command(
+    'schedule-plannings:close-and-clean'
+)->monthlyOn(16, '00:00');

@@ -20,12 +20,12 @@ class ShiftResource extends JsonResource
         $daysSinceUpdate = Carbon::now()->diffInDays($this->updated_at);
         $isModifiedInDifferentDay = !$this->updated_at->isSameDay($this->created_at);
 
-        if ($isModifiedInDifferentDay && $daysSinceUpdate < 15) {
+        if ($isModifiedInDifferentDay && $daysSinceUpdate <= 20) {
             $formattedDate = $this->updated_at->format('d/m/Y');
             $alert = [
                 'type'     => 'new_modification',
                 'label'    => 'NUEVO',
-                'tooltip'  => "Este turno fue modificado en los últimos 15 días ($formattedDate).",
+                'tooltip'  => "Este turno fue modificado el $formattedDate.",
             ];
         }
 
