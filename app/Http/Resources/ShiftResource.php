@@ -46,6 +46,7 @@ class ShiftResource extends JsonResource
             'allowExit' => $this->allow_exit,
             'allowReScanned' => $this->allow_re_scanned,
             'available' => $this->available,
+            'availableFrom' => $this->available_from,
             'observation' => $this->observation,
             'department' =>  new DepartmentResource($this->whenLoaded('department')),
             'hasSchedule' => $this->schedules()->exists(),

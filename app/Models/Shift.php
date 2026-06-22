@@ -24,6 +24,7 @@ class Shift extends Model
         'allow_exit',
         'allow_re_scanned',
         'available',
+        'available_from',
         'observation',
         'department_id'
     ];

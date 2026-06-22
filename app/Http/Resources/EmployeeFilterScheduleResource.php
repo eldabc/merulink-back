@@ -14,13 +14,15 @@ class EmployeeFilterScheduleResource extends JsonResource
     protected $isClosed;
     protected $liveShifts;
     protected $rotativeHolidays;
+    protected $isRegistred;
 
-    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null, $rotativeHolidays = null)
+    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null, $rotativeHolidays = null, $isRegistred)
     {
         parent::__construct($resource);
         $this->events = $events ?? collect();
         $this->isClosed = $isClosed;
         $this->liveShifts = $liveShifts ?? collect();
+        $this->isRegistred = $isRegistred ?? null;
         $this->rotativeHolidays = $rotativeHolidays ?? collect();
     }
     /**
@@ -80,29 +82,8 @@ class EmployeeFilterScheduleResource extends JsonResource
                 elseif ($indexedSchedules->has($dateString)) {
                     $schedule = $indexedSchedules->get($dateString);
                     
-                    // COMPORTAMIENTO LIVE: Si está ABIERTA, busca en la colección
-                    if (!$this->isClosed && $this->liveShifts->isNotEmpty()) {
-                        
-                        // Buscar el turno en schedule
-                        $liveShift = $this->liveShifts->first(function($shift) use ($schedule) {
-                            return $shift->id == $schedule->shift_id;
-                        });
-
-                        if ($liveShift) {
-                            $shiftData = [
-                                'id'          => $liveShift->id,
-                                'code'        => $liveShift->code,
-                                'letterShift' => $liveShift->letter_shift,
-                                'color'       => $liveShift->color,
-                                'nightShift'  => $liveShift->night_shift,
-                                'typeShift'   => $liveShift->type_shift,
-                                'checkInTime' => $liveShift->check_in_time,
-                                'checkOutTime'=> $liveShift->check_out_time,
-                            ];
-                        }
-                    }
-                    // Si está CERRADA asigna data de schedule
-                    else {
+                    // Asigna los datos que tiene schedules (se mantienen actualizados gracias a la actualización masiva en update ShiftsController)
+                    // if (filled($this->isRegistred)) {
                         $shiftData = [
                             'id' => $schedule->shift_id,
                             'code' => $schedule->code,
@@ -113,7 +94,7 @@ class EmployeeFilterScheduleResource extends JsonResource
                             'checkInTime' => $schedule->check_in_time,
                             'checkOutTime' => $schedule->check_out_time,
                         ];
-                    }
+                    // }
                 }
                 // CASO 3: Vacaciones
                 elseif ($vacation && $currentDate->between($vacationStart, $vacationEnd)) {

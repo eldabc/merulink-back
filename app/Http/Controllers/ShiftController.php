@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Shift;
 use App\Models\Department;
+use App\Models\Schedule;
+use App\Models\SchedulePlanning;
 use Illuminate\Support\Str;
 use App\Services\ShiftVisualIdentityService;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreShiftRequest;
 use App\Http\Resources\ShiftResource;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class ShiftController extends Controller
 {
@@ -64,9 +67,52 @@ class ShiftController extends Controller
     public function update(StoreShiftRequest $request, Shift $shift)
     {
         $data = $request->validated();
-        $shift->update($data);
-        return new ShiftResource($shift->load('department'));
+        DB::beginTransaction();
 
+        try {
+            // Actualizar
+            $shift->update($data);
+
+            if (!empty($shift->available_from)) {
+                $availableFrom = $shift->available_from;
+
+                // Buscar IDs de planificaciones abiertas de ESTE departamento que terminen después del available_from
+                $planningIds = SchedulePlanning::where('department_id', $shift->department_id)
+                    ->where('status', '!=', 'closed')
+                    ->where('end', '>=', $availableFrom)
+                    ->pluck('id');
+
+                if ($planningIds->isNotEmpty()) {
+                    // Actualizar en cascada solo las filas de schedules afectadas
+                    Schedule::whereIn('schedule_planning_id', $planningIds)
+                        ->where('shift_id', $shift->id)
+                        // ->where('date', '>=', $availableFrom) // Solo a partir del día fijado
+                        ->update([
+                            'code'                   => $shift->code,
+                            'night_shift'            => $shift->night_shift,
+                            'type_shift'             => $shift->type_shift,
+                            'check_in_time'          => $shift->check_in_time,
+                            'check_out_time'         => $shift->check_out_time,
+                            'rest_period_time'       => $shift->rest_period_time,
+                            'rest_period_unit_time'  => $shift->rest_period_unit_time,
+                            'active_period_time'     => $shift->active_period_time,
+                            'active_period_unit_time'=> $shift->active_period_unit_time,
+                            'total_period_time'      => $shift->total_period_time,
+                            'total_period_unit_time' => $shift->total_period_unit_time,
+                            'allow_exit'             => $shift->allow_exit,
+                            'allow_re_scanned'       => $shift->allow_re_scanned,
+                        ]);
+                }
+            }
+
+            DB::commit();
+
+            return new ShiftResource($shift->load('department'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     /**

@@ -439,6 +439,7 @@ class SchedulePlanningController extends Controller
         } else {
             $departmentShifts = Shift::where('department_id', $request->departmentId)
                 ->where('available', 'yes')
+                ->where('available_from', '<=', $end)
                 ->orderBy('check_in_time')
                 ->with('department')
                 ->get();
@@ -480,21 +481,6 @@ class SchedulePlanningController extends Controller
             }
         }
 
-        // $alert = null;
-        // if ($planning && $planning->updated_at) {
-        //     $daysSinceUpdate = Carbon::now()->diffInDays($planning->updated_at);
-        //     $isModifiedInDifferentDay = !$planning->updated_at->isSameDay($planning->created_at);
-
-        //     if ($isModifiedInDifferentDay && $daysSinceUpdate < 15) {
-        //         $formattedDate = $planning->updated_at->format('d/m/Y');
-        //         $alert = [
-        //             'type'     => 'new_modification',
-        //             'label'    => 'NUEVO',
-        //             'tooltip'  => "Este horario fue modificado en los últimos 15 días ($formattedDate).",
-        //         ];
-        //     }
-        // }
-
         return response()->json([
             'id'           => $planning?->id,
             'status'       => $planning?->status,
@@ -505,10 +491,9 @@ class SchedulePlanningController extends Controller
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
             'shifts'       => collect($shifts)->prepend(SystemShift::FREE->getData()), // Inyectar shift del sistema
-            // 'alert'        => $alert,
-            'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed, $rotativeHolidays) {
-                return $group->map(function ($employee) use ($events, $shifts, $isClosed, $rotativeHolidays) {
-                    return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts, $rotativeHolidays);
+            'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed, $rotativeHolidays, $planning) {
+                return $group->map(function ($employee) use ($events, $shifts, $isClosed, $rotativeHolidays, $planning) {
+                    return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts, $rotativeHolidays, $planning?->id);
                 });
             }),
         ]);

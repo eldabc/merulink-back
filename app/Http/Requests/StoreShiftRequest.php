@@ -44,6 +44,7 @@ class StoreShiftRequest extends FormRequest
             'allow_exit' => 'required|in:yes,no',
             'allow_re_scanned' => 'required|in:yes,no',
             'available' => 'required|in:yes,no',
+            'available_from' => 'required|date',
             
             'observation' => 'nullable|string',
 
@@ -68,6 +69,7 @@ class StoreShiftRequest extends FormRequest
             'allow_exit' => 'Permitir salida',
             'allow_re_scanned' => 'Remarcaje',
             'available' => 'Disponible',
+            'available_from' => 'Disponible a partir de',
             'night_shift' => 'Turno Nocturno',
             'type_shift' => 'Tipo de Turno',
             'observation' => 'Observaciones',

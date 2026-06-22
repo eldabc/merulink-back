@@ -177,5 +177,38 @@ class EmployeeSeeder extends Seeder
                 'use_transport' => false,
             ]
         );
+
+
+        Employee::firstOrCreate(
+            ['ci' => '21373456'], 
+            [
+                'num_employee'   => '701',
+                'first_name' => 'Carmen',
+                'second_name' => 'Andrea',
+                'last_name' => 'Ramírez',
+                'second_last_name' => 'Pérez',
+                'birthdate' => '1994-04-30',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'M',
+                'marital_status' => 'Soltero',
+                'blood_type' => 'O+',
+                'email' => 'carmen.ramirez@gmail.com',
+                'mobile_phone' => '04121234567',
+                'home_phone' => '02863410565',
+                'address' => 'PZO',
+                'join_date' => '2025-01-02',
+                'department_id' => 1,
+                'position_id' => 2,
+                'user_name' => 'carmen.ramirez',
+                'user_pass' => '1234hgfd3-',
+                'change_pass_next_login' => true,
+                'status' => true,
+                'use_meru_link' => true,
+                'use_hid_card' => false,
+                'use_locker' => false,
+                'use_transport' => false,
+            ]
+        );
     }
 }

@@ -67,5 +67,14 @@ class PositionSeeder extends Seeder
                 'sub_department_id' => 1
             ]
         );
+
+        Position::firstOrCreate(
+            ['code' => '711'], 
+            [
+                'name'   => 'Oficial de Seguridad',
+                'department_id' => 7,
+                'sub_department_id' => null
+            ]
+        );
     }
 }

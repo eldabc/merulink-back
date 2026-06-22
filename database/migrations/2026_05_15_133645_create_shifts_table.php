@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('allow_exit');
             $table->string('allow_re_scanned');
             $table->string('available');
+            $table->date('available_from');
             $table->string('observation')->nullable();
 
             $table->foreignId('department_id')
