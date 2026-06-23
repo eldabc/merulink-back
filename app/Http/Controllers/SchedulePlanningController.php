@@ -437,6 +437,7 @@ class SchedulePlanningController extends Controller
                 ->unique('shift_id')
                 ->values();
         } else {
+            // Obtener los turnos maestros que cumplen el available_from
             $departmentShifts = Shift::where('department_id', $request->departmentId)
                 ->where('available', 'yes')
                 ->where('available_from', '<=', $end)
@@ -444,8 +445,56 @@ class SchedulePlanningController extends Controller
                 ->with('department')
                 ->get();
 
+            $liveShiftIds = $departmentShifts->pluck('id')->toArray();
+
+            // Busca en Schedules turnos asignados que NO estén en la lista live
+            $historicalSchedules = Schedule::query()
+                ->where('schedule_planning_id', $planning?->id)
+                ->whereNotIn('shift_id', $liveShiftIds) // Solo los perdidos por el available_from
+                ->distinct()
+                ->get()
+                ->unique('shift_id');
+
+            // Transformar los registros de Schedule en instancias de Shift
+            $historicalShifts = $historicalSchedules->map(function ($schedule) use ($request) {
+                $mockShift = new Shift();
+                
+                // Asignar manualmente los atributos usando snake_case
+                $mockShift->forceFill([
+                    'id' => $schedule->shift_id,
+                    'code' => $schedule->code,
+                    'letter_shift' => $schedule->letter_shift,
+                    'color' => $schedule->color,
+                    'night_shift' => $schedule->night_shift,
+                    'type_shift' => $schedule->type_shift,
+                    'check_in_time' => $schedule->check_in_time,
+                    'check_out_time' => $schedule->check_out_time,
+                    'active_period_time' => $schedule->active_period_time,
+                    'active_period_unit_time' => $schedule->active_period_unit_time,
+                    'rest_period_time' => $schedule->rest_period_time,
+                    'rest_period_unit_time' => $schedule->rest_period_unit_time,
+                    'total_period_time' => $schedule->total_period_time,
+                    'total_period_unit_time' => $schedule->total_period_unit_time,
+                    'allow_exit' => $schedule->allow_exit,
+                    'allow_re_scanned' => $schedule->allow_re_scanned,
+                    'department_id' => $request->departmentId,
+                    'available' => 'yes',
+                    'available_from' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                // Forzar que la relación 'schedules' devuelva true sin ir a la BD
+                $mockShift->setRelation('schedules', collect([$schedule])); 
+
+                return $mockShift;
+            });
+
+            // Unificar ambos mundos en una sola colección Eloquent
+            $mergedShifts = $departmentShifts->concat($historicalShifts);
+
             $shiftsCollection = ShiftResource::collection(
-                $scheduleShiftService->apply($departmentShifts)
+                $scheduleShiftService->apply($mergedShifts)
             );
 
             $shifts = $shiftsCollection;

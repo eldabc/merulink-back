@@ -59,5 +59,51 @@ class ShiftSeeder extends Seeder
                 'department_id' => 7,
             ]
         );
+
+        Shift::firstOrCreate(
+            ['code' => 'SE-02'], 
+            [
+                'description' => 'Operative Shift 2',
+                'night_shift' => 'day',
+                'type_shift' => 'operative',
+                'check_in_time' => '14:00:00',
+                'check_out_time' => '23:00:00',
+                'rest_period_time' => 1,
+                'rest_period_unit_time' => 'hours',
+                'active_period_time' => 8,
+                'active_period_unit_time' => 'hours',
+                'total_period_time' => 9,
+                'total_period_unit_time' => 'hours',
+                'allow_exit' => 'yes',
+                'allow_re_scanned' => 'no',
+                'available' => 'yes',
+                'available_from' => now()->format('Y-m-d'),
+                'observation' => 'Test Shift',
+                'department_id' => 7,
+            ]
+        );
+
+        Shift::firstOrCreate(
+            ['code' => 'SE-03'], 
+            [
+                'description' => 'Operative Shift 3',
+                'night_shift' => 'day',
+                'type_shift' => 'operative',
+                'check_in_time' => '23:00:00',
+                'check_out_time' => '07:00:00',
+                'rest_period_time' => 1,
+                'rest_period_unit_time' => 'hours',
+                'active_period_time' => 8,
+                'active_period_unit_time' => 'hours',
+                'total_period_time' => 9,
+                'total_period_unit_time' => 'hours',
+                'allow_exit' => 'yes',
+                'allow_re_scanned' => 'no',
+                'available' => 'yes',
+                'available_from' => now()->format('Y-m-d'),
+                'observation' => 'Test Shift',
+                'department_id' => 7,
+            ]
+        );
     }
 }

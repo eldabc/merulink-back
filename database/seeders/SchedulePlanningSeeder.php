@@ -21,7 +21,6 @@ class SchedulePlanningSeeder extends Seeder
             ['start' => $start, 'end' => $end], 
             [
                 'month_number' => 6,
-                // 'fortnight_number' => 2,
                 'status' => 'created',
                 'observations' => 'Observations Test',
                 'department_id' => 1,
