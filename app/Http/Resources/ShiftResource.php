@@ -46,13 +46,14 @@ class ShiftResource extends JsonResource
             'allowExit' => $this->allow_exit,
             'allowReScanned' => $this->allow_re_scanned,
             'available' => $this->available,
-            'availableFrom' => $this->available_from,
+            'availableFrom' => $this->available_from->format('Y-m-d'),
             'observation' => $this->observation,
             'department' =>  new DepartmentResource($this->whenLoaded('department')),
             'hasSchedule' => $this->schedules()->exists(),
             'letterShift' => $this->letter_shift ?? null,
             'color' => $this->color ?? null,
-            'alert' => $alert
+            'alert' => $alert,
+            'createdAt' => $this->created_at->format('Y-m-d')
         ];
     }
 }

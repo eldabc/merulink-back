@@ -479,7 +479,8 @@ class SchedulePlanningController extends Controller
                     'allow_re_scanned' => $schedule->allow_re_scanned,
                     'department_id' => $request->departmentId,
                     'available' => 'yes',
-                    'available_from' => null,
+                    // Se coloca now() para evitar errores
+                    'available_from' => now(),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

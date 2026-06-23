@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Shift extends Model
 {
+    protected $casts = [
+        'available_from' => 'date',
+    ];
+    
     protected $fillable = [
         'code',
         'description',
