@@ -83,18 +83,16 @@ class EmployeeFilterScheduleResource extends JsonResource
                     $schedule = $indexedSchedules->get($dateString);
                     
                     // Asigna los datos que tiene schedules (se mantienen actualizados gracias a la actualización masiva en update ShiftsController)
-                    // if (filled($this->isRegistred)) {
-                        $shiftData = [
-                            'id' => $schedule->shift_id,
-                            'code' => $schedule->code,
-                            'letterShift' => $schedule->letter_shift,
-                            'color' => $schedule->color,
-                            'nightShift' => $schedule->night_shift,
-                            'typeShift' => $schedule->type_shift,
-                            'checkInTime' => $schedule->check_in_time,
-                            'checkOutTime' => $schedule->check_out_time,
-                        ];
-                    // }
+                    $shiftData = [
+                        'id' => $schedule->shift_id,
+                        'code' => $schedule->code,
+                        'letterShift' => $schedule->letter_shift,
+                        'color' => $schedule->color,
+                        'nightShift' => $schedule->night_shift,
+                        'typeShift' => $schedule->type_shift,
+                        'checkInTime' => $schedule->check_in_time,
+                        'checkOutTime' => $schedule->check_out_time,
+                    ];
                 }
                 // CASO 3: Vacaciones
                 elseif ($vacation && $currentDate->between($vacationStart, $vacationEnd)) {

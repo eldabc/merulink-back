@@ -62,6 +62,7 @@ use App\Http\Controllers\ScheduleController;
     Route::apiResource('locations', LocationController::class);
     Route::apiResource('shifts', ShiftController::class);
     Route::get('/schedule-plannings/filter-schedule', [SchedulePlanningController::class, 'filterSchedule']);
+    Route::post('/schedule-plannings/autofill', [SchedulePlanningController::class, 'autofill']);
     Route::apiResource('schedule-plannings', SchedulePlanningController::class);
     Route::apiResource('schedules', ScheduleController::class);
     Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);

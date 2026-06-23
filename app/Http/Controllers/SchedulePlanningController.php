@@ -17,6 +17,7 @@ use App\Http\Resources\SchedulePlanningResource;
 use App\Http\Resources\EmployeeResource;
 use App\Http\Resources\EmployeeFilterScheduleResource;
 use App\Http\Requests\SchedulePlanningRequest;
+use App\Http\Requests\FortnightParamsRequest;
 use App\Enums\SystemShift;
 
 use App\Services\ShiftVisualIdentityService;
@@ -315,6 +316,41 @@ class SchedulePlanningController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function autofill(FortnightParamsRequest $request) {
+       $data = $request->validated();
+
+       try {
+            DB::beginTransaction();
+            
+            // Crear la cabecera
+            $planning = SchedulePlanning::create([
+                'start' => $data['start'],
+                'end' => $data['end'],
+                'month_number' => $data['month_number'],
+                'status' => $data['status'],
+                'department_id' => $data['department_id'],
+                'observations' => $data['observations'],
+            ]);
+
+            // Recorrer los empleados y sus fechas asignadas para registrar
+            $this->saveSchedulesBatch($data['schedules'], $planning);
+
+            DB::commit();
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Planificación e historial de turnos guardados exitosamente.'
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al guardar la planificación: ' . $e->getMessage()
+            ], 500);
+        }
+
     }
 
     /**

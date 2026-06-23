@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('observations')->nullable();
 
             $table->foreignId('department_id')->constrained()->onDelete('cascade');
+            $table->unique(['start', 'end']);
 
             $table->timestamps();
         });
