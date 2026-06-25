@@ -328,12 +328,8 @@ class SchedulePlanningController extends Controller
             $departmentId = $data['department_id'];
             $start = Carbon::parse($data['start']);
             $end = Carbon::parse($data['end']);
-            $activeShift = $data['shift']; // Único turno activo para este departamento
+            $activeShift = $data['shift'];
             $planningId = $data['id'];
-
-            if (!$activeShift) {
-                return response()->json(['message' => 'No se encontró un turno activo para este departamento.'], 422);
-            }
 
             // Obtener la lista de feriados en este rango
             $holidays = $holidayService->getHolidaysInRange($start, $end);
@@ -366,6 +362,7 @@ class SchedulePlanningController extends Controller
                     $newPlanning = SchedulePlanning::create([
                         'start' => $start->format('Y-m-d'),
                         'end' => $end->format('Y-m-d'),
+                        'month_number' => $start->format('n'),
                         'department_id' => $departmentId,
                     ]);
                     $planningId = $newPlanning->id;
@@ -462,9 +459,10 @@ class SchedulePlanningController extends Controller
 
         $start = $request->input('start');
         $end = $request->input('end');
+        $departmentId = $request->departmentId;
 
         $planning = SchedulePlanning::query()
-            ->where('department_id', $request->departmentId)
+            ->where('department_id', $departmentId)
             ->whereDate('start', $start)
             ->whereDate('end', $end)
             ->first();
@@ -482,8 +480,8 @@ class SchedulePlanningController extends Controller
         $query = Employee::query();
 
         // Filtro por departamento a través de la posición
-        $query->whereHas('position', function ($q) use ($request) {
-            $q->where('department_id', $request->departmentId);
+        $query->whereHas('position', function ($q) use ($departmentId) {
+            $q->where('department_id', $departmentId);
         });
 
         // ESTRATEGIA DE EMPLEADOS HISTÓRICOS VS ACTIVOS O RETIROS A MITAD DE QUINCENA
@@ -565,7 +563,7 @@ class SchedulePlanningController extends Controller
                 ->values();
         } else {
             // Obtener los turnos maestros que cumplen el available_from
-            $departmentShifts = Shift::where('department_id', $request->departmentId)
+            $departmentShifts = Shift::where('department_id', $departmentId)
                 ->where('available', 'yes')
                 ->where('available_from', '<=', $end)
                 ->orderBy('check_in_time')
@@ -604,7 +602,7 @@ class SchedulePlanningController extends Controller
                     'total_period_unit_time' => $schedule->total_period_unit_time,
                     'allow_exit' => $schedule->allow_exit,
                     'allow_re_scanned' => $schedule->allow_re_scanned,
-                    'department_id' => $request->departmentId,
+                    'department_id' => $departmentId,
                     'available' => 'yes',
                     // Se coloca now() para evitar errores
                     'available_from' => now(),
@@ -663,7 +661,7 @@ class SchedulePlanningController extends Controller
             'status'       => $planning?->status,
             'observations' => $planning?->observations,
             'isClosed'     => $isClosed,
-            'departmentId' => $planning?->department_id,
+            'departmentId' => $planning?->department_id ?? $departmentId,
             'start'        => $planning?->start ?? $start,
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
