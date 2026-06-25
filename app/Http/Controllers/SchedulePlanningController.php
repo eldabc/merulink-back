@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Schedule;
 use App\Models\Shift;
 use App\Models\Employee;
+use App\Models\Vacation;
 use App\Models\SchedulePlanning;
 
 use Carbon\Carbon;
@@ -23,6 +24,7 @@ use App\Enums\SystemShift;
 use App\Services\ShiftVisualIdentityService;
 use App\Services\EventToScheduleService;
 use App\Services\GoogleCalendarService;
+use App\Services\HolidayService;
 
 class SchedulePlanningController extends Controller
 {
@@ -318,36 +320,125 @@ class SchedulePlanningController extends Controller
         }
     }
 
-    public function autofill(FortnightParamsRequest $request) {
+    public function autofill(FortnightParamsRequest $request, HolidayService $holidayService) {
        $data = $request->validated();
 
        try {
-            DB::beginTransaction();
-            
-            // Crear la cabecera
-            $planning = SchedulePlanning::create([
-                'start' => $data['start'],
-                'end' => $data['end'],
-                'month_number' => $data['month_number'],
-                'status' => $data['status'],
-                'department_id' => $data['department_id'],
-                'observations' => $data['observations'],
-            ]);
+           
+            $departmentId = $data['department_id'];
+            $start = Carbon::parse($data['start']);
+            $end = Carbon::parse($data['end']);
+            $activeShift = $data['shift']; // Único turno activo para este departamento
+            $planningId = $data['id'];
 
-            // Recorrer los empleados y sus fechas asignadas para registrar
-            $this->saveSchedulesBatch($data['schedules'], $planning);
+            if (!$activeShift) {
+                return response()->json(['message' => 'No se encontró un turno activo para este departamento.'], 422);
+            }
 
-            DB::commit();
-            return response()->json([
-                'status'  => 'success',
-                'message' => 'Planificación e historial de turnos guardados exitosamente.'
-            ], 201);
+            // Obtener la lista de feriados en este rango
+            $holidays = $holidayService->getHolidaysInRange($start, $end);
+
+            // Traer los empleados activos del departamento
+            $employees = Employee::where('department_id', $departmentId)
+                ->where('status', true)
+                ->get();
+
+            if ($employees->isEmpty()) {
+                return response()->json(['message' => 'No hay empleados activos en este departamento.'], 422);
+            }
+
+            // Traer las vacaciones que chocan con este rango de quincena para optimizar queries
+            $vacations = Vacation::whereIn('employee_id', $employees->pluck('id'))
+                ->where(function ($query) use ($start, $end) {
+                    $query->whereBetween('start', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+                        ->orWhereBetween('end', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+                        ->orWhere(function ($q) use ($start, $end) {
+                            $q->where('start', '<=', $start->format('Y-m-d'))
+                                ->where('end', '>=', $end->format('Y-m-d'));
+                        });
+                })->get();
+
+            return DB::transaction(function () use ($departmentId, $start, $end, $activeShift, $holidays, $employees, $vacations, $planningId) {
+                 
+                if ($planningId) {
+                    Schedule::where('schedule_planning_id', $planningId)->delete();
+                } else {
+                    $newPlanning = SchedulePlanning::create([
+                        'start' => $start->format('Y-m-d'),
+                        'end' => $end->format('Y-m-d'),
+                        'department_id' => $departmentId,
+                    ]);
+                    $planningId = $newPlanning->id;
+                }
+
+                // Generar el periodo de días de la quincena
+                $period = CarbonPeriod::create($start, $end);
+                $newSchedulesData = [];
+
+                foreach ($period as $currentDay) {
+                    $dateString = $currentDay->format('Y-m-d');
+
+                    // Excluir Sábados y Domingos
+                    if ($currentDay->isWeekend()) continue;
+
+                    // Excluir Feriados (Fijos y Rotativos de Google)
+                    if (in_array($dateString, $holidays)) continue;
+
+                    // Asignar el turno a cada empleado si cumple las reglas individuales
+                    foreach ($employees as $employee) {
+                        
+                        $onVacation = $vacations->where('employee_id', $employee->id)
+                            ->contains(function ($vacation) use ($dateString) {
+                                return $dateString >= $vacation->start && $dateString <= $vacation->end;
+                            });
+
+                        if ($onVacation) continue; // Excluir si el empleado está de vacaciones este día en específico
+
+
+                        // Almacenar nuevo turno estructurado
+                        $newSchedulesData[] = [
+                            'date'                    => $dateString,
+                            'employee_id'             => $employee->id,
+                            'shift_id'                => $activeShift['id'],
+                            'letter_shift'            => $activeShift['letterShift'] ,
+                            'color'                   => $activeShift['color'],
+                            'code'                    => $activeShift['code'],
+                            'night_shift'             => $activeShift['nightShift'],
+                            'type_shift'              => $activeShift['typeShift'],
+                            'check_in_time'           => $activeShift['checkInTime'],
+                            'check_out_time'          => $activeShift['checkOutTime'],
+                            'rest_period_time'        => $activeShift['restPeriodTime'],
+                            'rest_period_unit_time'   => $activeShift['restPeriodUnitTime'],
+                            'active_period_time'      => $activeShift['activePeriodTime'],
+                            'active_period_unit_time' => $activeShift['activePeriodUnitTime'],
+                            'total_period_time'       => $activeShift['totalPeriodTime'],
+                            'total_period_unit_time'  => $activeShift['totalPeriodUnitTime'],
+                            'allow_exit'              => $activeShift['allowExit'],
+                            'allow_re_scanned'        => $activeShift['allowReScanned'],
+                            'schedule_planning_id'    => $planningId,
+                            'created_at'              => now(),
+                            'updated_at'              => now(),
+                        ];
+                    }
+                }
+
+
+                // Inserción masiva en BD
+                if (!empty($newSchedulesData)) {
+                    Schedule::insert($newSchedulesData);
+                }
+
+                return response()->json([
+                    'message' => 'Quincena autocompletada con el turno activo de lunes a viernes.',
+                    'schedule_planning_id' => $planningId
+                ], 200);
+            });
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status'  => 'error',
-                'message' => 'Error al guardar la planificación: ' . $e->getMessage()
+                'message' => 'Error al guardar la quincena: ' . $e->getMessage()
             ], 500);
         }
 

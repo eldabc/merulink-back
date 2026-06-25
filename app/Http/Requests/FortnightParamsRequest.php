@@ -35,6 +35,13 @@ class FortnightParamsRequest extends FormRequest
                 'date',
                 'required',
             ],
+            'shift' => [
+                'required',
+                'array'
+            ],
+            'id' => [
+                'nullable'
+            ]
         ];
     }
 
@@ -45,6 +52,8 @@ class FortnightParamsRequest extends FormRequest
             'start' => 'Fecha inicio Quincena',
             'end' => 'Fecha fin Quincena',
             'department_id' => 'Id de Departamento',
+            'shift' => 'Turno',
+            'id' => 'ID de Horario'
         ];
     }
 }
