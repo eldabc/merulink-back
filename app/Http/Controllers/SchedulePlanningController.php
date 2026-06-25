@@ -28,6 +28,24 @@ use App\Services\HolidayService;
 
 class SchedulePlanningController extends Controller
 {
+    
+    protected ShiftVisualIdentityService $scheduleShiftService;
+    protected EventToScheduleService $eventToScheduleService;
+    protected GoogleCalendarService $googleCalendarService;
+    protected HolidayService $holidayService;
+    
+    public function __construct(
+        ShiftVisualIdentityService $scheduleShiftService,
+        EventToScheduleService $eventToScheduleService,
+        GoogleCalendarService $googleCalendarService,
+        HolidayService $holidayService,
+    ) {
+        $this->scheduleShiftService = $scheduleShiftService;
+        $this->eventToScheduleService = $eventToScheduleService;
+        $this->googleCalendarService = $googleCalendarService;
+        $this->holidayService = $holidayService;
+    }
+
     /**
      * Display a listing of the resource.
     */
@@ -220,7 +238,7 @@ class SchedulePlanningController extends Controller
                 ->get();
 
             $shiftsCollection = ShiftResource::collection(
-                $scheduleShiftService->apply($departmentShifts)
+                $this->scheduleShiftService->apply($departmentShifts)
             );
 
             // Inyectamos los del sistema convirtiéndolos a objetos limpios
@@ -320,7 +338,8 @@ class SchedulePlanningController extends Controller
         }
     }
 
-    public function autofill(FortnightParamsRequest $request, HolidayService $holidayService) {
+    public function autofill(FortnightParamsRequest $request, HolidayService $holidayService) 
+    {
        $data = $request->validated();
 
        try {
@@ -330,6 +349,13 @@ class SchedulePlanningController extends Controller
             $end = Carbon::parse($data['end']);
             $activeShift = $data['shift'];
             $planningId = $data['id'];
+
+            // Forzar departmentId en el request para poder reutilizar filterSchedule
+            $request->merge([
+                'departmentId' => $departmentId,
+                'start' => $start->format('Y-m-d'),
+                'end' => $end->format('Y-m-d'),
+            ]);
 
             // Obtener la lista de feriados en este rango
             $holidays = $holidayService->getHolidaysInRange($start, $end);
@@ -354,7 +380,7 @@ class SchedulePlanningController extends Controller
                         });
                 })->get();
 
-            return DB::transaction(function () use ($departmentId, $start, $end, $activeShift, $holidays, $employees, $vacations, $planningId) {
+            return DB::transaction(function () use ($departmentId, $start, $end, $activeShift, $holidays, $employees, $vacations, $planningId , $request) {
                  
                 if ($planningId) {
                     Schedule::where('schedule_planning_id', $planningId)->delete();
@@ -424,11 +450,8 @@ class SchedulePlanningController extends Controller
                 if (!empty($newSchedulesData)) {
                     Schedule::insert($newSchedulesData);
                 }
-
-                return response()->json([
-                    'message' => 'Quincena autocompletada con el turno activo de lunes a viernes.',
-                    'schedule_planning_id' => $planningId
-                ], 200);
+            
+                return $this->filterSchedule($request);
             });
 
         } catch (\Exception $e) {
@@ -444,12 +467,7 @@ class SchedulePlanningController extends Controller
     /**
      * Trae los empleados para schedule
      */
-    public function filterSchedule(
-        Request $request, 
-        ShiftVisualIdentityService $scheduleShiftService,
-        EventToScheduleService $eventToScheduleService,
-        GoogleCalendarService $googleCalendarService
-    )
+    public function filterSchedule(Request $request)
     {
         if (!$request->filled(['departmentId', 'start', 'end'])) {
             return response()->json([
@@ -620,7 +638,7 @@ class SchedulePlanningController extends Controller
             $mergedShifts = $departmentShifts->concat($historicalShifts);
 
             $shiftsCollection = ShiftResource::collection(
-                $scheduleShiftService->apply($mergedShifts)
+                $this->scheduleShiftService->apply($mergedShifts)
             );
 
             $shifts = $shiftsCollection;
@@ -633,11 +651,11 @@ class SchedulePlanningController extends Controller
         });
 
         // Buscar eventos que crucen con la quincena y tengan coloring_day
-        $events = $eventToScheduleService->getHighlightedEventsForPeriod($start, $end);
+        $events = $this->eventToScheduleService->getHighlightedEventsForPeriod($start, $end);
         $year = Carbon::parse($start)->year;
 
         // Traer eventos rotativos de Google Calendar
-        $googleEvents = $googleCalendarService->fetchHolidays($year);
+        $googleEvents = $this->googleCalendarService->fetchHolidays($year);
         $rotativeHolidays = [];
 
         if (!empty($googleEvents)) {
