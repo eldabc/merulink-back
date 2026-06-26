@@ -396,7 +396,9 @@ class SchedulePlanningController extends Controller
                     if ($currentDay->isWeekend()) continue;
 
                     // Excluir Feriados (Fijos y Rotativos de Google)
-                    if (in_array($dateString, $holidays)) continue;
+                    if (array_key_exists($dateString, $holidays)) {
+                        continue;
+                    }
 
                     // Asignar el turno a cada empleado si cumple las reglas individuales
                     foreach ($employees as $employee) {
@@ -491,7 +493,7 @@ class SchedulePlanningController extends Controller
             $q->where('department_id', $departmentId);
         });
 
-        // ESTRATEGIA DE EMPLEADOS HISTÓRICOS VS ACTIVOS O RETIROS A MITAD DE QUINCENA
+        // EMPLEADOS HISTÓRICOS VS ACTIVOS O RETIROS A MITAD DE QUINCENA
         $query->where(function ($mainGroup) use ($isClosed, $start, $end) {
 
             if ($isClosed) {
@@ -500,8 +502,7 @@ class SchedulePlanningController extends Controller
                     $q->whereBetween('date', [$start, $end]);
                 });
             } else {
-                // ABIERTO/NUEVO: Empleado califica si está activo en el sistema,
-                // O si está inactivo PERO su fecha de retiro ocurrió durante la quincena
+                // Empleado califica si está activo en el sistema o si está inactivo PERO su fecha de retiro ocurrió durante la quincena
                 $mainGroup->where(function ($q) use ($start) {
                     $q->where('status', true)
                     ->orWhere(function ($sub) use ($start) {
@@ -511,6 +512,7 @@ class SchedulePlanningController extends Controller
                     });
                 });
             }
+
             $mainGroup->orWhereHas('vacations', function ($v) use ($start, $end) {
                 $v->where(function ($vQuery) use ($start, $end) {
                     $vQuery->whereBetween('start', [$start, $end])
@@ -588,7 +590,7 @@ class SchedulePlanningController extends Controller
                 ->unique('shift_id');
 
             // Transformar los registros de Schedule en instancias de Shift
-            $historicalShifts = $historicalSchedules->map(function ($schedule) use ($request) {
+            $historicalShifts = $historicalSchedules->map(function ($schedule) use ($request, $departmentId) {
                 $mockShift = new Shift();
                 
                 // Asignar manualmente los atributos usando snake_case
