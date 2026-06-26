@@ -641,27 +641,12 @@ class SchedulePlanningController extends Controller
 
         // Buscar eventos que crucen con la quincena y tengan coloring_day
         $events = $this->eventToScheduleService->getHighlightedEventsForPeriod($start, $end);
-        $year = Carbon::parse($start)->year;
+        $carbonStart = Carbon::parse($start);
+        $carbonEnd = Carbon::parse($end);
 
-        // Traer eventos rotativos de Google Calendar
-        $googleEvents = $this->googleCalendarService->fetchHolidays($year);
-        $rotativeHolidays = [];
+        // OBTENER FERIADOS (Fijos + Google Calendar unificados)
+        $holidaysMap = $this->holidayService->getHolidaysInRange($carbonStart, $carbonEnd);
 
-        if (!empty($googleEvents)) {
-            foreach ($googleEvents as $event) {
-                $titleLower = mb_strtolower($event['title'] ?? '', 'UTF-8');
-
-                if (str_contains($titleLower, 'carnaval') || 
-                    str_contains($titleLower, 'jueves santo') || 
-                    str_contains($titleLower, 'viernes santo')) {
-                    
-                    $rotativeHolidays[] = [
-                        'date'  => substr($event['start'], 0, 10),
-                        'title' => $event['title']
-                    ];
-                }
-            }
-        }
 
         return response()->json([
             'id'           => $planning?->id,
@@ -673,9 +658,9 @@ class SchedulePlanningController extends Controller
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
             'shifts'       => collect($shifts)->prepend(SystemShift::FREE->getData()), // Inyectar shift del sistema
-            'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed, $rotativeHolidays, $planning) {
-                return $group->map(function ($employee) use ($events, $shifts, $isClosed, $rotativeHolidays, $planning) {
-                    return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts, $rotativeHolidays, $planning?->id);
+            'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed, $holidaysMap, $planning) {
+                return $group->map(function ($employee) use ($events, $shifts, $isClosed, $holidaysMap, $planning) {
+                    return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts, $holidaysMap, $planning?->id);
                 });
             }),
         ]);

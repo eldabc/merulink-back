@@ -13,23 +13,19 @@ class EmployeeFilterScheduleResource extends JsonResource
     protected $events;
     protected $isClosed;
     protected $liveShifts;
-    protected $rotativeHolidays;
+    protected $holidaysMap;
     protected $isRegistred;
 
-    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null, $rotativeHolidays = null, $isRegistred)
+    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null, $holidaysMap = null, $isRegistred)
     {
         parent::__construct($resource);
         $this->events = $events ?? collect();
         $this->isClosed = $isClosed;
         $this->liveShifts = $liveShifts ?? collect();
         $this->isRegistred = $isRegistred ?? null;
-        $this->rotativeHolidays = $rotativeHolidays ?? collect();
+        $this->holidaysMap = $holidaysMap ?? [];
     }
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+
     public function toArray(Request $request): array
     {
         $start = $request->input('start');
@@ -39,18 +35,6 @@ class EmployeeFilterScheduleResource extends JsonResource
       
         $datesMap = [];
 
-        // Feriados fijos Venezuela
-        $fixedHolidays = [
-            '01-01' => 'Año Nuevo',
-            '05-01' => 'Día del Trabajador',
-            '06-24' => 'Batalla de Carabobo',
-            '07-05' => 'Día de la Independencia',
-            '07-24' => 'Natalicio de Simón Bolívar',
-            '10-12' => 'Día de la Resistencia Indígena',
-            '12-24' => 'Víspera de Navidad',
-            '12-25' => 'Navidad',
-            '12-31' => 'Fin de Año',
-        ];
 
         if (!empty($start) && !empty($end)) {
             
@@ -78,7 +62,7 @@ class EmployeeFilterScheduleResource extends JsonResource
                 if ($retireDate && $currentDate->greaterThan($retireDate)) {
                     $shiftData = SystemShift::RETIREMENT->getData();
                 }
-                // CASO 2: Si la fecha está registrada
+                // CASO 2: Turno registrado
                 elseif ($indexedSchedules->has($dateString)) {
                     $schedule = $indexedSchedules->get($dateString);
                     
@@ -103,35 +87,34 @@ class EmployeeFilterScheduleResource extends JsonResource
                     $shiftData = SystemShift::FREE->getData();
                 }
 
-                // Busca si hay eventos con coloring_day activo para ESTA fecha
+                // Filtrar eventos con coloring_day
                 $dayEvents = collect($globalEvents)->filter(function ($event) use ($dateString) {
                     $eventStartDay = Carbon::parse($event['start'])->format('Y-m-d');
                     $eventEndDay = Carbon::parse($event['end'])->format('Y-m-d');
                     return $dateString >= $eventStartDay && $dateString <= $eventEndDay;
                 })->map(function ($event) { return ['title' => $event['title']]; })->values()->all();
 
-                $currentDateMonthDay = $date->format('m-d'); // Formato MM-DD
+                // Cumpleaños
+                $currentDateMonthDay = $date->format('m-d');
                 $currentMonthDay = $this->birthdate ? Carbon::parse($this->birthdate)->format('m-d') : null;
             
                 // Si MM-DD de cumpleaños está dentro de la quincena
                 if ($currentMonthDay && $currentMonthDay === $currentDateMonthDay) {
                     $dayBirthdays = [[ 'title' => trim("Cumpleaños {$this->first_name} {$this->last_name}")]];
-                } else $dayBirthdays = [];
-
-                // Feriado fijo
-                if (array_key_exists($currentDateMonthDay, $fixedHolidays)) {
-                    $holidayEvents[] = ['title' => $fixedHolidays[$currentDateMonthDay], 'nonWorking' => true];
+                } else {
+                    $dayBirthdays = [];
                 }
 
-                // Feriado rotativo (Google Calendar)
-                $googleHoliday = collect($this->rotativeHolidays)->firstWhere('date', $dateString);
-                if ($googleHoliday) {
-                    $holidayEvents[] = ['title' => $googleHoliday['title'], 'nonWorking' => true];
+                // FERIADOS (Fijos o de Google) busca directamente la fecha
+                if (isset($this->holidaysMap[$dateString])) {
+                    $holidayEvents[] = [
+                        'title' => $this->holidaysMap[$dateString]['title'], 
+                        'nonWorking' => true
+                    ];
                 }
                 
                 $allDayEvents = array_merge($dayEvents, $dayBirthdays, $holidayEvents);
 
-                // Estructura final del día
                 $datesMap[$dateString] = [
                     'shift' => $shiftData,
                     'events' => $allDayEvents,
