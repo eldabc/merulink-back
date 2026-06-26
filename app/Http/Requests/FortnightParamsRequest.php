@@ -41,6 +41,9 @@ class FortnightParamsRequest extends FormRequest
             ],
             'id' => [
                 'nullable'
+            ],
+            'autofillFortnight' => [
+                'boolean'
             ]
         ];
     }
@@ -53,7 +56,8 @@ class FortnightParamsRequest extends FormRequest
             'end' => 'Fecha fin Quincena',
             'departmentId' => 'Id de Departamento',
             'shift' => 'Turno',
-            'id' => 'ID de Horario'
+            'id' => 'ID de Horario',
+            'autofillFortnight' => 'Indicador Rellenar Quincena Automáticamente'
         ];
     }
 }

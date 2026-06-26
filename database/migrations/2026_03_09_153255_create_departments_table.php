@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->string('name');
+            $table->boolean('autofill_fortnight')->default(false);
             $table->timestamps();
         });
     }

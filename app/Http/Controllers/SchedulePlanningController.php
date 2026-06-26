@@ -7,6 +7,7 @@ use App\Models\Shift;
 use App\Models\Employee;
 use App\Models\Vacation;
 use App\Models\SchedulePlanning;
+use App\Models\Department;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -349,11 +350,12 @@ class SchedulePlanningController extends Controller
             $end = Carbon::parse($data['end']);
             $activeShift = $data['shift'];
             $planningId = $data['id'];
+            $autofillFortnight = $data['autofillFortnight'];
 
             // Obtener la lista de feriados en este rango
             $holidays = $this->holidayService->getHolidaysInRange($start, $end);
 
-            // Traer los empleados activos del departamento
+            // Traer los empleados activos
             $employees = Employee::where('department_id', $departmentId)->where('status', true)->get();
 
             if ($employees->isEmpty()) {
@@ -371,8 +373,9 @@ class SchedulePlanningController extends Controller
                         });
                 })->get();
 
-            return DB::transaction(function () use ($departmentId, $start, $end, $activeShift, $holidays, $employees, $vacations, $planningId , $request) {
+            return DB::transaction(function () use ($departmentId, $start, $end, $activeShift, $holidays, $employees, $vacations, $planningId, $request, $autofillFortnight) {
                  
+                Department::where('id', $departmentId)->update(['autofill_fortnight' => $autofillFortnight]);
                 if ($planningId) {
                     Schedule::where('schedule_planning_id', $planningId)->delete();
                 } else {
@@ -656,6 +659,7 @@ class SchedulePlanningController extends Controller
             'observations' => $planning?->observations,
             'isClosed'     => $isClosed,
             'departmentId' => $planning?->department_id ?? $departmentId,
+            'autofillFortnight' => $planning?->department?->autofill_fortnight,
             'start'        => $planning?->start ?? $start,
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,

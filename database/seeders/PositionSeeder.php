@@ -76,5 +76,14 @@ class PositionSeeder extends Seeder
                 'sub_department_id' => null
             ]
         );
+
+        Position::firstOrCreate(
+            ['code' => '300'], 
+            [
+                'name'   => 'Ama de Llaves',
+                'department_id' => 3,
+                'sub_department_id' => null
+            ]
+        );
     }
 }
