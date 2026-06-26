@@ -338,32 +338,23 @@ class SchedulePlanningController extends Controller
         }
     }
 
-    public function autofill(FortnightParamsRequest $request, HolidayService $holidayService) 
+    public function autofill(FortnightParamsRequest $request)
     {
        $data = $request->validated();
 
        try {
            
-            $departmentId = $data['department_id'];
+            $departmentId = $data['departmentId'];
             $start = Carbon::parse($data['start']);
             $end = Carbon::parse($data['end']);
             $activeShift = $data['shift'];
             $planningId = $data['id'];
 
-            // Forzar departmentId en el request para poder reutilizar filterSchedule
-            $request->merge([
-                'departmentId' => $departmentId,
-                'start' => $start->format('Y-m-d'),
-                'end' => $end->format('Y-m-d'),
-            ]);
-
             // Obtener la lista de feriados en este rango
-            $holidays = $holidayService->getHolidaysInRange($start, $end);
+            $holidays = $this->holidayService->getHolidaysInRange($start, $end);
 
             // Traer los empleados activos del departamento
-            $employees = Employee::where('department_id', $departmentId)
-                ->where('status', true)
-                ->get();
+            $employees = Employee::where('department_id', $departmentId)->where('status', true)->get();
 
             if ($employees->isEmpty()) {
                 return response()->json(['message' => 'No hay empleados activos en este departamento.'], 422);
@@ -417,8 +408,6 @@ class SchedulePlanningController extends Controller
 
                         if ($onVacation) continue; // Excluir si el empleado está de vacaciones este día en específico
 
-
-                        // Almacenar nuevo turno estructurado
                         $newSchedulesData[] = [
                             'date'                    => $dateString,
                             'employee_id'             => $employee->id,

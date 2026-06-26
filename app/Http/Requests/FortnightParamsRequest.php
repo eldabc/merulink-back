@@ -22,7 +22,7 @@ class FortnightParamsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'department_id' => [
+            'departmentId' => [
                 'required',
                 'integer',
                 'exists:departments,id',
@@ -51,7 +51,7 @@ class FortnightParamsRequest extends FormRequest
         return [
             'start' => 'Fecha inicio Quincena',
             'end' => 'Fecha fin Quincena',
-            'department_id' => 'Id de Departamento',
+            'departmentId' => 'Id de Departamento',
             'shift' => 'Turno',
             'id' => 'ID de Horario'
         ];
