@@ -26,6 +26,7 @@ use App\Enums\SystemShift;
 use App\Services\ShiftVisualIdentityService;
 use App\Services\EventToScheduleService;
 use App\Services\GoogleCalendarService;
+use App\Services\ScheduleAutofillService;
 use App\Services\HolidayService;
 
 class SchedulePlanningController extends Controller
@@ -34,17 +35,20 @@ class SchedulePlanningController extends Controller
     protected ShiftVisualIdentityService $scheduleShiftService;
     protected EventToScheduleService $eventToScheduleService;
     protected GoogleCalendarService $googleCalendarService;
+    protected ScheduleAutofillService $autofillService;
     protected HolidayService $holidayService;
     
     public function __construct(
         ShiftVisualIdentityService $scheduleShiftService,
         EventToScheduleService $eventToScheduleService,
         GoogleCalendarService $googleCalendarService,
+        ScheduleAutofillService $autofillService,
         HolidayService $holidayService,
     ) {
         $this->scheduleShiftService = $scheduleShiftService;
         $this->eventToScheduleService = $eventToScheduleService;
         $this->googleCalendarService = $googleCalendarService;
+        $this->autofillService = $autofillService;
         $this->holidayService = $holidayService;
     }
 
@@ -363,121 +367,31 @@ class SchedulePlanningController extends Controller
 
     public function autofill(FortnightParamsRequest $request)
     {
-       $data = $request->validated();
+        $data = $request->validated();
 
-       try {
-           
-            $departmentId = $data['departmentId'];
-            $start = Carbon::parse($data['start']);
-            $end = Carbon::parse($data['end']);
-            $activeShift = $data['shift'];
-            $planningId = $data['id'];
-            $autofillFortnight = $data['autofillFortnight'];
+        try {
+            // Guardar la regla de configuración del departamento
+            Department::where('id', $data['departmentId'])
+                ->update(['autofill_fortnight_always' => $data['autofillFortnight']]);
 
-            // Obtener la lista de feriados en este rango
-            $holidays = $this->holidayService->getHolidaysInRange($start, $end);
+            // Ejecutar el núcleo aislado del servicio
+            $this->autofillService->execute(
+                (int) $data['departmentId'],
+                Carbon::parse($data['start']),
+                Carbon::parse($data['end']),
+                $data['shift'],
+                $data['id'] ?? null
+            );
 
-            // Traer los empleados activos
-            $employees = Employee::where('department_id', $departmentId)->where('status', true)->get();
-
-            if ($employees->isEmpty()) {
-                return response()->json(['message' => 'No hay empleados activos en este departamento.'], 422);
-            }
-
-            // Traer las vacaciones que chocan con este rango de quincena para optimizar queries
-            $vacations = Vacation::whereIn('employee_id', $employees->pluck('id'))
-                ->where(function ($query) use ($start, $end) {
-                    $query->whereBetween('start', [$start->format('Y-m-d'), $end->format('Y-m-d')])
-                        ->orWhereBetween('end', [$start->format('Y-m-d'), $end->format('Y-m-d')])
-                        ->orWhere(function ($q) use ($start, $end) {
-                            $q->where('start', '<=', $start->format('Y-m-d'))
-                                ->where('end', '>=', $end->format('Y-m-d'));
-                        });
-                })->get();
-
-            return DB::transaction(function () use ($departmentId, $start, $end, $activeShift, $holidays, $employees, $vacations, $planningId, $request, $autofillFortnight) {
-                 
-                Department::where('id', $departmentId)->update(['autofill_fortnight_always' => $autofillFortnight]);
-                if ($planningId) {
-                    Schedule::where('schedule_planning_id', $planningId)->delete();
-                } else {
-                    $newPlanning = SchedulePlanning::create([
-                        'start' => $start->format('Y-m-d'),
-                        'end' => $end->format('Y-m-d'),
-                        'month_number' => $start->format('n'),
-                        'department_id' => $departmentId,
-                    ]);
-                    $planningId = $newPlanning->id;
-                }
-
-                // Generar el periodo de días de la quincena
-                $period = CarbonPeriod::create($start, $end);
-                $newSchedulesData = [];
-
-                foreach ($period as $currentDay) {
-                    $dateString = $currentDay->format('Y-m-d');
-
-                    // Excluir Sábados y Domingos
-                    if ($currentDay->isWeekend()) continue;
-
-                    // Excluir Feriados (Fijos y Rotativos de Google)
-                    if (array_key_exists($dateString, $holidays)) {
-                        continue;
-                    }
-
-                    // Asignar el turno a cada empleado si cumple las reglas individuales
-                    foreach ($employees as $employee) {
-                        
-                        $onVacation = $vacations->where('employee_id', $employee->id)
-                            ->contains(function ($vacation) use ($dateString) {
-                                return $dateString >= $vacation->start && $dateString <= $vacation->end;
-                            });
-
-                        if ($onVacation) continue; // Excluir si el empleado está de vacaciones este día en específico
-
-                        $newSchedulesData[] = [
-                            'date'                    => $dateString,
-                            'employee_id'             => $employee->id,
-                            'shift_id'                => $activeShift['id'],
-                            'letter_shift'            => $activeShift['letterShift'] ,
-                            'color'                   => $activeShift['color'],
-                            'code'                    => $activeShift['code'],
-                            'night_shift'             => $activeShift['nightShift'],
-                            'type_shift'              => $activeShift['typeShift'],
-                            'check_in_time'           => $activeShift['checkInTime'],
-                            'check_out_time'          => $activeShift['checkOutTime'],
-                            'rest_period_time'        => $activeShift['restPeriodTime'],
-                            'rest_period_unit_time'   => $activeShift['restPeriodUnitTime'],
-                            'active_period_time'      => $activeShift['activePeriodTime'],
-                            'active_period_unit_time' => $activeShift['activePeriodUnitTime'],
-                            'total_period_time'       => $activeShift['totalPeriodTime'],
-                            'total_period_unit_time'  => $activeShift['totalPeriodUnitTime'],
-                            'allow_exit'              => $activeShift['allowExit'],
-                            'allow_re_scanned'        => $activeShift['allowReScanned'],
-                            'schedule_planning_id'    => $planningId,
-                            'created_at'              => now(),
-                            'updated_at'              => now(),
-                        ];
-                    }
-                }
-
-
-                // Inserción masiva en BD
-                if (!empty($newSchedulesData)) {
-                    Schedule::insert($newSchedulesData);
-                }
-            
-                return $this->filterSchedule($request);
-            });
+            // Retornar la respuesta original de refresco visual para el Front
+            return $this->filterSchedule($request);
 
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'status'  => 'error',
                 'message' => 'Error al guardar la quincena: ' . $e->getMessage()
             ], 500);
         }
-
     }
 
     /**
