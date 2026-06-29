@@ -345,7 +345,7 @@ class SchedulePlanningController extends Controller
         $data = $request->validated();
         try {
             
-            Department::where('id', $data['departmentId'])->update(['autofill_fortnight' => $data['autofillFortnight']]);
+            Department::where('id', $data['departmentId'])->update(['autofill_fortnight_always' => $data['autofillFortnight']]);
             
             return response()->json([
                 'status'            => 'success',
@@ -397,7 +397,7 @@ class SchedulePlanningController extends Controller
 
             return DB::transaction(function () use ($departmentId, $start, $end, $activeShift, $holidays, $employees, $vacations, $planningId, $request, $autofillFortnight) {
                  
-                Department::where('id', $departmentId)->update(['autofill_fortnight' => $autofillFortnight]);
+                Department::where('id', $departmentId)->update(['autofill_fortnight_always' => $autofillFortnight]);
                 if ($planningId) {
                     Schedule::where('schedule_planning_id', $planningId)->delete();
                 } else {
@@ -681,7 +681,7 @@ class SchedulePlanningController extends Controller
             'observations' => $planning?->observations,
             'isClosed'     => $isClosed,
             'departmentId' => $planning?->department_id ?? $departmentId,
-            'autofillFortnight' => $planning?->department?->autofill_fortnight,
+            'autofillAlways' => $planning?->department?->autofill_fortnight_always,
             'start'        => $planning?->start ?? $start,
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
