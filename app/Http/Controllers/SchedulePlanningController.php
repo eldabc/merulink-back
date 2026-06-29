@@ -20,6 +20,7 @@ use App\Http\Resources\EmployeeResource;
 use App\Http\Resources\EmployeeFilterScheduleResource;
 use App\Http\Requests\SchedulePlanningRequest;
 use App\Http\Requests\FortnightParamsRequest;
+use App\Http\Requests\ToggleAutofillParamsRequest;
 use App\Enums\SystemShift;
 
 use App\Services\ShiftVisualIdentityService;
@@ -337,6 +338,27 @@ class SchedulePlanningController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function toggleAutofill(ToggleAutofillParamsRequest $request)
+    {
+        $data = $request->validated();
+        try {
+            
+            Department::where('id', $data['departmentId'])->update(['autofill_fortnight' => $data['autofillFortnight']]);
+            
+            return response()->json([
+                'status'            => 'success',
+                'message'           => 'Configuración de automatización actualizada correctamente.',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al cambiar indicador de automatización: ' . $e->getMessage()
+            ], 500);
+        }
+        
     }
 
     public function autofill(FortnightParamsRequest $request)
