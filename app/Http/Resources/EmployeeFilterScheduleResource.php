@@ -31,6 +31,7 @@ class EmployeeFilterScheduleResource extends JsonResource
         $start = $request->input('start');
         $end = $request->input('end');
         $hasVacation = $this->relationLoaded('vacations') && $this->vacations->isNotEmpty();
+        $hasPeriods = $this->relationLoaded('employeePeriods') && $this->employeePeriods->isNotEmpty();
         $globalEvents = $this->events;
       
         $datesMap = [];
@@ -53,13 +54,22 @@ class EmployeeFilterScheduleResource extends JsonResource
             $period = CarbonPeriod::create($start, $end);
 
             foreach ($period as $date) {
+                $hasActiveContractThisDay = false;
                 $dateString = $date->format('Y-m-d');
                 $currentDate = $date->startOfDay();
                 $holidayEvents = [];
                 $shiftData = null;
-
+                
                 // PRIORIDAD 1: Retiro
-                if ($retireDate && $currentDate->greaterThan($retireDate)) {
+                if ($hasPeriods) {
+                    $hasActiveContractThisDay = $this->employeePeriods->contains(function ($period) use ($dateString) {
+                        return $dateString >= $period->hire_date && 
+                            (is_null($period->retire_date) || $dateString <= $period->retire_date);
+                    });
+                }
+
+                // SI el empleado registra periodos pero NINGUNO cubre esta fecha, se marca como RETIRO (Baja)
+                if ($hasPeriods && !$hasActiveContractThisDay) {
                     $shiftData = SystemShift::RETIREMENT->getData();
                 }
                 // CASO 2: Turno registrado

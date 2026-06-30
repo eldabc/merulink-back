@@ -20,7 +20,7 @@ class SchedulePlanningSeeder extends Seeder
          SchedulePlanning::firstOrCreate(
             ['start' => $start, 'end' => $end], 
             [
-                'month_number' => 6,
+                'month_number' => Carbon::now()->month,
                 'status' => 'created',
                 'observations' => 'Observations Test',
                 'department_id' => 1,

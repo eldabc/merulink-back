@@ -19,10 +19,8 @@ class ScheduleSeeder extends Seeder
         $shift = Shift::first();
         $schedulePlanning = SchedulePlanning::first();
 
-        $firstDayMonth = Carbon::now()->startOfMonth();
-
         Schedule::firstOrCreate(
-            ['date' => $firstDayMonth], 
+            ['date' => Carbon::now()->day(16)], 
             [
                 'employee_id' => 1,
                 'shift_id' => $shift->id,

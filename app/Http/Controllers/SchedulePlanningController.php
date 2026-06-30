@@ -169,11 +169,13 @@ class SchedulePlanningController extends Controller
                     $q->whereBetween('date', [$start, $end]);
                 });
             } else {
-                $mainGroup->where(function ($q) use ($start) {
-                    $q->where('status', true)
-                    ->orWhere(function ($sub) use ($start) {
-                        $sub->where('status', false)
-                            ->whereNotNull('retire_date')
+                $mainGroup->whereHas('employeePeriods', function ($q) use ($start, $end) {
+                    $q->where(function ($sub) use ($start, $end) {
+                        $sub->whereNull('retire_date')
+                            ->where('hire_date', '<=', $end);
+                    })->orWhere(function ($sub) use ($start, $end) {
+                        $sub->whereNotNull('retire_date')
+                            ->where('hire_date', '<=', $end)
                             ->where('retire_date', '>=', $start);
                     });
                 });
@@ -195,6 +197,16 @@ class SchedulePlanningController extends Controller
         $employees = $query->with([
             'position.department', 
             'position.subDepartment',
+            'employeePeriods' => function ($q) use ($start, $end) {
+                $q->where(function ($sub) use ($start, $end) {
+                    $sub->whereNull('retire_date')
+                        ->where('hire_date', '<=', $end);
+                })->orWhere(function ($sub) use ($start, $end) {
+                    $sub->whereNotNull('retire_date')
+                        ->where('hire_date', '<=', $end)
+                        ->where('retire_date', '>=', $start);
+                });
+            },
             'schedules' => function ($q) use ($start, $end) {
                 $q->whereBetween('date', [$start, $end]);
             },
@@ -432,21 +444,25 @@ class SchedulePlanningController extends Controller
             $q->where('department_id', $departmentId);
         });
 
-        // EMPLEADOS HISTÓRICOS VS ACTIVOS O RETIROS A MITAD DE QUINCENA
+        // EMPLEADOS HISTÓRICOS, ACTIVOS o RETIROS A MITAD DE QUINCENA
         $query->where(function ($mainGroup) use ($isClosed, $start, $end) {
 
             if ($isClosed) {
-                // Si ya está cerrado o expiró se listan todos los empleados que tengan turnos en esta quincena específica
+                // Se listan los empleados que tengan turnos en la quincena
                 $mainGroup->whereHas('schedules', function ($q) use ($start, $end) {
                     $q->whereBetween('date', [$start, $end]);
                 });
             } else {
-                // Empleado califica si está activo en el sistema o si está inactivo PERO su fecha de retiro ocurrió durante la quincena
-                $mainGroup->where(function ($q) use ($start) {
-                    $q->where('status', true)
-                    ->orWhere(function ($sub) use ($start) {
-                        $sub->where('status', false)
-                            ->whereNotNull('retire_date')
+                // Empleado califica sino tiene fecha de retiro o si su fecha de retiro ocurrió durante la quincena
+                $mainGroup->whereHas('employeePeriods', function ($q) use ($start, $end) {
+                    $q->where(function ($sub) use ($start, $end) {
+                        // El empleado está activo actualmente
+                        $sub->whereNull('retire_date')
+                            ->where('hire_date', '<=', $end);
+                    })->orWhere(function ($sub) use ($start, $end) {
+                        // El empleado se fue (baja), pero estuvo vigente al menos un día de la quincena
+                        $sub->whereNotNull('retire_date')
+                            ->where('hire_date', '<=', $end)
                             ->where('retire_date', '>=', $start);
                     });
                 });
@@ -469,6 +485,16 @@ class SchedulePlanningController extends Controller
         $employees = $query->with([
             'position.department', 
             'position.subDepartment',
+            'employeePeriods' => function ($q) use ($start, $end) {
+                $q->where(function ($sub) use ($start, $end) {
+                    $sub->whereNull('retire_date')
+                        ->where('hire_date', '<=', $end);
+                })->orWhere(function ($sub) use ($start, $end) {
+                    $sub->whereNotNull('retire_date')
+                        ->where('hire_date', '<=', $end)
+                        ->where('retire_date', '>=', $start);
+                });
+            },
             'schedules' => function ($q) use ($start, $end) {
                 $q->whereBetween('date', [$start, $end]);
             },

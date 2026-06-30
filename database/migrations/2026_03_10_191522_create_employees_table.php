@@ -38,7 +38,6 @@ return new class extends Migration
             $table->boolean('use_hid_card')->default(false);
             $table->boolean('use_locker')->default(false);
             $table->boolean('use_transport')->default(false);
-            $table->string('retire_date')->nullable();
             
             $table->foreignId('department_id')
                   ->constrained()

@@ -40,12 +40,11 @@ class EmployeeSeeder extends Seeder
                 'user_name' => 'ana.camila',
                 'user_pass' => '1234hgfd3-',
                 'change_pass_next_login' => true,
-                'status' => false, // empleado prueba vacations
+                'status' => false, // empleado prueba BAJA
                 'use_meru_link' => true,
                 'use_hid_card' => true,
                 'use_locker' => true,
                 'use_transport' => true,
-                'retire_date' => $startMonth,
                 
             ]
         );
@@ -74,7 +73,7 @@ class EmployeeSeeder extends Seeder
                 'user_name' => 'jose.bello',
                 'user_pass' => '1234hgfd3-',
                 'change_pass_next_login' => true,
-                'status' => true,
+                'status' => false, // empleado prueba vacations
                 'use_meru_link' => true,
                 'use_hid_card' => false,
                 'use_locker' => false,
