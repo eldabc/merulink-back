@@ -169,57 +169,22 @@ class SchedulePlanningController extends Controller
                     $q->whereBetween('date', [$start, $end]);
                 });
             } else {
-                $mainGroup->whereHas('employeePeriods', function ($q) use ($start, $end) {
-                    $q->where(function ($sub) use ($start, $end) {
-                        $sub->whereNull('retire_date')
-                            ->where('hire_date', '<=', $end);
-                    })->orWhere(function ($sub) use ($start, $end) {
-                        $sub->whereNotNull('retire_date')
-                            ->where('hire_date', '<=', $end)
-                            ->where('retire_date', '>=', $start);
-                    });
-                });
+                $mainGroup->whereHas('employeePeriods', fn($q) => $q->activeInPeriod($start, $end));
             }
 
-            $mainGroup->orWhereHas('vacations', function ($v) use ($start, $end) {
-                $v->where(function ($vQuery) use ($start, $end) {
-                    $vQuery->whereBetween('start', [$start, $end])
-                        ->orWhereBetween('end', [$start, $end])
-                        ->orWhere(function ($deep) use ($start, $end) {
-                            $deep->where('start', '<=', $start)
-                                ->where('end', '>=', $end);
-                        });
-                });
-            });
+            $mainGroup->orWhereHas('vacations', fn($v) => $v->overlapPeriod($start, $end));
+
         });
 
         // Eager Loading con el contexto quincenal de la planificación
         $employees = $query->with([
             'position.department', 
             'position.subDepartment',
-            'employeePeriods' => function ($q) use ($start, $end) {
-                $q->where(function ($sub) use ($start, $end) {
-                    $sub->whereNull('retire_date')
-                        ->where('hire_date', '<=', $end);
-                })->orWhere(function ($sub) use ($start, $end) {
-                    $sub->whereNotNull('retire_date')
-                        ->where('hire_date', '<=', $end)
-                        ->where('retire_date', '>=', $start);
-                });
-            },
+            'employeePeriods' => fn($q) => $q->activeInPeriod($start, $end),
             'schedules' => function ($q) use ($start, $end) {
                 $q->whereBetween('date', [$start, $end]);
             },
-            'vacations' => function ($q) use ($start, $end) {
-                $q->where(function ($vQuery) use ($start, $end) {
-                    $vQuery->whereBetween('start', [$start, $end])
-                        ->orWhereBetween('end', [$start, $end])
-                        ->orWhere(function ($deep) use ($start, $end) {
-                            $deep->where('start', '<=', $start)
-                                ->where('end', '>=', $end);
-                        });
-                });
-            }
+            'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
         ])->get();
 
         // 4. Mapeo de la barra lateral de Turnos (Shifts) según estado
@@ -454,30 +419,10 @@ class SchedulePlanningController extends Controller
                 });
             } else {
                 // Empleado califica sino tiene fecha de retiro o si su fecha de retiro ocurrió durante la quincena
-                $mainGroup->whereHas('employeePeriods', function ($q) use ($start, $end) {
-                    $q->where(function ($sub) use ($start, $end) {
-                        // El empleado está activo actualmente
-                        $sub->whereNull('retire_date')
-                            ->where('hire_date', '<=', $end);
-                    })->orWhere(function ($sub) use ($start, $end) {
-                        // El empleado se fue (baja), pero estuvo vigente al menos un día de la quincena
-                        $sub->whereNotNull('retire_date')
-                            ->where('hire_date', '<=', $end)
-                            ->where('retire_date', '>=', $start);
-                    });
-                });
+                $mainGroup->whereHas('employeePeriods', fn($q) => $q->activeInPeriod($start, $end));
             }
 
-            $mainGroup->orWhereHas('vacations', function ($v) use ($start, $end) {
-                $v->where(function ($vQuery) use ($start, $end) {
-                    $vQuery->whereBetween('start', [$start, $end])
-                        ->orWhereBetween('end', [$start, $end])
-                        ->orWhere(function ($deep) use ($start, $end) {
-                            $deep->where('start', '<=', $start)
-                                 ->where('end', '>=', $end);
-                        });
-                });
-            });
+            $mainGroup->orWhereHas('vacations', fn($v) => $v->overlapPeriod($start, $end));
 
         });
 
@@ -485,29 +430,11 @@ class SchedulePlanningController extends Controller
         $employees = $query->with([
             'position.department', 
             'position.subDepartment',
-            'employeePeriods' => function ($q) use ($start, $end) {
-                $q->where(function ($sub) use ($start, $end) {
-                    $sub->whereNull('retire_date')
-                        ->where('hire_date', '<=', $end);
-                })->orWhere(function ($sub) use ($start, $end) {
-                    $sub->whereNotNull('retire_date')
-                        ->where('hire_date', '<=', $end)
-                        ->where('retire_date', '>=', $start);
-                });
-            },
+            'employeePeriods' => fn($q) => $q->activeInPeriod($start, $end),
             'schedules' => function ($q) use ($start, $end) {
                 $q->whereBetween('date', [$start, $end]);
             },
-            'vacations' => function ($q) use ($start, $end) {
-                $q->where(function ($vQuery) use ($start, $end) {
-                    $vQuery->whereBetween('start', [$start, $end])
-                        ->orWhereBetween('end', [$start, $end])
-                        ->orWhere(function ($deep) use ($start, $end) {
-                            $deep->where('start', '<=', $start)
-                                 ->where('end', '>=', $end);
-                        });
-                });
-            }
+            'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
         ])->get();
 
         if ($isClosed) {
@@ -546,10 +473,10 @@ class SchedulePlanningController extends Controller
 
             $liveShiftIds = $departmentShifts->pluck('id')->toArray();
 
-            // Busca en Schedules turnos asignados que NO estén en la lista live
+            // Busca en Schedules turnos asignados que NO estén en la lista live (perdidos por el available_from)
             $historicalSchedules = Schedule::query()
                 ->where('schedule_planning_id', $planning?->id)
-                ->whereNotIn('shift_id', $liveShiftIds) // Solo los perdidos por el available_from
+                ->whereNotIn('shift_id', $liveShiftIds)
                 ->distinct()
                 ->get()
                 ->unique('shift_id');
