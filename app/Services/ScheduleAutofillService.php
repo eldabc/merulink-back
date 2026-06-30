@@ -35,7 +35,11 @@ class ScheduleAutofillService
         $holidays = $this->holidayService->getHolidaysInRange($start, $end);
 
         // Traer los empleados activos
-        $employees = Employee::where('department_id', $departmentId)->where('status', true)->get();
+        $employees = Employee::where('department_id', $departmentId)
+                        ->whereHas('employeePeriods', fn($q) => $q->activeInPeriod($start, $end))->with([
+                            'employeePeriods' => fn($q) => $q->activeInPeriod($start, $end),
+                            'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
+                        ])->get();
 
         if ($employees->isEmpty()) {
             throw new \Exception('No hay empleados activos en este departamento.');
@@ -43,14 +47,8 @@ class ScheduleAutofillService
 
         // Traer las vacaciones que cruzan la quincena
         $vacations = Vacation::whereIn('employee_id', $employees->pluck('id'))
-            ->where(function ($query) use ($start, $end) {
-                $query->whereBetween('start', [$start->format('Y-m-d'), $end->format('Y-m-d')])
-                    ->orWhereBetween('end', [$start->format('Y-m-d'), $end->format('Y-m-d')])
-                    ->orWhere(function ($q) use ($start, $end) {
-                        $q->where('start', '<=', $start->format('Y-m-d'))
-                            ->where('end', '>=', $end->format('Y-m-d'));
-                    });
-            })->get();
+            ->overlapPeriod($start->format('Y-m-d'), $end->format('Y-m-d'))
+            ->get();
 
         // Operaciones de escritura en la transacción
         return DB::transaction(function () use ($departmentId, $start, $end, $activeShift, $holidays, $employees, $vacations, $planningId) {
@@ -81,11 +79,21 @@ class ScheduleAutofillService
 
                 // Iterar empleados y validar vacaciones
                 foreach ($employees as $employee) {
+                    
+                    $hasActiveContractThisDay = $employee->employeePeriods->contains(function ($period) use ($dateString) {
+                        return $dateString >= $period->hire_date && 
+                            (is_null($period->retire_date) || $dateString <= $period->retire_date);
+                    });
+
+                    // Excluir si ya estaba de baja este día
+                    if (!$hasActiveContractThisDay) continue;
+
                     $onVacation = $vacations->where('employee_id', $employee->id)
                         ->contains(function ($vacation) use ($dateString) {
                             return $dateString >= $vacation->start && $dateString <= $vacation->end;
                         });
 
+                    // Excluir si es día de vacaciones
                     if ($onVacation) continue;
 
                     // Mapeo masivo en memoria
