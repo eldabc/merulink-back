@@ -26,20 +26,16 @@ class RoleSeeder extends Seeder
             'name' => 'user',
         ]);
 
-        Permission:: firstOrcreate([
-            'name' => 'create-locker',
-        ]);
-
-        Permission:: firstOrcreate([
-            'name' => 'view-locker',
-        ]);
-
-        Permission:: firstOrcreate([
-            'name' => 'edit-locker',
-        ]);
+        Permission:: firstOrcreate([ 'name' => 'create-schedules' ]);
+        Permission:: firstOrcreate([ 'name' => 'view-schedules' ]);
+        Permission:: firstOrcreate([ 'name' => 'edit-schedules' ]);
+        Permission:: firstOrcreate([ 'name' => 'delete-schedules' ]);
+        Permission:: firstOrcreate([ 'name' => 'approve-schedules' ]);
 
         $roleSuperAdmin->givePermissionTo(Permission::all());
-        $roleUser->givePermissionTo('view-locker');
+        $roleAdmin->givePermissionTo(['create-schedules', 'view-schedules', 'edit-schedules' ]);
+        $roleUser->givePermissionTo('view-schedules');
+         
 
 
     }

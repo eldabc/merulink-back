@@ -27,4 +27,9 @@ class Department extends Model
     {
         return $this->hasMany(Position::class);
     }
+
+    // public function shifts(): hasMany
+    // {
+    //     return $this->hasMany(Shift::class);
+    // }
 }

@@ -61,6 +61,7 @@ use App\Http\Controllers\ScheduleController;
     Route::apiResource('eventTemplates', EventTemplateController::class);
     Route::apiResource('locations', LocationController::class);
     Route::apiResource('shifts', ShiftController::class);
+    
     Route::get('/schedule-plannings/filter-schedule', [SchedulePlanningController::class, 'filterSchedule']);
     Route::post('/schedule-plannings/autofill', [SchedulePlanningController::class, 'autofill']);
     Route::post('/schedule-plannings/toggle-autofill', [SchedulePlanningController::class, 'toggleAutofill']);
@@ -70,8 +71,10 @@ use App\Http\Controllers\ScheduleController;
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {
+
+        Route::post('/logout', [AuthController::class, 'logout']);
         // Por Rol
-        Route::middleware('role:super-admin')->group(function () {
+        Route::middleware('role:super-admin|admin')->group(function () {
             // Route::post('/lockers', [LockerController::class, 'store']);
         });
 
