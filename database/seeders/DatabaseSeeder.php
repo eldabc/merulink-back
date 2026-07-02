@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call(DepartmentSeeder::class);
         $this->call(SubDepartmentSeeder::class);
         $this->call(PositionSeeder::class);
+        $this->call(UserSeeder::class);  
         $this->call(EmployeeSeeder::class);
         $this->call(EmployeePeriodSeeder::class);
         $this->call(VacationSeeder::class);  
@@ -33,14 +34,8 @@ class DatabaseSeeder extends Seeder
         $this->call(LocationSeeder::class);
         $this->call(EventSeeder::class);
         $this->call(EventTemplateSeeder::class);
-        $this->call(UserSeeder::class);  
         $this->call(ShiftSeeder::class);  
         $this->call(SchedulePlanningSeeder::class);  
         $this->call(ScheduleSeeder::class);  
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
     }
 }

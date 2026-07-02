@@ -30,8 +30,8 @@ return new class extends Migration
             $table->string('home_phone')->nullable();
             $table->string('address')->nullable();
             $table->string('join_date');
-            $table->string('user_name')->nullable();
-            $table->string('user_pass')->nullable();
+            // $table->string('user_name')->nullable();
+            // $table->string('user_pass')->nullable();
             $table->boolean('change_pass_next_login')->default(false);
             $table->boolean('status')->default(true);
             $table->boolean('use_meru_link')->default(false);
@@ -39,6 +39,11 @@ return new class extends Migration
             $table->boolean('use_locker')->default(false);
             $table->boolean('use_transport')->default(false);
             
+            $table->foreignId('user_id')
+                  ->nullable()
+                  ->constrained()
+                  ->nullOnDelete();
+
             $table->foreignId('department_id')
                   ->constrained()
                   ->onDelete('cascade');

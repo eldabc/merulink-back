@@ -10,23 +10,22 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        // Validar los datos que vienen de React
+
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'username' => 'required|string',
+            'password' => 'required|string',
         ]);
 
-        // Buscar al usuario
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('username', $request->username)->first();
 
-        // Verificar la contraseña
+        // Verificar si existe y si la contraseña coincide
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Las credenciales proporcionadas son incorrectas.'],
-            ]);
+            return response()->json([
+                'message' => 'Las credenciales ingresadas son incorrectas.'
+            ], 401);
         }
 
-        // Generar token de Sanctum
+        // Genera token con Sanctum e inyecta roles/permisos
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -35,8 +34,8 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
+                'username' => $user->username,
                 'email' => $user->email,
-                // Roles y permisos para que el Front pueda ocultar/mostrar botones
                 'roles' => $user->getRoleNames(), 
                 'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
