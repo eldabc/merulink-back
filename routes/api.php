@@ -19,62 +19,66 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\SchedulePlanningController;
 use App\Http\Controllers\ScheduleController;
 
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    })->middleware('auth:sanctum');
-
-    Route::post('/login', [AuthController::class, 'login']);
-    
-    Route::get('/lockers', [LockerController::class, 'index']);
-    Route::post('/lockers', [LockerController::class, 'store']);
-    Route::get('/lockers/{locker}', [LockerController::class, 'show'])->whereNumber('locker');
-    Route::put('/lockers/{locker}', [LockerController::class, 'update'])->whereNumber('locker');
-    Route::delete('/lockers/{locker}', [LockerController::class, 'destroy'])->whereNumber('locker');
-
-    Route::group(['prefix' => 'padlocks'], function () {
-        Route::apiResource('patterns', PadlockPatternController::class);
-        
-        Route::apiResource('/', PadlockController::class)->parameters(['' => 'padlock']);
-    });
-    
-    Route::delete('assigns', [AssignController::class, 'destroyByCategory']);
-    Route::apiResource('assigns', AssignController::class)->except([
-        'update', 'show'
-    ]);
-
     // Ruta solo con fin informativo
     Route::get('/check-time', function () {
-    return [
-        'time_now' => date('Y-m-d H:i:s'),
-        'timezone' => date_default_timezone_get(),
-    ];
-});
+        return [
+            'time_now' => date('Y-m-d H:i:s'),
+            'timezone' => date_default_timezone_get(),
+        ];
+    });
 
-    Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
-    Route::apiResource('employees', EmployeeController::class);
-    Route::apiResource('departments', DepartmentController::class);
-    Route::apiResource('subdepartments', SubDepartmentController::class);
-    Route::apiResource('positions', PositionController::class);
-    Route::apiResource('events', EventController::class);
-    Route::post('events/batch-banking', [EventController::class, 'batchBanking']);
-    Route::apiResource('eventCategories', EventCategoryController::class);
-    Route::apiResource('eventTemplates', EventTemplateController::class);
-    Route::apiResource('locations', LocationController::class);
-    Route::apiResource('shifts', ShiftController::class);
-    
-    Route::get('/schedule-plannings/filter-schedule', [SchedulePlanningController::class, 'filterSchedule']);
-    Route::post('/schedule-plannings/autofill', [SchedulePlanningController::class, 'autofill']);
-    Route::post('/schedule-plannings/toggle-autofill', [SchedulePlanningController::class, 'toggleAutofill']);
-    Route::apiResource('schedule-plannings', SchedulePlanningController::class);
-    Route::apiResource('schedules', ScheduleController::class);
-    Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);
+    Route::post('/login', [AuthController::class, 'login']);
+
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {
 
+        Route::get('/user', function (Request $request) {
+            return $request->user();
+        })->middleware('auth:sanctum');
+       
+        Route::get('/lockers', [LockerController::class, 'index']);
+        Route::post('/lockers', [LockerController::class, 'store']);
+        Route::get('/lockers/{locker}', [LockerController::class, 'show'])->whereNumber('locker');
+        Route::put('/lockers/{locker}', [LockerController::class, 'update'])->whereNumber('locker');
+        Route::delete('/lockers/{locker}', [LockerController::class, 'destroy'])->whereNumber('locker');
+
+        Route::group(['prefix' => 'padlocks'], function () {
+            Route::apiResource('patterns', PadlockPatternController::class);
+            
+            Route::apiResource('/', PadlockController::class)->parameters(['' => 'padlock']);
+        });
+        
+        Route::delete('assigns', [AssignController::class, 'destroyByCategory']);
+        Route::apiResource('assigns', AssignController::class)->except([
+            'update', 'show'
+        ]);
+
+
+        Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
+        Route::apiResource('employees', EmployeeController::class);
+        Route::apiResource('departments', DepartmentController::class);
+        Route::apiResource('subdepartments', SubDepartmentController::class);
+        Route::apiResource('positions', PositionController::class);
+        Route::apiResource('events', EventController::class);
+        Route::post('events/batch-banking', [EventController::class, 'batchBanking']);
+        Route::apiResource('eventCategories', EventCategoryController::class);
+        Route::apiResource('eventTemplates', EventTemplateController::class);
+        Route::apiResource('locations', LocationController::class);
+        Route::apiResource('shifts', ShiftController::class);
+        
+        Route::get('/schedule-plannings/filter-schedule', [SchedulePlanningController::class, 'filterSchedule']);
+        Route::post('/schedule-plannings/autofill', [SchedulePlanningController::class, 'autofill']);
+        Route::post('/schedule-plannings/toggle-autofill', [SchedulePlanningController::class, 'toggleAutofill']);
+        Route::apiResource('schedule-plannings', SchedulePlanningController::class);
+        Route::apiResource('schedules', ScheduleController::class);
+        Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);
+
+    
+
         Route::post('/logout', [AuthController::class, 'logout']);
         // Por Rol
-        Route::middleware('role:super-admin|admin')->group(function () {
+        Route::middleware('role:admin|supervisor|employee|guest')->group(function () {
             // Route::post('/lockers', [LockerController::class, 'store']);
         });
 
