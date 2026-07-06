@@ -42,11 +42,18 @@ class RoleSeeder extends Seeder
         Permission:: firstOrcreate([ 'name' => 'create-employees' ]);
         Permission:: firstOrcreate([ 'name' => 'view-employees' ]);
         Permission:: firstOrcreate([ 'name' => 'edit-employees' ]);
-        Permission:: firstOrcreate([ 'name' => 'delete-employees' ]);
+        Permission:: firstOrcreate([ 'name' => 'change-status-employees' ]);
 
 
         $adminUser->givePermissionTo(Permission::all());
-        $supervisorUser->givePermissionTo(['create-schedules', 'view-schedules', 'edit-schedules', 'view-employees']);
+        $supervisorUser->givePermissionTo([
+            'create-schedules', 
+            'view-schedules', 
+            'edit-schedules', 
+            'autofill-schedules',
+            'reviewed-schedules',
+            'view-employees', 
+        ]);
         $employeeUser->givePermissionTo(['view-schedules', 'view-calendar']);
         $guestUser->givePermissionTo(['view-schedules', 'view-calendar']);
          
