@@ -35,7 +35,9 @@ class RoleSeeder extends Seeder
         Permission:: firstOrcreate([ 'name' => 'view-schedules' ]);
         Permission:: firstOrcreate([ 'name' => 'edit-schedules' ]);
         Permission:: firstOrcreate([ 'name' => 'delete-schedules' ]);
+        Permission:: firstOrcreate([ 'name' => 'reviewed-schedules' ]);
         Permission:: firstOrcreate([ 'name' => 'approve-schedules' ]);
+        Permission:: firstOrcreate([ 'name' => 'autofill-schedules' ]);
         
         Permission:: firstOrcreate([ 'name' => 'create-employees' ]);
         Permission:: firstOrcreate([ 'name' => 'view-employees' ]);
