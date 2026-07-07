@@ -55,7 +55,7 @@ class RoleSeeder extends Seeder
             'view-employees', 
         ]);
         $employeeUser->givePermissionTo(['view-schedules', 'view-calendar']);
-        $guestUser->givePermissionTo(['view-schedules', 'view-calendar']);
+        $guestUser->givePermissionTo(['view-calendar']);
          
 
 

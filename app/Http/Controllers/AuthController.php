@@ -36,6 +36,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
+                'departmentId' => $user->employee?->department->id ?? null,
                 'roles' => $user->getRoleNames(), 
                 'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
