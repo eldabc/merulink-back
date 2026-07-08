@@ -6,88 +6,55 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
- * Scraper IVSS usando Chrome headless.
+ * Scraper IVSS usando Guzzle HTTP.
  *
- * El servidor GlassFish bloquea peticiones HTTP automatizadas (Guzzle/cURL).
- * Usamos Chrome headless con un HTML temporal que auto-envía el formulario,
- * simulando exactamente lo que hace un navegador real.
+ * Campos confirmados del form (DevTools):
+ *   nationalidad_aseg, cedula_aseg, d, m (sin leading zero), y, boton
+ *
+ * URL: http://www.ivss.gob.ve:28083/CuentaIndividualIntranet/CtaIndividual_PortalCTRL
  */
 class IvssScraper extends BaseScraper
 {
     private const RESULTS_URL = 'http://www.ivss.gob.ve:28083/CuentaIndividualIntranet/CtaIndividual_PortalCTRL';
-    private const CHROME_PATH  = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 
     public function scrape(string $ci, string $birthdate): array
     {
-        $ciNormalized = $this->normalizeCi($ci);
-        $birthFormatted = $this->formatBirthdate($birthdate);
-        $parts = explode('/', $birthFormatted);
+        $ciNorm = $this->normalizeCi($ci);
+        $birth   = $this->formatBirthdate($birthdate);
+        $parts   = explode('/', $birth);
 
-        Log::info("IVSS Chrome Scraper: CI={$ciNormalized}, FN={$birthFormatted}");
+        Log::info("IVSS: CI={$ciNorm}, FN={$birth}");
 
-        $html = $this->submitViaChrome($ciNormalized, $parts[0], (int)$parts[1], $parts[2]);
+        $formData = [
+            'nationalidad_aseg' => 'V',
+            'cedula_aseg'       => $ciNorm,
+            'd'                 => (int) ($parts[0] ?? '1'),
+            'm'                 => (int) ($parts[1] ?? '1'),
+            'y'                 => $parts[2] ?? '1990',
+            'boton'             => 'Consultar',
+        ];
 
-        return $this->parseResultsPage($html);
+        try {
+            $response = $this->httpClient->post(self::RESULTS_URL, [
+                'form_params' => $formData,
+            ]);
+
+            $html = (string) $response->getBody();
+
+            Log::info("IVSS: HTTP {$response->getStatusCode()}, " . strlen($html) . " bytes.");
+
+            return $this->parse($html);
+        } catch (\Exception $e) {
+            Log::warning("IVSS: Error HTTP — " . $e->getMessage());
+            throw new \RuntimeException("No se pudo conectar con el IVSS: " . $e->getMessage());
+        }
     }
 
-    /**
-     * Crea un HTML temporal con un formulario que se auto-envía al IVSS,
-     * lo ejecuta en Chrome headless y retorna el HTML resultante.
-     */
-    private function submitViaChrome(string $ci, string $day, int $month, string $year): string
-    {
-        $tmpFile = storage_path('app/tmp_ivss_' . uniqid() . '.html');
-
-        $formHtml = '<!DOCTYPE html><html><body>
-<form id="f" action="' . self::RESULTS_URL . '" method="post" target="_self" accept-charset="ISO-8859-1">
-<input name="nationalidad_aseg" value="V">
-<input name="cedula_aseg" value="' . $ci . '">
-<input name="d" value="' . $day . '">
-<input name="m" value="' . $month . '">
-<input name="y" value="' . $year . '">
-<input name="boton" value="Consultar">
-</form>
-<script>document.getElementById("f").submit();</script>
-</body></html>';
-
-        file_put_contents($tmpFile, $formHtml);
-
-        $cmd = '"' . self::CHROME_PATH . '"'
-            . ' --headless --disable-gpu --no-sandbox'
-            . ' --virtual-time-budget=15000'
-            . ' --dump-dom'
-            . ' "file:///' . str_replace('\\', '/', $tmpFile) . '"'
-            . ' 2>nul';
-
-        Log::info("IVSS: Ejecutando Chrome headless...");
-
-        $output = [];
-        $exitCode = 0;
-        exec($cmd, $output, $exitCode);
-
-        $result = implode("\n", $output);
-
-        // Limpiar temp
-        @unlink($tmpFile);
-
-        if (empty(trim($result))) {
-            throw new \RuntimeException("Chrome no devolvió resultados (exit: {$exitCode}).");
-        }
-
-        Log::info("IVSS: HTML recibido, " . strlen($result) . " bytes. ¿BELLO? " . (strpos($result, 'BELLO') !== false ? 'SÍ' : 'NO'));
-
-        if (strpos($result, 'BELLO') === false && strpos($result, 'no esta registrada') !== false) {
-            throw new \RuntimeException("El IVSS indica que la cédula no está registrada como asegurado.");
-        }
-
-        return $result;
-    }
-
-    // =========================================================================
+    // ============================================================
     // PARSER
-    // =========================================================================
+    // ============================================================
 
-    private function parseResultsPage(string $html): array
+    private function parse(string $html): array
     {
         $result = [
             'ci'               => null,
@@ -103,83 +70,69 @@ class IvssScraper extends BaseScraper
             'source'           => 'ivss',
         ];
 
-        // Solo parsear si el HTML contiene los datos
-        if (strpos($html, 'BELLO') === false && strpos($html, 'Nombre y Apellido') === false) {
+        // ¿Es la página de error?
+        if (str_contains($html, 'no esta registrada')) {
+            Log::info("IVSS: La cédula no está registrada como asegurado.");
+            return $result;
+        }
+
+        // ¿Tiene los datos?
+        if (!str_contains($html, 'Datos del Asegurado')) {
+            Log::warning("IVSS: HTML recibido no contiene 'Datos del Asegurado'. Primeros 300 chars: " . substr($html, 0, 300));
             return $result;
         }
 
         $crawler = new Crawler($html);
 
-        // Buscar <tr class="datos">
         try {
             $crawler->filter('tr.datos')->each(function (Crawler $tr) use (&$result) {
                 $cells = $tr->filter('td');
                 if ($cells->count() >= 2) {
-                    $label = trim(preg_replace('/\s+/', ' ', $cells->eq(0)->text()));
-                    $value = trim(preg_replace('/\s+/', ' ', $cells->eq(1)->text()));
-                    $this->matchField($label, $value, $result);
+                    $label = $this->clean($cells->eq(0)->text());
+                    $value = $this->clean($cells->eq(1)->text());
+                    $this->match($label, $value, $result);
                 }
             });
         } catch (\Exception $e) {
             Log::warning("IVSS parser: " . $e->getMessage());
         }
 
+        Log::info("IVSS: Parseado — nombre=" . ($result['first_name'] ?? 'null') . ", ci=" . ($result['ci'] ?? 'null'));
+
         return $result;
     }
 
-    private function matchField(string $label, string $value, array &$result): void
+    private function match(string $label, string $value, array &$r): void
     {
         $label = strtolower(trim($label, ":\t\n\r\0\x0B "));
 
-        if (str_contains($label, 'cédula') || $label === 'cedula de identidad') {
-            $result['ci'] = $value;
-            return;
-        }
-        if (str_contains($label, 'nombre') && str_contains($label, 'apellido')) {
-            $this->parseFullName($value, $result);
-            return;
-        }
-        if (str_contains($label, 'sexo')) {
-            $result['sex'] = strtoupper(substr(trim($value), 0, 1)) === 'F' ? 'FEMENINO' : (strtoupper(substr(trim($value), 0, 1)) === 'M' ? 'MASCULINO' : strtoupper(trim($value)));
-            return;
-        }
-        if (str_contains($label, 'fecha') && str_contains($label, 'nacimiento')) {
-            $result['birthdate'] = $value;
-            return;
-        }
-        if (str_contains($label, 'patronal')) {
-            $result['company_code'] = $value;
-            return;
-        }
-        if (str_contains($label, 'empresa') && str_contains($label, 'nombre')) {
-            $result['company_name'] = $value;
-            return;
-        }
-        if (str_contains($label, 'egreso')) {
-            $result['retire_date'] = $value;
-            return;
+        if (str_contains($label, 'cédula'))          { $r['ci'] = $value; return; }
+        if (str_contains($label, 'nombre') && str_contains($label, 'apellido')) { $this->splitName($value, $r); return; }
+        if (str_contains($label, 'sexo'))            { $r['sex'] = strtoupper(trim($value)); return; }
+        if (str_contains($label, 'fecha') && str_contains($label, 'nacimiento')) { $r['birthdate'] = $value; return; }
+        if (str_contains($label, 'patronal'))        { $r['company_code'] = $value; return; }
+        if (str_contains($label, 'empresa') && str_contains($label, 'nombre')) { $r['company_name'] = $value; return; }
+        if (str_contains($label, 'egreso'))          { $r['retire_date'] = $value; return; }
+    }
+
+    private function splitName(string $name, array &$r): void
+    {
+        $parts = preg_split('/\s+/', trim($name));
+        $c = count($parts);
+        if ($c >= 4) {
+            $r['last_name'] = $parts[0]; $r['second_last_name'] = $parts[1];
+            $r['first_name'] = $parts[$c-2]; $r['second_name'] = $parts[$c-1];
+        } elseif ($c === 3) {
+            $r['first_name'] = $parts[0]; $r['last_name'] = $parts[1]; $r['second_last_name'] = $parts[2];
+        } elseif ($c === 2) {
+            $r['first_name'] = $parts[0]; $r['last_name'] = $parts[1];
+        } elseif ($c === 1) {
+            $r['first_name'] = $parts[0];
         }
     }
 
-    private function parseFullName(string $fullName, array &$result): void
+    private function clean(string $text): string
     {
-        $parts = preg_split('/\s+/', trim($fullName));
-        $count = count($parts);
-
-        if ($count >= 4) {
-            $result['last_name']        = $parts[0];
-            $result['second_last_name'] = $parts[1];
-            $result['first_name']       = $parts[$count - 2];
-            $result['second_name']      = $parts[$count - 1];
-        } elseif ($count === 3) {
-            $result['first_name'] = $parts[0];
-            $result['last_name']  = $parts[1];
-            $result['second_last_name'] = $parts[2];
-        } elseif ($count === 2) {
-            $result['first_name'] = $parts[0];
-            $result['last_name']  = $parts[1];
-        } elseif ($count === 1) {
-            $result['first_name'] = $parts[0];
-        }
+        return trim(preg_replace('/\s+/', ' ', $text));
     }
 }
