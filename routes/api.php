@@ -61,6 +61,7 @@ use App\Http\Controllers\ScraperController;
 
         // Scraper de datos de empleado desde IVSS/SENIAT
         Route::post('/scrape/employee', [ScraperController::class, 'scrapeEmployee']);
+        Route::post('/scrape/seniat/captcha', [ScraperController::class, 'getSeniatCaptcha']);
 
         Route::apiResource('departments', DepartmentController::class);
         Route::apiResource('subdepartments', SubDepartmentController::class);

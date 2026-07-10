@@ -3,38 +3,57 @@
 namespace App\Http\Controllers;
 
 use App\Services\Scraping\EmployeeDataScraper;
+use App\Services\Scraping\SeniatScraper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ScraperController extends Controller
 {
     /**
-     * Busca datos de un empleado por cédula y fecha de nacimiento
-     * en fuentes externas (IVSS, SENIAT).
+     * Busca datos del empleado en IVSS (y opcionalmente SENIAT con captcha).
      *
      * POST /api/scrape/employee
-     *
-     * Body: { ci: "16456780", birthdate: "20/09/1990" }
+     * Body: { ci, birthdate, seniat_code? }
      */
     public function scrapeEmployee(Request $request, EmployeeDataScraper $scraper): JsonResponse
     {
         $validated = $request->validate([
-            'ci'        => ['required', 'string', 'min:5', 'max:15'],
-            'birthdate' => ['required', 'string', 'min:8', 'max:10'],
+            'ci'            => ['required', 'string', 'min:5', 'max:15'],
+            'birthdate'     => ['required', 'string', 'min:8', 'max:10'],
+            'seniat_code' => ['nullable', 'string', 'max:10'],
         ]);
 
+        $result = $scraper->fetch(
+            $validated['ci'],
+            $validated['birthdate'],
+            $validated['seniat_code'] ?? null
+        );
+
+        $statusCode = $result['success'] ? 200 : 422;
+
+        return response()->json($result, $statusCode);
+    }
+
+    /**
+     * Obtiene la imagen captcha del SENIAT para que el usuario la resuelva.
+     *
+     * POST /api/scrape/seniat/captcha
+     * Body: { ci }
+     */
+    public function getSeniatCaptcha(Request $request, SeniatScraper $seniat): JsonResponse
+    {
+
         try {
-            $result = $scraper->fetch($validated['ci'], $validated['birthdate']);
+            $captchaData = $seniat->getCaptcha();
 
-            $statusCode = $result['success'] ? 200 : 422;
-
-            return response()->json($result, $statusCode);
+            return response()->json([
+                'success'       => true,
+                'captcha_image' => $captchaData['captcha'],
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'data'    => null,
-                'source'  => 'error',
-                'error'   => 'Error interno al procesar la búsqueda: ' . $e->getMessage(),
+                'error'   => 'No se pudo obtener el captcha del SENIAT: ' . $e->getMessage(),
             ], 500);
         }
     }

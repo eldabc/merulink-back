@@ -17,11 +17,12 @@ use Illuminate\Support\Facades\Log;
 class EmployeeDataScraper
 {
     /**
-     * @param string $ci        Cédula de identidad
-     * @param string $birthdate Fecha de nacimiento (acepta d/m/Y, Y-m-d, etc.)
-     * @return array{success: bool, data: array, source: string, error: string|null}
+     * @param string      $ci           Cédula de identidad
+     * @param string      $birthdate    Fecha de nacimiento
+     * @param string|null $seniatCode Código captcha del SENIAT (opcional)
+     * @return array
      */
-    public function fetch(string $ci, string $birthdate): array
+    public function fetch(string $ci, string $birthdate, ?string $seniatCode = null): array
     {
         $scrapers = [
             'ivss'   => IvssScraper::class,
@@ -34,9 +35,15 @@ class EmployeeDataScraper
             try {
                 /** @var BaseScraper $scraper */
                 $scraper = app($class);
-                $data = $scraper->scrape($ci, $birthdate);
 
-                if (!empty($data['first_name']) || !empty($data['last_name'])) {
+                // SENIAT requiere código captcha como 2do parámetro (no birthdate)
+                if ($name === 'seniat' && $seniatCode) {
+                    $data = $scraper->scrape($ci, $seniatCode);
+                } else {
+                    $data = $scraper->scrape($ci, $birthdate);
+                }
+
+                if (!empty($data['first_name']) && !empty($data['last_name'])) {
                     return [
                         'success' => true,
                         'data'    => $this->formatResponse($data, $ci),
@@ -52,7 +59,7 @@ class EmployeeDataScraper
             }
         }
 
-        // Si todos fallan, retornamos datos mínimos (solo CI) para que el usuario llene manualmente
+        // Si todos fallan, retorna datos mínimos (solo CI) para que el usuario llene manualmente
         return [
             'success' => false,
             'data'    => $this->emptyResponse($ci),
@@ -72,7 +79,7 @@ class EmployeeDataScraper
             'second_name'      => $data['second_name'] ?? null,
             'last_name'        => $data['last_name'] ?? null,
             'second_last_name' => $data['second_last_name'] ?? null,
-            'birthdate'        => $this->normalizeDate($data['birthdate'] ?? null),
+            'birthdate'        => $data['birthdate'] ?? null,
             'sex'              => $data['sex'] ?? null,
             'nationality'      => $data['nationality'] ?? 'V',
             'source'           => $data['source'] ?? 'ivss',
