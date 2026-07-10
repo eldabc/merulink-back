@@ -14,7 +14,7 @@ class ScraperController extends Controller
      *
      * POST /api/scrape/employee
      *
-     * Body: { ci: "21380780", birthdate: "21/01/1993" }
+     * Body: { ci: "16456780", birthdate: "20/09/1990" }
      */
     public function scrapeEmployee(Request $request, EmployeeDataScraper $scraper): JsonResponse
     {

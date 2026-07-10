@@ -9,8 +9,7 @@ use Symfony\Component\DomCrawler\Crawler;
 /**
  * Scraper IVSS usando Guzzle HTTP.
  *
- * Campos confirmados del form (DevTools):
- *   nationalidad_aseg, cedula_aseg, d, m (sin leading zero), y, boton
+ * Campos: nacionalidad_aseg, cedula_aseg, d, m (sin zero), y, boton
  *
  * URL: http://www.ivss.gob.ve:28083/CuentaIndividualIntranet/CtaIndividual_PortalCTRL
  */
@@ -29,9 +28,9 @@ class IvssScraper extends BaseScraper
         $formData = [
             'nacionalidad_aseg' => 'V',
             'cedula_aseg'       => $ciNorm,
-            'd'                 => (int) ($parts[0] ?? '1'),
-            'm'                 => (int) ($parts[1] ?? '1'),
-            'y'                 => $parts[2] ?? '1990',
+            'd'                 => (int) ($parts[0]),
+            'm'                 => (int) ($parts[1]),
+            'y'                 => $parts[2],
             'boton'             => 'Consultar',
         ];
 
@@ -65,9 +64,6 @@ class IvssScraper extends BaseScraper
             'second_last_name' => null,
             'birthdate'        => null,
             'sex'              => null,
-            // 'company_name'     => null,
-            // 'company_code'     => null,
-            // 'retire_date'      => null,
         ];
 
         // ¿Es la página de error?
@@ -109,10 +105,7 @@ class IvssScraper extends BaseScraper
         if (str_contains($label, 'cédula'))          { $r['ci'] = $value; return; }
         if (str_contains($label, 'nombre') && str_contains($label, 'apellido')) { $this->splitName($value, $r); return; }
         if (str_contains($label, 'sexo'))            { $r['sex'] = strtoupper(trim($value)); return; }
-        if (str_contains($label, 'fecha') && str_contains($label, 'nacimiento')) { $r['birthdate'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d'); return; }
-        // if (str_contains($label, 'patronal'))        { $r['company_code'] = $value; return; }
-        // if (str_contains($label, 'empresa') && str_contains($label, 'nombre')) { $r['company_name'] = $value; return; }
-        // if (str_contains($label, 'egreso'))          { $r['retire_date'] = $value; return; }
+        if (str_contains($label, 'fecha') && str_contains($label, 'nacimiento')) { $r['birthdate'] = $value; return; }
     }
 
     private function splitName(string $name, array &$r): void
