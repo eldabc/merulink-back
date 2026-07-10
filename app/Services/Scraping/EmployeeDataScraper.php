@@ -75,9 +75,6 @@ class EmployeeDataScraper
             'birthdate'        => $this->normalizeDate($data['birthdate'] ?? null),
             'sex'              => $data['sex'] ?? null,
             'nationality'      => $data['nationality'] ?? 'V',
-            'company_name'     => $data['company_name'] ?? null,
-            'company_code'     => $data['company_code'] ?? null,
-            'retire_date'      => $this->normalizeDate($data['retire_date'] ?? null),
             'source'           => $data['source'] ?? 'ivss',
         ];
     }
@@ -96,9 +93,6 @@ class EmployeeDataScraper
             'birthdate'        => null,
             'sex'              => null,
             'nationality'      => 'V',
-            'company_name'     => null,
-            'company_code'     => null,
-            'retire_date'      => null,
             'source'           => 'manual',
         ];
     }

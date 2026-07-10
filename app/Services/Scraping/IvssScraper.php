@@ -2,6 +2,7 @@
 
 namespace App\Services\Scraping;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -26,7 +27,7 @@ class IvssScraper extends BaseScraper
         Log::info("IVSS: CI={$ciNorm}, FN={$birth}");
 
         $formData = [
-            'nationalidad_aseg' => 'V',
+            'nacionalidad_aseg' => 'V',
             'cedula_aseg'       => $ciNorm,
             'd'                 => (int) ($parts[0] ?? '1'),
             'm'                 => (int) ($parts[1] ?? '1'),
@@ -64,15 +65,14 @@ class IvssScraper extends BaseScraper
             'second_last_name' => null,
             'birthdate'        => null,
             'sex'              => null,
-            'company_name'     => null,
-            'company_code'     => null,
-            'retire_date'      => null,
-            'source'           => 'ivss',
+            // 'company_name'     => null,
+            // 'company_code'     => null,
+            // 'retire_date'      => null,
         ];
 
         // ¿Es la página de error?
         if (str_contains($html, 'no esta registrada')) {
-            Log::info("IVSS: La cédula no está registrada como asegurado.");
+            Log::info("IVSS: La cédula no está registrada como asegurado.". $html . " bytes.");
             return $result;
         }
 
@@ -109,10 +109,10 @@ class IvssScraper extends BaseScraper
         if (str_contains($label, 'cédula'))          { $r['ci'] = $value; return; }
         if (str_contains($label, 'nombre') && str_contains($label, 'apellido')) { $this->splitName($value, $r); return; }
         if (str_contains($label, 'sexo'))            { $r['sex'] = strtoupper(trim($value)); return; }
-        if (str_contains($label, 'fecha') && str_contains($label, 'nacimiento')) { $r['birthdate'] = $value; return; }
-        if (str_contains($label, 'patronal'))        { $r['company_code'] = $value; return; }
-        if (str_contains($label, 'empresa') && str_contains($label, 'nombre')) { $r['company_name'] = $value; return; }
-        if (str_contains($label, 'egreso'))          { $r['retire_date'] = $value; return; }
+        if (str_contains($label, 'fecha') && str_contains($label, 'nacimiento')) { $r['birthdate'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d'); return; }
+        // if (str_contains($label, 'patronal'))        { $r['company_code'] = $value; return; }
+        // if (str_contains($label, 'empresa') && str_contains($label, 'nombre')) { $r['company_name'] = $value; return; }
+        // if (str_contains($label, 'egreso'))          { $r['retire_date'] = $value; return; }
     }
 
     private function splitName(string $name, array &$r): void
