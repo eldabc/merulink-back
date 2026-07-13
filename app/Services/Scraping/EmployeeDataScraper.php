@@ -32,10 +32,10 @@ class EmployeeDataScraper
             $scraper = app($class);
 
             // TODO: quitar tras testear SENIAT
-            if ($source === 'ivss') {
-                Log::info("EmployeeDataScraper: Simulando fallo de IVSS.");
-                throw new \RuntimeException("IVSS simulado como fallido.");
-            }
+            // if ($source === 'ivss') {
+            //     Log::info("EmployeeDataScraper: Simulando fallo de IVSS.");
+            //     throw new \RuntimeException("IVSS simulado como fallido.");
+            // }
 
             $data = match ($source) {
                 'ivss'   => $scraper->scrape($ci, $birthdate),

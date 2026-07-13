@@ -20,7 +20,7 @@ class ScraperController extends Controller
         $validated = $request->validate([
             'source'       => ['required', 'string', 'in:ivss,seniat'],
             'ci'           => ['required', 'string', 'min:5', 'max:10'],
-            'birthdate'    => ['required_if:source,ivss', 'string', 'min:8', 'max:8'],
+            'birthdate'    => ['required_if:source,ivss', 'string', 'min:8', 'max:10'],
             'seniat_code'  => ['required_if:source,seniat', 'string', 'max:10'],
         ]);
 
