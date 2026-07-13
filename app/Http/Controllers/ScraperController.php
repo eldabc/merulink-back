@@ -6,6 +6,7 @@ use App\Services\Scraping\EmployeeDataScraper;
 use App\Services\Scraping\SeniatScraper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\ScrapeEmployeeRequest;
 
 class ScraperController extends Controller
 {
@@ -15,14 +16,10 @@ class ScraperController extends Controller
      * POST /api/scrape/employee
      * Body: { source: "ivss"|"seniat", ci, birthdate?, seniat_code? }
      */
-    public function scrapeEmployee(Request $request, EmployeeDataScraper $scraper): JsonResponse
+    public function scrapeEmployee(ScrapeEmployeeRequest $request, EmployeeDataScraper $scraper): JsonResponse
     {
-        $validated = $request->validate([
-            'source'       => ['required', 'string', 'in:ivss,seniat'],
-            'ci'           => ['required', 'string', 'min:5', 'max:10'],
-            'birthdate'    => ['required_if:source,ivss', 'string', 'min:8', 'max:10'],
-            'seniat_code'  => ['required_if:source,seniat', 'string', 'max:10'],
-        ]);
+
+        $validated = $request->validated();
 
         $result = $scraper->fetchBySource(
             $validated['source'],

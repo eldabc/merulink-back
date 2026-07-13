@@ -148,7 +148,7 @@ class IvssScraper extends BaseScraper
         if (str_contains($label, 'cédula'))          { $r['ci'] = $value; return; }
         if (str_contains($label, 'nombre') && str_contains($label, 'apellido')) { $this->splitName($value, $r); return; }
         if (str_contains($label, 'sexo'))            { $r['sex'] = strtoupper(trim($value)); return; }
-        if (str_contains($label, 'fecha') && str_contains($label, 'nacimiento')) { $r['birthdate'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d'); return; }
+        if (str_contains($label, 'fecha') && str_contains($label, 'nacimiento')) { $r['birthdate'] = $value; return; }
     }
 
     private function splitName(string $name, array &$r): void
