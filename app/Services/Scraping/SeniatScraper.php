@@ -3,6 +3,7 @@
 namespace App\Services\Scraping;
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -27,7 +28,6 @@ class SeniatScraper extends BaseScraper
      */
     public function getCaptcha(): array
     {
-        // GET a la página para obtener JSESSIONID y la URL del captcha
         $response = $this->httpClient->get(self::BASE_URL);
         $html = (string) $response->getBody();
 
@@ -35,17 +35,11 @@ class SeniatScraper extends BaseScraper
         $captchaResponse = $this->httpClient->get('http://contribuyente.seniat.gob.ve/BuscaRif/Captcha.jpg');
         $captchaBytes = (string) $captchaResponse->getBody();
 
-        // Extraer cookies para mantener la sesión
-        $cookies = [];
-        foreach ($this->cookieJar->toArray() as $c) {
-            if (isset($c['Name'], $c['Value'])) {
-                $cookies[$c['Name']] = $c['Value'];
-            }
-        }
+        // Guardar cookies de sesión para que scrape() las use
+        Cache::put('seniat_jar', serialize($this->cookieJar), 120);
 
         return [
             'captcha' => 'data:image/jpeg;base64,' . base64_encode($captchaBytes),
-            'cookies' => $cookies,
         ];
     }
 
@@ -61,7 +55,25 @@ class SeniatScraper extends BaseScraper
         $ciNorm = $this->normalizeCi($ci);
 
         if (empty($codigo)) {
-            throw new \RuntimeException("Se requiere el código {$codigo} captcha para consultar el SENIAT.");
+            throw new \RuntimeException("Se requiere el código captcha para consultar el SENIAT.");
+        }
+
+        // Restaurar cookies de sesión del captcha (mismo JSESSIONID)
+        $cachedJar = Cache::get('seniat_jar');
+        if ($cachedJar) {
+            $this->cookieJar = unserialize($cachedJar);
+            $this->httpClient = new \GuzzleHttp\Client([
+                'timeout'         => 30,
+                'connect_timeout' => 10,
+                'allow_redirects' => true,
+                'cookies'         => $this->cookieJar,
+                'verify'          => false,
+                'headers'         => [
+                    'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
+                    'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language' => 'es-VE,es;q=0.9,en;q=0.8',
+                ],
+            ]);
         }
 
         Log::info("SENIAT: Consultando CI={$ciNorm}, codigo={$codigo}");

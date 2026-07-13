@@ -10,39 +10,39 @@ use Illuminate\Http\Request;
 class ScraperController extends Controller
 {
     /**
-     * Busca datos del empleado en IVSS (y opcionalmente SENIAT con captcha).
+     * Ejecuta scraper según el source
      *
      * POST /api/scrape/employee
-     * Body: { ci, birthdate, seniat_code? }
+     * Body: { source: "ivss"|"seniat", ci, birthdate?, seniat_code? }
      */
     public function scrapeEmployee(Request $request, EmployeeDataScraper $scraper): JsonResponse
     {
         $validated = $request->validate([
-            'ci'            => ['required', 'string', 'min:5', 'max:15'],
-            'birthdate'     => ['required', 'string', 'min:8', 'max:10'],
-            'seniat_code' => ['nullable', 'string', 'max:10'],
+            'source'       => ['required', 'string', 'in:ivss,seniat'],
+            'ci'           => ['required', 'string', 'min:5', 'max:10'],
+            'birthdate'    => ['required_if:source,ivss', 'string', 'min:8', 'max:8'],
+            'seniat_code'  => ['required_if:source,seniat', 'string', 'max:10'],
         ]);
 
-        $result = $scraper->fetch(
+        $result = $scraper->fetchBySource(
+            $validated['source'],
             $validated['ci'],
-            $validated['birthdate'],
+            $validated['birthdate'] ?? '',
             $validated['seniat_code'] ?? null
         );
 
-        $statusCode = $result['success'] ? 200 : 422;
+        $statusCode = ($result['success'] ?? false) ? 200 : 422;
 
         return response()->json($result, $statusCode);
     }
 
     /**
-     * Obtiene la imagen captcha del SENIAT para que el usuario la resuelva.
+     * Obtiene la imagen captcha del SENIAT.
      *
      * POST /api/scrape/seniat/captcha
-     * Body: { ci }
      */
     public function getSeniatCaptcha(Request $request, SeniatScraper $seniat): JsonResponse
     {
-
         try {
             $captchaData = $seniat->getCaptcha();
 

@@ -5,66 +5,67 @@ namespace App\Services\Scraping;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Orquestador de scraping de datos de empleados.
+ * Orquestador de scraping por source.
  *
- * Intenta obtener datos del empleado desde múltiples fuentes en orden:
- *   1. IVSS (http://www.ivss.gov.ve/)
- *   2. SENIAT (http://contribuyente.seniat.gob.ve/) — placeholder
- *   3. Fallback: retorna campos vacíos para llenado manual
- *
- * Cada scraper tiene 30s para responder.
+ * El frontend decide qué servicio usar:
+ *   source=ivss   → IvssScraper  (requiere ci + birthdate)
+ *   source=seniat → SeniatScraper (requiere ci + seniat_code)
  */
 class EmployeeDataScraper
 {
-    /**
-     * @param string      $ci           Cédula de identidad
-     * @param string      $birthdate    Fecha de nacimiento
-     * @param string|null $seniatCode Código captcha del SENIAT (opcional)
-     * @return array
-     */
-    public function fetch(string $ci, string $birthdate, ?string $seniatCode = null): array
+    private const SCRAPERS = [
+        'ivss'   => IvssScraper::class,
+        'seniat' => SeniatScraper::class,
+    ];
+
+    public function fetchBySource(string $source, string $ci, string $birthdate, ?string $seniatCode = null): array
     {
-        $scrapers = [
-            'ivss'   => IvssScraper::class,
-            'seniat' => SeniatScraper::class,
-        ];
-
-        foreach ($scrapers as $name => $class) {
-            Log::info("EmployeeDataScraper: Intentando con {$name}...");
-            
-            try {
-                /** @var BaseScraper $scraper */
-                $scraper = app($class);
-
-                // SENIAT requiere código captcha como 2do parámetro (no birthdate)
-                if ($name === 'seniat' && $seniatCode) {
-                    $data = $scraper->scrape($ci, $seniatCode);
-                } else {
-                    $data = $scraper->scrape($ci, $birthdate);
-                }
-
-                if (!empty($data['first_name']) && !empty($data['last_name'])) {
-                    return [
-                        'success' => true,
-                        'data'    => $this->formatResponse($data, $ci),
-                        'source'  => $name,
-                        'error'   => null,
-                    ];
-                }
-
-                Log::info("EmployeeDataScraper: {$name} respondió pero sin datos de nombre.");
-
-            } catch (\RuntimeException $e) {
-                Log::info("EmployeeDataScraper: {$name} falló — " . $e->getMessage());
-            }
+        if (!isset(self::SCRAPERS[$source])) {
+            return $this->fail($ci, "Fuente no válida: {$source}");
         }
 
-        // Si todos fallan, retorna datos mínimos (solo CI) para que el usuario llene manualmente
+        $class = self::SCRAPERS[$source];
+        Log::info("EmployeeDataScraper: Ejecutando {$source}...");
+
+        try {
+            /** @var BaseScraper $scraper */
+            $scraper = app($class);
+
+            // TODO: quitar tras testear SENIAT
+            if ($source === 'ivss') {
+                Log::info("EmployeeDataScraper: Simulando fallo de IVSS.");
+                throw new \RuntimeException("IVSS simulado como fallido.");
+            }
+
+            $data = match ($source) {
+                'ivss'   => $scraper->scrape($ci, $birthdate),
+                'seniat' => $scraper->scrape($ci, $seniatCode),
+            };
+
+            if (!empty($data['first_name']) && !empty($data['last_name'])) {
+                return [
+                    'success' => true,
+                    'data'    => $this->formatResponse($data, $ci),
+                    'source'  => $source,
+                    'error'   => null,
+                ];
+            }
+
+            Log::info("EmployeeDataScraper: {$source} respondió pero sin datos de nombre.");
+        } catch (\RuntimeException $e) {
+            Log::info("EmployeeDataScraper: {$source} falló — " . $e->getMessage());
+        }
+
+        return $this->fail($ci, "No se encontraron datos del empleado en {$source}.");
+    }
+
+    private function fail(string $ci, string $msg): array
+    {
         return [
             'success' => false,
             'data'    => $this->emptyResponse($ci),
             'source'  => 'manual',
-            'error'   => 'No se pudo obtener información del empleado desde ninguna fuente. Complete los datos manualmente.',
+            'error'   => $msg,
         ];
     }
 
@@ -80,9 +81,9 @@ class EmployeeDataScraper
             'last_name'        => $data['last_name'] ?? null,
             'second_last_name' => $data['second_last_name'] ?? null,
             'birthdate'        => $data['birthdate'] ?? null,
-            'sex'              => $data['sex'] ?? null,
-            'nationality'      => $data['nationality'] ?? 'V',
-            'source'           => $data['source'] ?? 'ivss',
+            'sex'              => $data['sex'] ?? '',
+            'nationality'      => $data['nationality'] ?? '',
+            'source'           => $data['source'] ?? '',
         ];
     }
 
