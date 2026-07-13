@@ -54,6 +54,7 @@ class EmployeeDataScraper
             Log::info("EmployeeDataScraper: {$source} respondió pero sin datos de nombre.");
         } catch (\RuntimeException $e) {
             Log::info("EmployeeDataScraper: {$source} falló — " . $e->getMessage());
+            return $this->fail($ci, $e->getMessage());
         }
 
         return $this->fail($ci, "No se encontraron datos del empleado en {$source}.");

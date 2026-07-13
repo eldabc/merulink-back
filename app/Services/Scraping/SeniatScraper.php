@@ -106,38 +106,45 @@ class SeniatScraper extends BaseScraper
         $crawler = new Crawler($html);
 
         try {
-            // El nombre viene en: <b><font>V123456780&nbsp;NOMBRE COMPLETO USUARIO</font></b>
+            // El nombre y los errores comparten el mismo nodo:
+            // Éxito:  <b><font>V123456789 NOMBRE COMPLETO</font></b>
+            // Error:  <b><font>EL código no coincide con la imagen.</font></b>
             $nameNode = $crawler->filter('table[align="center"] b font');
             if ($nameNode->count() > 0) {
                 $fullText = trim($nameNode->first()->text());
+                Log::info("SENIAT: texto extraído — \"{$fullText}\"");
 
-                // Formato: "V123456780 NOMBRE COMPLETO USUARIO"
-                // Quitar el RIF del inicio (V/E/J + números)
+                // Detectar error de captcha en el texto del nodo
+                $this->throwIfCaptchaError($fullText);
+
+                // Quitar el RIF del inicio si existe (V/E/J + números)
                 $fullText = preg_replace('/^[VEJ]\d{7,9}\s*/i', '', $fullText);
                 $this->splitName($fullText, $result);
             }
-
-            // Intentar obtener RIF/CI del texto
-            if (preg_match('/([VEJ]\d{7,9})/i', $html, $m)) {
-                $result['ci'] = $m[1];
-            }
+        } catch (\RuntimeException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::warning("SENIAT parser: " . $e->getMessage());
-        }
-
-        // Verificar si hay mensaje de error
-        if (empty($result['first_name']) && empty($result['last_name'])) {
-            if (str_contains($html, 'no esta registrado') || str_contains($html, 'No Existe')) {
-                Log::info("SENIAT: Cédula no encontrada.");
-            } elseif (str_contains($html, 'codigo') && str_contains($html, 'incorrecto')) {
-                Log::info("SENIAT: Código captcha incorrecto.");
-                throw new \RuntimeException("El código captcha ingresado es incorrecto.");
-            }
         }
 
         Log::info("SENIAT: Parseado — nombre=" . ($result['first_name'] ?? 'null'));
 
         return $result;
+    }
+
+    /**
+     * Revisa el texto del nodo de resultado en busca de errores de captcha.
+     */
+    private function throwIfCaptchaError(string $text): void
+    {
+        $patterns = ['no coincide', 'incorrecto', 'inválido', 'invalido'];
+
+        foreach ($patterns as $pattern) {
+            if (stripos($text, $pattern) !== false) {
+                Log::info("SENIAT: Código captcha incorrecto (\"{$pattern}\").");
+                throw new \RuntimeException("El código captcha ingresado es incorrecto.");
+            }
+        }
     }
 
     /**
