@@ -24,7 +24,7 @@ class IvssScraper extends BaseScraper
     private function makeIvssClient(): \GuzzleHttp\Client
     {
         return new \GuzzleHttp\Client([
-            'timeout'         => 35,
+            'timeout'         => 30,
             'connect_timeout' => 15,
             'allow_redirects' => true,
             'cookies'         => $this->cookieJar,

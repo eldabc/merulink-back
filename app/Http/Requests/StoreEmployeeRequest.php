@@ -121,15 +121,15 @@ class StoreEmployeeRequest extends FormRequest
                 'exists:positions,id',
             ],
 
-            'user_name' => [
-                'nullable',
-                'string',
-            ],
+            // 'user_name' => [
+            //     'nullable',
+            //     'string',
+            // ],
 
-            'user_pass' => [
-                'nullable',
-                'string',
-            ],
+            // 'user_pass' => [
+            //     'nullable',
+            //     'string',
+            // ],
 
             'change_pass_next_login' => [
                 'nullable',
