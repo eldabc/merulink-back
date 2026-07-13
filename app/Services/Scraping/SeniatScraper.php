@@ -106,9 +106,7 @@ class SeniatScraper extends BaseScraper
         $crawler = new Crawler($html);
 
         try {
-            // El nombre y los errores comparten el mismo nodo:
-            // Éxito:  <b><font>V123456789 NOMBRE COMPLETO</font></b>
-            // Error:  <b><font>EL código no coincide con la imagen.</font></b>
+            // El nombre y los errores comparten el mismo nodo: <b><font>RESPUESTA SENIAT</font></b>
             $nameNode = $crawler->filter('table[align="center"] b font');
             if ($nameNode->count() > 0) {
                 $fullText = trim($nameNode->first()->text());
@@ -117,7 +115,13 @@ class SeniatScraper extends BaseScraper
                 // Detectar error de captcha en el texto del nodo
                 $this->throwIfCaptchaError($fullText);
 
-                // Quitar el RIF del inicio si existe (V/E/J + números)
+                // ¿Cédula no encontrada? → retorna vacío
+                if ($this->isNotFound($fullText)) {
+                    Log::info("SENIAT: Contribuyente no encontrado.");
+                    return $result;
+                }
+
+                // Quitar RIF del inicio y parsear nombre
                 $fullText = preg_replace('/^[VEJ]\d{7,9}\s*/i', '', $fullText);
                 $this->splitName($fullText, $result);
             }
@@ -133,7 +137,7 @@ class SeniatScraper extends BaseScraper
     }
 
     /**
-     * Revisa el texto del nodo de resultado en busca de errores de captcha.
+     * Lanza RuntimeException si el texto contiene un error de captcha.
      */
     private function throwIfCaptchaError(string $text): void
     {
@@ -145,6 +149,22 @@ class SeniatScraper extends BaseScraper
                 throw new \RuntimeException("El código captcha ingresado es incorrecto.");
             }
         }
+    }
+
+    /**
+     * Detecta si el texto indica que el contribuyente no está registrado.
+     */
+    private function isNotFound(string $text): bool
+    {
+        $patterns = ['no existe', 'contribuyente', 'no esta registrado'];
+
+        foreach ($patterns as $pattern) {
+            if (stripos($text, $pattern) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
