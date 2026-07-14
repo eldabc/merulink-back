@@ -22,7 +22,6 @@ class StoreEmployeeRequest extends FormRequest
      */
     public function rules(): array
     {
-        // $standardText = ['required', 'string'];
         return [
             'ci' => [
                 'required',
@@ -121,15 +120,23 @@ class StoreEmployeeRequest extends FormRequest
                 'exists:positions,id',
             ],
 
-            // 'user_name' => [
-            //     'nullable',
-            //     'string',
-            // ],
 
-            // 'user_pass' => [
-            //     'nullable',
-            //     'string',
-            // ],
+            'username' => [
+                'nullable',
+                'string',
+                'required_if:use_meru_link,true',
+                Rule::unique('users', 'username')->ignore(
+                    $this->route('employee')?->user_id
+                ),
+            ],
+
+            'password' => [
+                'nullable',
+                'string',
+                'required_if:use_meru_link,true',
+                'min:10',
+                'max:20',
+            ],
 
             'change_pass_next_login' => [
                 'nullable',
@@ -201,6 +208,11 @@ class StoreEmployeeRequest extends FormRequest
             'mobile_phone.regex' => 'El formato del teléfono móvil debe ser 04XX-XXXXXXX (incluyendo el guion).',
             'home_phone.regex' => 'El teléfono de habitación debe tener el formato 0286-XXXXXXX.',
             'assign_id.exists' => 'El locker seleccionado no tiene registro de emparejamiento',
+            'username.required_if' => 'El nombre de usuario es requerido cuando se activa la opción Usa MeruLink.',
+            'username.unique' => 'El nombre de usuario ya está en uso.',
+            'password.required_if' => 'La contraseña es requerida cuando se activa la opción Usa MeruLink.',
+            'password.min' => 'La contraseña debe tener al menos 10 caracteres.',
+            'password.max' => 'La contraseña debe tener máximo 20 caracteres.',
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Assign;
 use App\Models\Locker;
+use App\Models\User;
 use App\Models\EmergencyContact;
 
 use Illuminate\Http\Request;
@@ -43,7 +44,8 @@ class EmployeeController extends Controller
         $employees = $query->with([
             'position.department', 
             'position.subDepartment',
-            'assignment'
+            'assignment',
+            'user'
         ])->get();
 
         return EmployeeResource::collection($employees);
@@ -73,10 +75,23 @@ class EmployeeController extends Controller
                 }
             }
 
+            if (filled($data['use_meru_link'])) {
+                $user = User::create([
+                    'name'     => trim($employee->first_name . ' ' . $employee->last_name),
+                    'username' => $data['username'],
+                    'email'    => $employee->email,
+                    'password' => $data['password'],
+                ]);
+
+                $employee->user_id = $user->id;
+                $employee->save();
+            }
+
             return new EmployeeResource($employee->load([
                 'position.department', 
                 'position.subDepartment',
-                'assignment'
+                'assignment',
+                'user'
             ]));
         });
 
@@ -99,6 +114,39 @@ class EmployeeController extends Controller
         return DB::transaction(function () use ($data, $employee) {
 
             $employee->update($data);
+
+            // Sincronizar usuario del sistema
+            $useMeruLink = $data['use_meru_link'] ?? false;
+            $currentUser = $employee->user;
+
+            if ($useMeruLink) {
+                $userData = [
+                    'name'     => trim($employee->first_name . ' ' . $employee->last_name),
+                    'username' => $data['username'],
+                    'email'    => $employee->email,
+                    'status'   => true,
+                ];
+
+                if (!empty($data['password'])) {
+                    $userData['password'] = $data['password'];
+                }
+
+                if ($currentUser) {
+                    // Si no se envía contraseña nueva, no sobreescribir
+                    if (empty($data['password'])) {
+                        unset($userData['password']);
+                    }
+                    $currentUser->update($userData);
+                } else {
+                    $user = User::create($userData);
+                    $employee->user_id = $user->id;
+                    $employee->save();
+                }
+            } else {
+                if ($currentUser) {
+                    $currentUser->update(['status' => false]);
+                }
+            }
 
             $assignId = $data['assign_id'] ?? null;
             $currentAssign = $employee->assignment;
@@ -127,7 +175,8 @@ class EmployeeController extends Controller
             return new EmployeeResource($employee->load([
                 'position.department', 
                 'position.subDepartment',
-                'assignment'
+                'assignment',
+                'user'
             ]));
         });
 
@@ -145,7 +194,7 @@ class EmployeeController extends Controller
             
             $employeeDataReset = [];
             if ($field === 'status') {
-                $newStatus = !$employee->status;
+                // $newStatus = !$employee->status;
 
                 if (!$employee->status === false) {
                     $employeeDataReset = [
@@ -162,6 +211,10 @@ class EmployeeController extends Controller
                 $this->lockerService->unassignLocker($employee->id);
             }
 
+            if ($field === 'use_meru_link') {
+                $employee->user?->update(['status' => !$employee->use_meru_link]);
+            }
+
             $employee->update(array_merge(
                 [$field => !$employee->$field],
                 $employeeDataReset
@@ -170,7 +223,8 @@ class EmployeeController extends Controller
             return new EmployeeResource($employee->fresh()->load([
                 'position.department', 
                 'position.subDepartment',
-                'assignment'
+                'assignment',
+                'user'
             ]));
         });
     }

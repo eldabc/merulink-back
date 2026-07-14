@@ -30,8 +30,6 @@ return new class extends Migration
             $table->string('home_phone')->nullable();
             $table->string('address')->nullable();
             $table->string('join_date');
-            // $table->string('user_name')->nullable();
-            // $table->string('user_pass')->nullable();
             $table->boolean('change_pass_next_login')->default(false);
             $table->boolean('status')->default(true);
             $table->boolean('use_meru_link')->default(false);
