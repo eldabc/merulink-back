@@ -17,7 +17,6 @@ class UserSeeder extends Seeder
         $user = User::firstOrCreate(
             ['username' => 'admin'],
             [
-                'name' => 'Admin Merulink',
                 'password' => Hash::make('123456'),
             ]
         );
@@ -27,7 +26,6 @@ class UserSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['username' => 'supervisor'],
             [
-                'name' => 'Supervisor Merulink',
                 'password' => Hash::make('123456'),
             ]
         );
@@ -37,7 +35,6 @@ class UserSeeder extends Seeder
         $user = User::firstOrCreate(
             ['username' => 'employee'],
             [
-                'name' => 'Empleado Merulink',
                 'password' => Hash::make('123456'),
             ]
         );
@@ -48,7 +45,6 @@ class UserSeeder extends Seeder
         $user = User::firstOrCreate(
             ['username' => 'guest'],
             [
-                'name' => 'Invitado Merulink',
                 'password' => Hash::make('123456'),
             ]
         );

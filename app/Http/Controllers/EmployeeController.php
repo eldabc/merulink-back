@@ -77,9 +77,7 @@ class EmployeeController extends Controller
 
             if (filled($data['use_meru_link'])) {
                 $user = User::create([
-                    'name'     => trim($employee->first_name . ' ' . $employee->last_name),
                     'username' => $data['username'],
-                    'email'    => $employee->email,
                     'password' => $data['password'],
                 ]);
 
@@ -121,9 +119,7 @@ class EmployeeController extends Controller
 
             if ($useMeruLink) {
                 $userData = [
-                    'name'     => trim($employee->first_name . ' ' . $employee->last_name),
                     'username' => $data['username'],
-                    'email'    => $employee->email,
                     'status'   => true,
                 ];
 

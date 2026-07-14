@@ -133,7 +133,8 @@ class StoreEmployeeRequest extends FormRequest
             'password' => [
                 'nullable',
                 'string',
-                'required_if:use_meru_link,true',
+                // Solo exige contraseña al crear; al editar es opcional
+                $this->route('employee') ? 'nullable' : 'required_if:use_meru_link,true',
                 'min:10',
                 'max:20',
             ],

@@ -33,10 +33,13 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $user->employee
+                    ? trim($user->employee->first_name . ' ' . $user->employee->last_name)
+                    : $user->username,
                 'username' => $user->username,
-                'email' => $user->email,
+                'email' => $user->employee?->email,
                 'departmentId' => $user->employee?->department->id ?? null,
+                'departmentName' => $user->employee?->department->name ?? '',
                 'roles' => $user->getRoleNames(), 
                 'permissions' => $user->getAllPermissions()->pluck('name'),
             ]
