@@ -45,7 +45,8 @@ class EmployeeController extends Controller
             'position.department', 
             'position.subDepartment',
             'assignment',
-            'user'
+            'user.permissions',
+            'user.roles.permissions',
         ])->get();
 
         return EmployeeResource::collection($employees);
@@ -90,7 +91,8 @@ class EmployeeController extends Controller
                 'position.department', 
                 'position.subDepartment',
                 'assignment',
-                'user'
+                'user.permissions',
+                'user.roles.permissions',
             ]));
         });
 
@@ -174,7 +176,8 @@ class EmployeeController extends Controller
                 'position.department', 
                 'position.subDepartment',
                 'assignment',
-                'user'
+                'user.permissions',
+                'user.roles.permissions',
             ]));
         });
 
