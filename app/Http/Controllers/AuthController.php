@@ -77,20 +77,12 @@ class AuthController extends Controller
     public function changePassword(Request $request)
     {
         $request->validate([
-            'current_password' => 'required|string',
             'new_password' => 'required|string|min:6|confirmed',
         ]);
 
         $user = $request->user();
 
-        // Verificar que la contraseña actual coincida
-        if (! Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'message' => 'La contraseña actual es incorrecta.'
-            ], 422);
-        }
-
-        // Verificar que la nueva contraseña sea diferente
+        // Verificar que la nueva contraseña sea diferente a la actual
         if (Hash::check($request->new_password, $user->password)) {
             return response()->json([
                 'message' => 'La nueva contraseña no puede ser igual a la actual.'
