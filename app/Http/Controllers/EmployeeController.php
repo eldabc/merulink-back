@@ -79,6 +79,7 @@ class EmployeeController extends Controller
                 $user = User::create([
                     'username' => $data['username'],
                     'password' => $data['password'],
+                    'change_pass_next_login' => $data['change_pass_next_login'] ?? false,
                 ]);
 
                 $employee->user_id = $user->id;
@@ -119,8 +120,9 @@ class EmployeeController extends Controller
 
             if ($useMeruLink) {
                 $userData = [
-                    'username' => $data['username'],
-                    'status'   => true,
+                    'username'                   => $data['username'],
+                    'status'                     => true,
+                    'change_pass_next_login'     => $data['change_pass_next_login'] ?? false,
                 ];
 
                 if (!empty($data['password'])) {

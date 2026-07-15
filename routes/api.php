@@ -30,6 +30,11 @@ use App\Http\Controllers\ScraperController;
 
     Route::post('/login', [AuthController::class, 'login']);
 
+    // Cambio de contraseña
+    Route::middleware(['auth:sanctum', 'abilities:password-change'])->group(function () {
+        Route::post('/change-password', [AuthController::class, 'changePassword']);
+    });
+
 
     // Rutas protegidas
     Route::middleware('auth:sanctum')->group(function () {

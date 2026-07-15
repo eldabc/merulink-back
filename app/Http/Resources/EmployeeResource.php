@@ -49,7 +49,7 @@ class EmployeeResource extends JsonResource
             ],
             'userName' => $this->user?->username,
             'userPass' => null,
-            'changePassNextLogin' => $this->change_pass_next_login,
+            'changePassNextLogin' => $this->user?->change_pass_next_login ?? false,
             'status' => $this->status,
             'useMeruLink' => $this->use_meru_link,
             'useHidCard' => $this->use_hid_card,

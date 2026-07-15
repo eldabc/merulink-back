@@ -24,6 +24,7 @@ class User extends Authenticatable
         'username',
         'password',
         'status',
+        'change_pass_next_login',
     ];
 
     /**
@@ -46,6 +47,7 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'status' => 'boolean',
+            'change_pass_next_login' => 'boolean',
         ];
     }
 

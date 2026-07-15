@@ -27,6 +27,7 @@ class UserSeeder extends Seeder
             ['username' => 'supervisor'],
             [
                 'password' => Hash::make('123456'),
+                'change_pass_next_login' => true,
             ]
         );
 
