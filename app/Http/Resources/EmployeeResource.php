@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Helpers\PermissionHelper;
 
 class EmployeeResource extends JsonResource
 {
@@ -15,6 +16,13 @@ class EmployeeResource extends JsonResource
     public function toArray(Request $request): array
     {
         $hasVacation = $this->relationLoaded('vacations') && $this->vacations->isNotEmpty();
+
+        $permissionTable = $this->user && $this->user->getAllPermissions()->isNotEmpty()
+            ? PermissionHelper::buildTable(
+                $this->user->getAllPermissions()->pluck('name')->toArray()
+              )
+            : null;
+
         return [
             'id' => $this->id,
             'ci' => $this->ci,
@@ -51,15 +59,9 @@ class EmployeeResource extends JsonResource
             'userPass' => null,
             'changePassNextLogin' => $this->user?->change_pass_next_login ?? false,
             'roles' => $this->user ? $this->user->getRoleNames() : [],
-            'permissions' => $this->user ? $this->user->getAllPermissions()->pluck('name') : [],
-            'permissionLabels' => $this->user && $this->user->getAllPermissions()->isNotEmpty()
-                ? \App\Helpers\PermissionHelper::displayNames(
-                    $this->user->getAllPermissions()->pluck('name')->toArray()
-                  )
-                : [],
-            'moduleLabels' => __('permissions.modules'),
-            // 'actionLabels' => __('permissions.actions'),
-            'specialLabels' => __('permissions.specials'),
+            // 'permissions' => $this->user ? $this->user->getAllPermissions()->pluck('name') : [],
+            'permissionModules' => $permissionTable['modules'] ?? [],
+            'permissionSpecials' => $permissionTable['specials'] ?? [],
             'status' => $this->status,
             'useMeruLink' => $this->use_meru_link,
             'useHidCard' => $this->use_hid_card,

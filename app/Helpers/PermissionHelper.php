@@ -62,4 +62,65 @@ class PermissionHelper
         }
         return $labels;
     }
+
+    /**
+     * Acciones CRUD estándar.
+     */
+    public const CRUD_ACTIONS = ['create', 'view', 'edit', 'delete'];
+
+    /**
+     * Agrupa los permisos en una estructura lista para renderizar,
+     * separando acciones CRUD (por módulo) de permisos especiales.
+     *
+     * @param  array  $permissionNames  Array de nombres de permisos
+     * @return array{modules: array, specials: array}
+     */
+    public static function buildTable(array $permissionNames): array
+    {
+        $moduleLabels = __('permissions.modules');
+        $modulesMap = [];
+
+        // Clasificar: CRUD → módulo, especial → specials
+        foreach ($permissionNames as $perm) {
+            $lastDash = strrpos($perm, '-');
+            if ($lastDash === false) continue;
+
+            $action = substr($perm, 0, $lastDash);
+            $moduleKey = substr($perm, $lastDash + 1);
+
+            if (in_array($action, self::CRUD_ACTIONS, true)) {
+                if (!isset($modulesMap[$moduleKey])) {
+                    $modulesMap[$moduleKey] = [
+                        'key'    => $moduleKey,
+                        'label'  => $moduleLabels[$moduleKey] ?? $moduleKey,
+                        'create' => false,
+                        'view'   => false,
+                        'edit'   => false,
+                        'delete' => false,
+                    ];
+                }
+                $modulesMap[$moduleKey][$action] = true;
+            }
+        }
+
+        // Recolectar especiales
+        $specials = [];
+        foreach ($permissionNames as $perm) {
+            $lastDash = strrpos($perm, '-');
+            if ($lastDash === false) continue;
+
+            $action = substr($perm, 0, $lastDash);
+            if (!in_array($action, self::CRUD_ACTIONS, true)) {
+                $specials[] = [
+                    'key'   => $perm,
+                    'label' => self::displayName($perm),
+                ];
+            }
+        }
+
+        return [
+            'modules'  => array_values($modulesMap),
+            'specials' => $specials,
+        ];
+    }
 }
