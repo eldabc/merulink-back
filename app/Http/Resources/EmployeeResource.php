@@ -59,6 +59,7 @@ class EmployeeResource extends JsonResource
             'userPass' => null,
             'changePassNextLogin' => $this->user?->change_pass_next_login ?? false,
             'roles' => $this->user ? $this->user->getRoleNames() : [],
+            'roleId' => $this->user?->roles->first()?->id,
             // 'permissions' => $this->user ? $this->user->getAllPermissions()->pluck('name') : [],
             'permissionModules' => $permissionTable['modules'] ?? [],
             'permissionSpecials' => $permissionTable['specials'] ?? [],

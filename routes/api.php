@@ -19,6 +19,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\SchedulePlanningController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScraperController;
+use App\Http\Controllers\RoleController;
 
     // Ruta solo con fin informativo
     Route::get('/check-time', function () {
@@ -63,6 +64,8 @@ use App\Http\Controllers\ScraperController;
 
         Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
         Route::apiResource('employees', EmployeeController::class);
+
+        Route::get('/roles', [RoleController::class, 'index'])->middleware('role:admin|super-admin');
 
         // Scraper de datos de empleado desde IVSS/SENIAT
         Route::post('/scrape/employee', [ScraperController::class, 'scrapeEmployee']);

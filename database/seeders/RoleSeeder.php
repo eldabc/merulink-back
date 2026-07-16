@@ -14,39 +14,49 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminUser = Role::firstOrCreate([
+        $superAdminRole = Role::firstOrCreate([
+            'name' => 'super-admin',
+            'name_label' => 'Super Admin',
+        ]);
+
+        $adminRole = Role::firstOrCreate([
             'name' => 'admin',
+            'name_label' => 'Admin',
         ]);
 
-        $supervisorUser = Role::firstOrCreate([
+        $supervisorRole = Role::firstOrCreate([
             'name' => 'supervisor',
+            'name_label' => 'Supervisor',
         ]);
 
-        $employeeUser = Role::firstOrCreate([
+        $employeeRole = Role::firstOrCreate([
             'name' => 'employee',
+            'name_label' => 'Empleado',
         ]);
 
-        $guestUser = Role::firstOrCreate([
+        $guestRole = Role::firstOrCreate([
             'name' => 'guest',
+            'name_label' => 'Invitado',
         ]);
 
-        Permission:: firstOrcreate([ 'name' => 'view-calendar' ]);
-        Permission:: firstOrcreate([ 'name' => 'create-schedules' ]);
-        Permission:: firstOrcreate([ 'name' => 'view-schedules' ]);
-        Permission:: firstOrcreate([ 'name' => 'edit-schedules' ]);
-        Permission:: firstOrcreate([ 'name' => 'delete-schedules' ]);
-        Permission:: firstOrcreate([ 'name' => 'reviewed-schedules' ]);
-        Permission:: firstOrcreate([ 'name' => 'approve-schedules' ]);
-        Permission:: firstOrcreate([ 'name' => 'autofill-schedules' ]);
+        Permission::firstOrcreate([ 'name' => 'view-calendar' ]);
+        Permission::firstOrcreate([ 'name' => 'create-schedules' ]);
+        Permission::firstOrcreate([ 'name' => 'view-schedules' ]);
+        Permission::firstOrcreate([ 'name' => 'edit-schedules' ]);
+        Permission::firstOrcreate([ 'name' => 'delete-schedules' ]);
+        Permission::firstOrcreate([ 'name' => 'reviewed-schedules' ]);
+        Permission::firstOrcreate([ 'name' => 'approve-schedules' ]);
+        Permission::firstOrcreate([ 'name' => 'autofill-schedules' ]);
         
-        Permission:: firstOrcreate([ 'name' => 'create-employees' ]);
-        Permission:: firstOrcreate([ 'name' => 'view-employees' ]);
-        Permission:: firstOrcreate([ 'name' => 'edit-employees' ]);
-        Permission:: firstOrcreate([ 'name' => 'change-status-employees' ]);
+        Permission::firstOrcreate([ 'name' => 'create-employees' ]);
+        Permission::firstOrcreate([ 'name' => 'view-employees' ]);
+        Permission::firstOrcreate([ 'name' => 'edit-employees' ]);
+        Permission::firstOrcreate([ 'name' => 'change-status-employees' ]);
 
 
-        $adminUser->givePermissionTo(Permission::all());
-        $supervisorUser->givePermissionTo([
+        $superAdminRole->givePermissionTo(Permission::all());
+        $adminRole->givePermissionTo(Permission::all());
+        $supervisorRole->givePermissionTo([
             'create-schedules', 
             'view-schedules', 
             'edit-schedules', 
@@ -54,10 +64,7 @@ class RoleSeeder extends Seeder
             'reviewed-schedules',
             'view-employees', 
         ]);
-        $employeeUser->givePermissionTo(['view-schedules', 'view-calendar']);
-        $guestUser->givePermissionTo(['view-calendar']);
-         
-
-
+        $employeeRole->givePermissionTo(['view-schedules', 'view-calendar']);
+        $guestRole->givePermissionTo(['view-calendar']);
     }
 }
