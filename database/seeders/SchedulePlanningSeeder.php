@@ -14,8 +14,8 @@ class SchedulePlanningSeeder extends Seeder
      */
     public function run(): void
     {
-        $start = Carbon::now()->startOfMonth();
-        $end = $start->copy()->addDays(14);
+        $start = Carbon::now()->day(16)->startOfDay();
+        $end = Carbon::now()->endOfMonth()->startOfDay();
 
          SchedulePlanning::firstOrCreate(
             ['start' => $start, 'end' => $end], 

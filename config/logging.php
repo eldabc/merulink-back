@@ -141,6 +141,13 @@ return [
             'days' => 60,
         ],
 
+        'autofill_schedule_plannings' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/schedule_plannings/autofill-schedule-plannings.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+
     ],
 
 ];
