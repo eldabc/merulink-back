@@ -19,7 +19,7 @@ class RoleSnapshotService
      * @param  bool      $isUpdate  Si es true, elimina el snapshot anterior primero
      * @return RoleSnapshot
      */
-    public static function save(Employee $employee, int $roleId, array $permissions = [], bool $isUpdate = false): RoleSnapshot
+    public function save(Employee $employee, int $roleId, array $permissions = [], bool $isUpdate = false): RoleSnapshot
     {
         $role = Role::find($roleId);
         $roleName = $role?->name_label ?? $role?->name ?? 'Sin rol';
@@ -38,7 +38,7 @@ class RoleSnapshotService
     /**
      * Sincroniza los permisos reales en Spatie (para middlewares).
      */
-    public static function syncSpatie(Model $user, int $roleId, array $permissions = []): void
+    public function syncSpatie(Model $user, int $roleId, array $permissions = []): void
     {
         $role = Role::find($roleId);
 
