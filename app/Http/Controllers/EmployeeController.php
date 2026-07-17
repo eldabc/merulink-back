@@ -100,7 +100,7 @@ class EmployeeController extends Controller
                     ]);
 
                     // Sincronizar Spatie para que los middlewares funcionen
-                    $user->syncRoles([$data['role_id']]);
+                    $user->syncRoles([$role->name]);
                     $user->syncPermissions($data['permissions'] ?? []);
                 }
             }
@@ -165,7 +165,7 @@ class EmployeeController extends Controller
                 // Actualizar role_snapshot si se asignó un rol
                 if (!empty($data['role_id'])) {
                     $role = Role::find($data['role_id']);
-                    $roleName = $role?->name_label ?? $role?->name ?? 'Sin rol';
+                    $roleName = $role?->name_label ?? $role?->name;
 
                     // Eliminar snapshot anterior y crear uno nuevo
                     $employee->roleSnapshot()->delete();
@@ -176,7 +176,7 @@ class EmployeeController extends Controller
                     ]);
 
                     // Sincronizar Spatie para middlewares
-                    $currentUser->syncRoles([$data['role_id']]);
+                    $currentUser->syncRoles([$role->name]);
                     $currentUser->syncPermissions($data['permissions'] ?? []);
                 }
             } else {
