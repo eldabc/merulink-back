@@ -14,6 +14,7 @@ use App\Http\Requests\StoreEmployeeRequest;
 use Illuminate\Support\Facades\DB;
 use App\Enums\LockerStatus;
 use App\Services\LockerService;
+use App\Services\RoleSnapshotService;
 use Spatie\Permission\Models\Role;
 
 class EmployeeController extends Controller
@@ -90,18 +91,8 @@ class EmployeeController extends Controller
 
                 // Guardar role_snapshot si se asignó un rol
                 if (!empty($data['role_id'])) {
-                    $role = Role::find($data['role_id']);
-                    $roleName = $role?->name_label ?? $role?->name ?? 'Sin rol';
-
-                    $employee->roleSnapshot()->create([
-                        'role_id'     => $data['role_id'],
-                        'role_name'   => $roleName,
-                        'permissions' => $data['permissions'] ?? [],
-                    ]);
-
-                    // Sincronizar Spatie para que los middlewares funcionen
-                    $user->syncRoles([$role->name]);
-                    $user->syncPermissions($data['permissions'] ?? []);
+                    RoleSnapshotService::save($employee, $data['role_id'], $data['permissions'] ?? []);
+                    RoleSnapshotService::syncSpatie($user, $data['role_id'], $data['permissions'] ?? []);
                 }
             }
 
@@ -164,20 +155,8 @@ class EmployeeController extends Controller
 
                 // Actualizar role_snapshot si se asignó un rol
                 if (!empty($data['role_id'])) {
-                    $role = Role::find($data['role_id']);
-                    $roleName = $role?->name_label ?? $role?->name;
-
-                    // Eliminar snapshot anterior y crear uno nuevo
-                    $employee->roleSnapshot()->delete();
-                    $employee->roleSnapshot()->create([
-                        'role_id'     => $data['role_id'],
-                        'role_name'   => $roleName,
-                        'permissions' => $data['permissions'] ?? [],
-                    ]);
-
-                    // Sincronizar Spatie para middlewares
-                    $currentUser->syncRoles([$role->name]);
-                    $currentUser->syncPermissions($data['permissions'] ?? []);
+                    RoleSnapshotService::save($employee, $data['role_id'], $data['permissions'] ?? [], isUpdate: true);
+                    RoleSnapshotService::syncSpatie($currentUser, $data['role_id'], $data['permissions'] ?? []);
                 }
             } else {
                 if ($currentUser) {
