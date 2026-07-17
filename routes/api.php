@@ -63,6 +63,7 @@ use App\Http\Controllers\RoleController;
 
 
         Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
+        Route::get('employees/by-permission', [EmployeeController::class, 'byPermission']);
         Route::apiResource('employees', EmployeeController::class);
 
         Route::get('/roles', [RoleController::class, 'index'])->middleware('role:admin|super-admin');
