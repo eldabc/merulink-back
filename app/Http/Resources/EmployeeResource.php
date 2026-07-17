@@ -17,11 +17,7 @@ class EmployeeResource extends JsonResource
     {
         $hasVacation = $this->relationLoaded('vacations') && $this->vacations->isNotEmpty();
 
-        $permissionTable = $this->user && $this->user->getAllPermissions()->isNotEmpty()
-            ? PermissionHelper::buildTable(
-                $this->user->getAllPermissions()->pluck('name')->toArray()
-              )
-            : null;
+        $snapshot = $this->relationLoaded('roleSnapshot') ? $this->roleSnapshot : null;
 
         return [
             'id' => $this->id,
@@ -60,9 +56,11 @@ class EmployeeResource extends JsonResource
             'changePassNextLogin' => $this->user?->change_pass_next_login ?? false,
             'roles' => $this->user ? $this->user->getRoleNames() : [],
             'roleId' => $this->user?->roles->first()?->id,
-            // 'permissions' => $this->user ? $this->user->getAllPermissions()->pluck('name') : [],
-            'permissionModules' => $permissionTable['modules'] ?? [],
-            'permissionSpecials' => $permissionTable['specials'] ?? [],
+            'roleSnapshot' => $snapshot ? [
+                'roleId'      => $snapshot->role_id,
+                'roleName'    => $snapshot->role_name,
+                'permissions' => $snapshot->permissions,
+            ] : null,
             'status' => $this->status,
             'useMeruLink' => $this->use_meru_link,
             'useHidCard' => $this->use_hid_card,

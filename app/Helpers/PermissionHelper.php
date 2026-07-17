@@ -123,4 +123,84 @@ class PermissionHelper
             'specials' => $specials,
         ];
     }
+
+    /**
+     * Devuelve la estructura de módulos desde las traducciones, rellena
+     * solo con los permisos que realmente existen en la BD.
+     * Los módulos sin ningún permiso en BD se excluyen.
+     *
+     * @return array{modules: array, specials: array}
+     */
+    public static function allPermissions(): array
+    {
+        $moduleLabels = __('permissions.modules');
+        $specialsLabels = __('permissions.specials');
+        $dbPermissionNames = \Spatie\Permission\Models\Permission::pluck('name')->toArray();
+        $dbPermissionSet = array_flip($dbPermissionNames);
+
+        $modulesMap = [];
+        $orphanSpecials = [];
+
+        // Recorrer módulos de traducciones y ver qué permisos existen en BD
+        foreach ($moduleLabels as $moduleKey => $moduleLabel) {
+            $row = [
+                'key'      => $moduleKey,
+                'label'    => $moduleLabel,
+                'create'   => null,
+                'view'     => null,
+                'edit'     => null,
+                'delete'   => null,
+                'specials' => [],
+            ];
+            $hasAny = false;
+
+            // CRUD: solo si el permiso existe en BD
+            foreach (self::CRUD_ACTIONS as $action) {
+                $permName = "{$action}-{$moduleKey}";
+                if (isset($dbPermissionSet[$permName])) {
+                    $row[$action] = $permName;
+                    $hasAny = true;
+                }
+            }
+
+            // Especiales del módulo: solo si existen en BD
+            foreach ($specialsLabels as $permName => $label) {
+                $lastDash = strrpos($permName, '-');
+                if ($lastDash === false) continue;
+                $spModuleKey = substr($permName, $lastDash + 1);
+
+                if ($spModuleKey === $moduleKey && isset($dbPermissionSet[$permName])) {
+                    $row['specials'][] = [
+                        'key'   => $permName,
+                        'label' => $label,
+                    ];
+                    $hasAny = true;
+                }
+            }
+
+            if ($hasAny) {
+                $modulesMap[$moduleKey] = $row;
+            }
+        }
+
+        // Especiales que no pertenecen a ningún módulo conocido
+        foreach ($specialsLabels as $permName => $label) {
+            if (!isset($dbPermissionSet[$permName])) continue;
+
+            $lastDash = strrpos($permName, '-');
+            if ($lastDash === false) {
+                $orphanSpecials[] = ['key' => $permName, 'label' => $label];
+                continue;
+            }
+            $moduleKey = substr($permName, $lastDash + 1);
+            if (!isset($modulesMap[$moduleKey])) {
+                $orphanSpecials[] = ['key' => $permName, 'label' => $label];
+            }
+        }
+
+        return [
+            'modules'  => array_values($modulesMap),
+            'specials' => $orphanSpecials,
+        ];
+    }
 }

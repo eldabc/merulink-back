@@ -14,6 +14,7 @@ use App\Http\Requests\StoreEmployeeRequest;
 use Illuminate\Support\Facades\DB;
 use App\Enums\LockerStatus;
 use App\Services\LockerService;
+use Spatie\Permission\Models\Role;
 
 class EmployeeController extends Controller
 {
@@ -45,6 +46,7 @@ class EmployeeController extends Controller
             'position.department', 
             'position.subDepartment',
             'assignment',
+            'roleSnapshot',
             'user.permissions',
             'user.roles.permissions',
         ])->get();
@@ -85,12 +87,29 @@ class EmployeeController extends Controller
 
                 $employee->user_id = $user->id;
                 $employee->save();
+
+                // Guardar role_snapshot si se asignó un rol
+                if (!empty($data['role_id'])) {
+                    $role = Role::find($data['role_id']);
+                    $roleName = $role?->name_label ?? $role?->name ?? 'Sin rol';
+
+                    $employee->roleSnapshot()->create([
+                        'role_id'     => $data['role_id'],
+                        'role_name'   => $roleName,
+                        'permissions' => $data['permissions'] ?? [],
+                    ]);
+
+                    // Sincronizar Spatie para que los middlewares funcionen
+                    $user->syncRoles([$data['role_id']]);
+                    $user->syncPermissions($data['permissions'] ?? []);
+                }
             }
 
             return new EmployeeResource($employee->load([
                 'position.department', 
                 'position.subDepartment',
                 'assignment',
+                'roleSnapshot',
                 'user.permissions',
                 'user.roles.permissions',
             ]));
@@ -142,6 +161,24 @@ class EmployeeController extends Controller
                     $employee->user_id = $user->id;
                     $employee->save();
                 }
+
+                // Actualizar role_snapshot si se asignó un rol
+                if (!empty($data['role_id'])) {
+                    $role = Role::find($data['role_id']);
+                    $roleName = $role?->name_label ?? $role?->name ?? 'Sin rol';
+
+                    // Eliminar snapshot anterior y crear uno nuevo
+                    $employee->roleSnapshot()->delete();
+                    $employee->roleSnapshot()->create([
+                        'role_id'     => $data['role_id'],
+                        'role_name'   => $roleName,
+                        'permissions' => $data['permissions'] ?? [],
+                    ]);
+
+                    // Sincronizar Spatie para middlewares
+                    $currentUser->syncRoles([$data['role_id']]);
+                    $currentUser->syncPermissions($data['permissions'] ?? []);
+                }
             } else {
                 if ($currentUser) {
                     $currentUser->update(['status' => false]);
@@ -176,6 +213,7 @@ class EmployeeController extends Controller
                 'position.department', 
                 'position.subDepartment',
                 'assignment',
+                'roleSnapshot',
                 'user.permissions',
                 'user.roles.permissions',
             ]));

@@ -133,9 +133,9 @@ class StoreEmployeeRequest extends FormRequest
             'password' => [
                 'nullable',
                 'string',
-                // Solo exige contraseña al crear; al editar es opcional
+                // Solo es requerido al crear; al editar es opcional
                 $this->route('employee') ? 'nullable' : 'required_if:use_meru_link,true',
-                'min:10',
+                'min:7',
                 'max:20',
             ],
 
@@ -177,6 +177,18 @@ class StoreEmployeeRequest extends FormRequest
                 'integer',
                 'exists:assigns,id',
             ],
+            'role_id' => [
+                'required_if:use_meru_link,true',
+                'integer',
+                'exists:roles,id',
+            ],
+            'permissions' => [
+                'nullable',
+                'array',
+            ],
+            'permissions.*' => [
+                'string',
+            ],
             'retire_date' => [
                 'nullable',
                 'date',
@@ -212,7 +224,7 @@ class StoreEmployeeRequest extends FormRequest
             'username.required_if' => 'El nombre de usuario es requerido cuando se activa la opción Usa MeruLink.',
             'username.unique' => 'El nombre de usuario ya está en uso.',
             'password.required_if' => 'La contraseña es requerida cuando se activa la opción Usa MeruLink.',
-            'password.min' => 'La contraseña debe tener al menos 10 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 7 caracteres.',
             'password.max' => 'La contraseña debe tener máximo 20 caracteres.',
         ];
     }

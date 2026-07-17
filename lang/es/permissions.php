@@ -17,9 +17,7 @@ return [
     */
 
     'modules' => [
-        'schedules'         => 'Horarios',
         'employees'         => 'Empleados',
-        'calendar'          => 'Calendario',
         'lockers'           => 'Lockers',
         'padlocks'          => 'Candados',
         'assigns'           => 'Asignaciones',
@@ -27,11 +25,13 @@ return [
         'subdepartments'    => 'Subdepartamentos',
         'positions'         => 'Cargos',
         'events'            => 'Eventos',
-        'event-categories'  => 'Categorías de eventos',
-        'event-templates'   => 'Plantillas de eventos',
-        'locations'         => 'Ubicaciones',
+        'calendar'          => 'Calendario',
+        // 'event-categories'  => 'Categorías de eventos',
+        // 'event-templates'   => 'Plantillas de eventos',
+        // 'locations'         => 'Ubicaciones',
         'shifts'            => 'Turnos',
-        'schedule-plannings'=> 'Planificaciones',
+        'schedules'         => 'Horarios',
+        // 'schedule-plannings'=> 'Planificaciones',
     ],
 
     'actions' => [
@@ -43,7 +43,6 @@ return [
 
     'specials' => [
         // Permisos especiales
-        // (view-calendar se resuelve automáticamente como "Ver Calendario")
 
         // Horarios
         'reviewed-schedules'      => 'Revisar horarios',

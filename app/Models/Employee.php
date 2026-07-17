@@ -76,4 +76,9 @@ class Employee extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function roleSnapshot(): HasOne
+    {
+        return $this->hasOne(RoleSnapshot::class);
+    }
 }
