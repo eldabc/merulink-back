@@ -255,9 +255,9 @@ class EmployeeController extends Controller
     public function byPermission(Request $request)
     {
         $permission = $request->query('permission');
-        $roleId = $request->query('selectedRole');
+        // $roleId = $request->query('selectedRole');
 
-        if (!$permission && !$roleId) {
+        if (!$permission) {// && !$roleId
             return response()->json([
                 'message' => 'Debe proporcionar al menos uno de los parámetros: permission o selectedRole.',
             ], 400);
@@ -269,9 +269,9 @@ class EmployeeController extends Controller
             $query->whereJsonContains('permissions', $permission);
         }
 
-        if ($roleId) {
-            $query->where('role_id', $roleId);
-        }
+        // if ($roleId) {
+        //     $query->where('role_id', $roleId);
+        // }
 
         $snapshots = $query->with(['employee' => fn($q) => $q->select('id', 'first_name', 'last_name', 'position_id')
                 ->with(['position' => fn($q) => $q->select('id', 'name', 'department_id')

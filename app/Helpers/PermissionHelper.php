@@ -186,4 +186,45 @@ class PermissionHelper
             'modules'  => array_values($modulesMap),
         ];
     }
+
+    /**
+     * Agrupa los permisos por módulo con traducciones listas para el frontend.
+     * Cada módulo contiene un array de permisos con key + label.
+     * Los permisos especiales se agrupan bajo el módulo que les corresponde
+     * según el sufijo del nombre (ej: "reviewed-schedules" → módulo "schedules").
+     *
+     * @param  array  $permissionNames  Array de nombres de permisos
+     * @return array  Grupos con key, label y permissions[]
+     */
+    public static function buildGroupedPermissions(array $permissionNames): array
+    {
+        $moduleLabels = __('permissions.modules');
+        $groups = [];
+
+        foreach ($permissionNames as $perm) {
+            $lastDash = strrpos($perm, '-');
+            if ($lastDash === false) continue;
+
+            $action = substr($perm, 0, $lastDash);
+            $moduleKey = substr($perm, $lastDash + 1);
+
+            if (!isset($groups[$moduleKey])) {
+                $groups[$moduleKey] = [
+                    'key'         => $moduleKey,
+                    'label'       => $moduleLabels[$moduleKey] ?? $moduleKey,
+                    'permissions' => [],
+                ];
+            }
+
+            $groups[$moduleKey]['permissions'][] = [
+                'key'   => $perm,
+                'label' => self::displayName($perm),
+            ];
+        }
+
+        // Ordenar alfabéticamente por key del módulo
+        usort($groups, fn($a, $b) => strcmp($a['key'], $b['key']));
+
+        return $groups;
+    }
 }

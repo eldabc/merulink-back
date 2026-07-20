@@ -16,10 +16,6 @@ class RoleController extends Controller
      */
     public function index()
     {
-        // Contador de empleados asignados por rol
-        $counts = RoleSnapshot::select('role_id', DB::raw('count(*) as total'))
-            ->groupBy('role_id')
-            ->pluck('total', 'role_id');
 
         $roles = Role::where('name', '!=', 'super-admin')
             ->with('permissions')
@@ -28,17 +24,8 @@ class RoleController extends Controller
                 'value'          => $role->id,
                 'label'          => $role->name_label ?? ucfirst($role->name),
                 'name'           => $role->name,
-                'employeeCount'  => $counts[$role->id] ?? 0,
                 'permissions'    => $role->permissions->pluck('name'),
             ]);
-
-        // Agregar estructura formateada a cada rol
-        $roles = $roles->map(function ($role) {
-            $table = PermissionHelper::buildTable($role['permissions']->toArray());
-            $role['permissionModules'] = $table['modules'];
-            $role['permissionSpecials'] = $table['specials'];
-            return $role;
-        });
 
         // Todos los permisos por módulo
         $all = PermissionHelper::allPermissions();
@@ -46,6 +33,56 @@ class RoleController extends Controller
         return response()->json([
             'data' => $roles,
             'allModules'  => $all['modules'],
+        ]);
+    }
+
+    public function getRolesPermissions()
+    {
+        // Contador de empleados asignados por rol
+        $counts = RoleSnapshot::select('role_id', DB::raw('count(*) as total'))
+            ->groupBy('role_id')
+            ->pluck('total', 'role_id');
+
+        // Permisos base del rol (Spatie)
+        $basePermissions = Role::where('name', '!=', 'super-admin')
+            ->with('permissions')
+            ->get()
+            ->mapWithKeys(fn($role) => [
+                $role->id => $role->permissions->pluck('name')->toArray(),
+            ]);
+
+        // Todos los permisos únicos desde role_snapshots (versiones personalizadas)
+        $snapshotPermissions = RoleSnapshot::select('role_id', 'permissions')
+            ->get()
+            ->groupBy('role_id')
+            ->map(function ($snapshots) {
+                return $snapshots->flatMap(fn($s) => $s->permissions ?? [])
+                    ->unique()
+                    ->values()
+                    ->toArray();
+            });
+
+        // Unir: base del rol + versiones de snapshots
+        $allRolePermissions = collect($basePermissions)->mapWithKeys(function ($perms, $roleId) use ($snapshotPermissions) {
+            $merged = array_unique(array_merge($perms, $snapshotPermissions[$roleId] ?? []));
+            return [$roleId => $merged];
+        });
+
+        $roles = Role::where('name', '!=', 'super-admin')
+            ->get()
+            ->map(function ($role) use ($counts, $allRolePermissions) {
+                $perms = $allRolePermissions[$role->id] ?? [];
+                return [
+                    'value'            => $role->id,
+                    'label'            => $role->name_label ?? ucfirst($role->name),
+                    'name'             => $role->name,
+                    'employeeCount'    => $counts[$role->id] ?? 0,
+                    'permissionGroups' => PermissionHelper::buildGroupedPermissions($perms),
+                ];
+            });
+
+        return response()->json([
+            'data' => $roles,
         ]);
     }
 }
