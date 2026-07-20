@@ -255,26 +255,37 @@ class EmployeeController extends Controller
     public function byPermission(Request $request)
     {
         $permission = $request->query('permission');
-        if (!$permission) {
-            return response()->json(['message' => 'El parámetro permission es requerido.'], 400);
+        $roleId = $request->query('selectedRole');
+
+        if (!$permission && !$roleId) {
+            return response()->json([
+                'message' => 'Debe proporcionar al menos uno de los parámetros: permission o selectedRole.',
+            ], 400);
         }
 
-        $snapshots = RoleSnapshot::whereJsonContains('permissions', $permission)
-            ->with(['employee' => fn($q) => $q->select('id', 'first_name', 'last_name', 'position_id')
+        $query = RoleSnapshot::query();
+
+        if ($permission) {
+            $query->whereJsonContains('permissions', $permission);
+        }
+
+        if ($roleId) {
+            $query->where('role_id', $roleId);
+        }
+
+        $snapshots = $query->with(['employee' => fn($q) => $q->select('id', 'first_name', 'last_name', 'position_id')
                 ->with(['position' => fn($q) => $q->select('id', 'name', 'department_id')
                     ->with(['department' => fn($q) => $q->select('id', 'name')])
                 ])
             ])
             ->get();
 
-        $employees = $snapshots->map(fn($s) => $s->employee)->filter();
-
         return response()->json([
-            'data' => $employees->map(fn($e) => [
-                'id'         => $e->id,
-                'name'       => "{$e->first_name} {$e->last_name}",
-                'department' => $e->position?->department?->name ?? '—',
-                'position'   => $e->position?->name ?? '—',
+            'data' => $snapshots->map(fn($e) => [
+                'id'         => $e->employee->id,
+                'name'       => "{$e->employee->first_name} {$e->employee->last_name}",
+                'department' => $e->employee->position?->department?->name ?? '—',
+                'position'   => $e->employee->position?->name ?? '—',
             ]),
         ]);
     }

@@ -129,7 +129,7 @@ class PermissionHelper
      * solo con los permisos que realmente existen en la BD.
      * Los módulos sin ningún permiso en BD se excluyen.
      *
-     * @return array{modules: array, specials: array}
+     * @return array{modules: array}
      */
     public static function allPermissions(): array
     {
@@ -139,7 +139,6 @@ class PermissionHelper
         $dbPermissionSet = array_flip($dbPermissionNames);
 
         $modulesMap = [];
-        $orphanSpecials = [];
 
         // Recorrer módulos de traducciones y ver qué permisos existen en BD
         foreach ($moduleLabels as $moduleKey => $moduleLabel) {
@@ -183,24 +182,8 @@ class PermissionHelper
             }
         }
 
-        // Especiales que no pertenecen a ningún módulo conocido
-        foreach ($specialsLabels as $permName => $label) {
-            if (!isset($dbPermissionSet[$permName])) continue;
-
-            $lastDash = strrpos($permName, '-');
-            if ($lastDash === false) {
-                $orphanSpecials[] = ['key' => $permName, 'label' => $label];
-                continue;
-            }
-            $moduleKey = substr($permName, $lastDash + 1);
-            if (!isset($modulesMap[$moduleKey])) {
-                $orphanSpecials[] = ['key' => $permName, 'label' => $label];
-            }
-        }
-
         return [
             'modules'  => array_values($modulesMap),
-            'specials' => $orphanSpecials,
         ];
     }
 }

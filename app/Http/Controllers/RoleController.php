@@ -40,13 +40,12 @@ class RoleController extends Controller
             return $role;
         });
 
-        // Todos los permisos disponibles (para calcular "otros" en frontend)
+        // Todos los permisos por módulo
         $all = PermissionHelper::allPermissions();
 
         return response()->json([
             'data' => $roles,
             'allModules'  => $all['modules'],
-            'allSpecials' => $all['specials'],
         ]);
     }
 }
