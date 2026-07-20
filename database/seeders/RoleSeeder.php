@@ -53,6 +53,7 @@ class RoleSeeder extends Seeder
         Permission::firstOrcreate([ 'name' => 'view-employees' ]);
         Permission::firstOrcreate([ 'name' => 'edit-employees' ]);
         Permission::firstOrcreate([ 'name' => 'change-status-employees' ]);
+        Permission::firstOrcreate([ 'name' => 'manage-merulink-tab-employees' ]);
         
         // Calendario
         Permission::firstOrcreate([ 'name' => 'view-calendar' ]);

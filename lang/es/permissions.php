@@ -41,8 +41,8 @@ return [
         'delete' => 'Eliminar',
     ],
 
-    'specials' => [
-        // Permisos especiales
+    // Permisos especiales
+    'specials' => [      
 
         // Horarios
         'reviewed-schedules'      => 'Revisar horarios',
@@ -51,5 +51,6 @@ return [
 
         // Empleados
         'change-status-employees' => 'Cambiar estado de empleados',
+        'manage-merulink-tab-employees'     => 'Gestionar pestaña Meru Link',
     ],
 ];
