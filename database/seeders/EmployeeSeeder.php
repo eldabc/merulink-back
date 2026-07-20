@@ -227,5 +227,34 @@ class EmployeeSeeder extends Seeder
                 'use_transport' => false,
             ]
         );
+
+        // Empleado para usuario guest (user_id = 5)
+        Employee::firstOrCreate(
+            ['ci' => '99999999'],
+            [
+                'num_employee'   => '999',
+                'first_name'     => 'Invitado',
+                'last_name'      => 'Sistema',
+                'birthdate'      => '2000-01-01',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality'    => 'V',
+                'sex'            => 'H',
+                'marital_status' => 'Soltero',
+                'blood_type'     => 'O+',
+                'email'          => 'invitado@sistema.com',
+                'mobile_phone'   => '04121234567',
+                'home_phone'     => '02863410565',
+                'address'        => 'PZO',
+                'join_date'      => '2024-01-01',
+                'department_id'  => 7,
+                'position_id'    => 7,
+                'user_id'        => 5,
+                'status'         => true,
+                'use_meru_link'  => true,
+                'use_hid_card'   => false,
+                'use_locker'     => false,
+                'use_transport'  => false,
+            ]
+        );
     }
 }
