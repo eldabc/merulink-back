@@ -286,6 +286,7 @@ class EmployeeController extends Controller
                 'name'       => "{$e->employee->first_name} {$e->employee->last_name}",
                 'department' => $e->employee->position?->department?->name ?? '—',
                 'position'   => $e->employee->position?->name ?? '—',
+                'roleName'       => $e->role_name ?? '—',
             ]),
         ]);
     }
