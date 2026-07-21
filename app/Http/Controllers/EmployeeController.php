@@ -153,6 +153,7 @@ class EmployeeController extends Controller
                     $user = User::create($userData);
                     $employee->user_id = $user->id;
                     $employee->save();
+                    $currentUser = $user;
                 }
 
                 // Actualizar role_snapshot si se asignó un rol
@@ -291,11 +292,27 @@ class EmployeeController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Employee $employee)
+
+    public function resetPass(Employee $employee)
     {
-        //
+        $user = $employee->user;
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Este empleado no tiene un usuario de MeruLink asociado.',
+            ], 400);
+        }
+
+        $user->update([
+            'password'               => $employee->ci,
+            'change_pass_next_login' => true,
+        ]);
+
+        $employee->load(['user.roles', 'roleSnapshot']);
+
+        return response()->json([
+            'message' => "Contraseña restablecida a la cédula ({$employee->ci}). El usuario deberá cambiarla en el próximo inicio de sesión.",
+            'data'    => new EmployeeResource($employee),
+        ]);
     }
 }

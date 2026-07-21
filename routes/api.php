@@ -62,6 +62,7 @@ use App\Http\Controllers\RoleController;
         ]);
 
 
+        Route::put('employees/{employee}/resetPass', [EmployeeController::class, 'resetPass']);
         Route::put('employees/{employee}/changeBooleanField', [EmployeeController::class, 'changeStatus']);
         Route::get('employees/by-permission', [EmployeeController::class, 'byPermission']);
         Route::apiResource('employees', EmployeeController::class);
