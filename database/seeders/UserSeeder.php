@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
         $superAdmin = User::firstOrCreate(
             ['username' => 'superadmin'],
             [
-                'password' => Hash::make('654321'),
+                'password' => Hash::make('7654321'),
             ]
         );
 
@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
         $user = User::firstOrCreate(
             ['username' => 'admin'],
             [
-                'password' => Hash::make('123456'),
+                'password' => Hash::make('1234567'),
             ]
         );
 
@@ -35,7 +35,7 @@ class UserSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['username' => 'supervisor'],
             [
-                'password' => Hash::make('123456'),
+                'password' => Hash::make('1234567'),
                 'change_pass_next_login' => true,
             ]
         );
@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
         $user = User::firstOrCreate(
             ['username' => 'employee'],
             [
-                'password' => Hash::make('123456'),
+                'password' => Hash::make('1234567'),
             ]
         );
 
@@ -55,7 +55,7 @@ class UserSeeder extends Seeder
         $user = User::firstOrCreate(
             ['username' => 'guest'],
             [
-                'password' => Hash::make('123456'),
+                'password' => Hash::make('1234567'),
             ]
         );
 
