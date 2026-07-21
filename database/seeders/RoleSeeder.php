@@ -70,6 +70,12 @@ class RoleSeeder extends Seeder
         Permission::firstOrcreate([ 'name' => 'edit-padlocks' ]);
         Permission::firstOrcreate([ 'name' => 'delete-padlocks' ]);
 
+        // Roles
+        Permission::firstOrcreate([ 'name' => 'create-roles' ]);
+        Permission::firstOrcreate([ 'name' => 'view-roles' ]);
+        Permission::firstOrcreate([ 'name' => 'edit-roles' ]);
+        // Permission::firstOrcreate([ 'name' => 'delete-roles' ]);
+
         // Asignaciones
         Permission::firstOrcreate([ 'name' => 'create-assigns' ]);
         Permission::firstOrcreate([ 'name' => 'view-assigns' ]);
