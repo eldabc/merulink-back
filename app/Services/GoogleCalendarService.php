@@ -67,12 +67,10 @@ class GoogleCalendarService
 
         $monthDay = substr($dateStr, 5, 5);
 
-        // eventos fijos venezolanos
-        $fixedEventsList = [
-            '01-01', '05-01', '06-24', '07-05', '07-24', '10-12', '12-24', '12-25', '12-31'
-        ];
-
-        $isFixed = in_array($monthDay, $fixedEventsList);
+        // Feriados fijos
+        $fixedHolidays = config('holidays.fixed', []);
+        $fixedTitle = $fixedHolidays[$monthDay] ?? null;
+        $isFixed = $fixedTitle !== null;
 
         return [
 
@@ -98,7 +96,7 @@ class GoogleCalendarService
 
                 'description' =>
                     $event['description']
-                    ?? 'Feriado oficial de Venezuela',
+                    ?? ($fixedTitle ? "{$fixedTitle} — Feriado oficial de Venezuela" : 'Feriado oficial de Venezuela'),
 
                 'externalDate' => true,
 
@@ -107,6 +105,8 @@ class GoogleCalendarService
                 'repeatInterval' => $isFixed
                     ? 'YEARLY'
                     : 'ROTATIVE',
+
+                'coloringDay' => $isFixed,
 
                 'isFixed' => $isFixed,
 

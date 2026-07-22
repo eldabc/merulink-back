@@ -8,18 +8,13 @@ class HolidayService
 {
     protected GoogleCalendarService $googleCalendarService;
 
-    // Feriados fijos oficiales de VE
-    protected array $fixedHolidays = [
-        '01-01' => 'Año Nuevo',
-        '05-01' => 'Día del Trabajador',
-        '06-24' => 'Batalla de Carabobo',
-        '07-05' => 'Día de la Independencia',
-        '07-24' => 'Natalicio de Simón Bolívar',
-        '10-12' => 'Día de la Resistencia Indígena',
-        '12-24' => 'Víspera de Navidad',
-        '12-25' => 'Navidad',
-        '12-31' => 'Fin de Año',
-    ];
+    /**
+     * Fuente única de feriados fijos: config/holidays.php
+     */
+    protected function fixedHolidays(): array
+    {
+        return config('holidays.fixed', []);
+    }
 
     public function __construct(GoogleCalendarService $googleCalendarService)
     {
@@ -37,7 +32,7 @@ class HolidayService
 
         foreach ($years as $year) {
             // Mapear Feriados Fijos
-            foreach ($this->fixedHolidays as $monthDay => $title) {
+            foreach ($this->fixedHolidays() as $monthDay => $title) {
                 $dateKey = "{$year}-{$monthDay}";
                 $holidayMap[$dateKey] = [
                     'title' => $title,
