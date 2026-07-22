@@ -10,8 +10,9 @@ class GoogleCalendarService
     protected string $apiKey;
     protected string $calendarId;
 
-    public function __construct()
-    {
+    public function __construct(
+        protected NationalHolidayService $nationalHolidayService,
+    ) {
         $this->apiKey = config('services.google.calendar_api_key');
 
         $this->calendarId = 'es.ve#holiday@group.v.calendar.google.com';
@@ -66,6 +67,7 @@ class GoogleCalendarService
             ?? null;
 
         $monthDay = substr($dateStr, 5, 5);
+        $title = $event['summary'] ?? 'Sin título';
 
         // Feriados fijos
         $fixedHolidays = config('holidays.fixed', []);
@@ -76,7 +78,7 @@ class GoogleCalendarService
 
             'id' => $event['id'] ?? null,
 
-            'title' => $event['summary'] ?? 'Sin título',
+            'title' => $title,
 
             'start' => isset($event['start']['date'])
                 ? $event['start']['date'] . 'T00:00:00'
@@ -106,7 +108,7 @@ class GoogleCalendarService
                     ? 'YEARLY'
                     : 'ROTATIVE',
 
-                'coloringDay' => $isFixed,
+                'coloringDay' => $this->nationalHolidayService->isNonWorkingDay($monthDay, $title),
 
                 'isFixed' => $isFixed,
 
