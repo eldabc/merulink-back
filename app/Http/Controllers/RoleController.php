@@ -16,7 +16,6 @@ class RoleController extends Controller
      */
     public function index()
     {
-
         $roles = Role::where('name', '!=', 'super-admin')
             ->with('permissions')
             ->get()
@@ -36,6 +35,25 @@ class RoleController extends Controller
         ]);
     }
 
+   
+    /**
+     * Devuelve todos los permisos del sistema agrupados por módulo,
+     * con key y label en español.
+     */
+    public function allPermissions()
+    {
+        $allPermissionNames = Permission::pluck('name')->toArray();
+
+        return response()->json(
+            PermissionHelper::buildGroupedPermissions($allPermissionNames)
+        );
+    }
+
+    
+    /**
+     * Devuelve listado personalizado de 
+     * roles - permisos agupados por módulo
+     */
     public function getRolesPermissions()
     {
         // Contador de empleados asignados por rol

@@ -67,6 +67,7 @@ use App\Http\Controllers\RoleController;
         Route::get('employees/by-permission', [EmployeeController::class, 'byPermission']);
         Route::apiResource('employees', EmployeeController::class);
 
+        Route::get('/permissions', [RoleController::class, 'allPermissions'])->middleware('role:admin|super-admin');
         Route::get('/roles', [RoleController::class, 'index'])->middleware('role:admin|super-admin');
         Route::get('/roles/permissions', [RoleController::class, 'getRolesPermissions'])->middleware('role:admin|super-admin');
 
