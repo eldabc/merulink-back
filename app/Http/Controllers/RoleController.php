@@ -7,6 +7,7 @@ use Spatie\Permission\Models\Permission;
 use App\Helpers\PermissionHelper;
 use App\Models\RoleSnapshot;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\RoleRequest;
 
 class RoleController extends Controller
 {
@@ -33,6 +34,20 @@ class RoleController extends Controller
             'data' => $roles,
             'allModules'  => $all['modules'],
         ]);
+    }
+
+    public function store(RoleRequest $request)
+    {
+        $data = $request->validated();
+        return DB::transaction(function () use ($data) {
+
+            $role = Role::create([
+                'role_name' => $data['role_name'],
+                'name' => $data['name'],
+            ]);
+
+            return new RoleResource($role);
+        });
     }
 
    
