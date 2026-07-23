@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Helpers\PermissionHelper;
 
 class RoleResource extends JsonResource
 {
@@ -14,9 +15,13 @@ class RoleResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $permissions = $this->permissions->pluck('name')->toArray();
+
         return [
-            'roleName' => $this->roleName,
-            'roleName' => $this->roleName,
+            'value'            => $this->id,
+            'label'            => $this->name_label ?? ucfirst($this->name),
+            'name'             => $this->name,
+            'permissionGroups' => PermissionHelper::buildGroupedPermissions($permissions),
         ];
     }
 }

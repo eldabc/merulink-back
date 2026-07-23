@@ -69,6 +69,7 @@ use App\Http\Controllers\RoleController;
 
         Route::get('/permissions', [RoleController::class, 'allPermissions'])->middleware('role:admin|super-admin');
         Route::get('/roles', [RoleController::class, 'index'])->middleware('role:admin|super-admin');
+        Route::post('/roles', [RoleController::class, 'store'])->middleware('role:admin|super-admin');
         Route::get('/roles/permissions', [RoleController::class, 'getRolesPermissions'])->middleware('role:admin|super-admin');
 
         // Scraper de datos de empleado desde IVSS/SENIAT

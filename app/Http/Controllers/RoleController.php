@@ -8,6 +8,7 @@ use App\Helpers\PermissionHelper;
 use App\Models\RoleSnapshot;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RoleRequest;
+use App\Http\Resources\RoleResource;
 
 class RoleController extends Controller
 {
@@ -39,14 +40,26 @@ class RoleController extends Controller
     public function store(RoleRequest $request)
     {
         $data = $request->validated();
+
         return DB::transaction(function () use ($data) {
+            // Normalizar: minúsculas, sin espacios, espacios - guiones
+            $normalizedName = preg_replace('/\s+/', '-', trim(strtolower($data['role_name'])));
 
             $role = Role::create([
-                'role_name' => $data['role_name'],
-                'name' => $data['name'],
+                'name'       => $normalizedName,
+                'name_label' => trim($data['role_name']),
             ]);
 
-            return new RoleResource($role);
+            // Vincular permisos directamente en la tabla pivote (evita guard mismatch)
+            $permissionIds = Permission::whereIn('name', $data['permissions'])->pluck('id');
+            $role->permissions()->sync($permissionIds);
+            $role->load('permissions');
+            $role->forgetCachedPermissions();
+
+            return response()->json([
+                'message' => "Rol '{$data['role_name']}' creado correctamente.",
+                'data'    => new RoleResource($role),
+            ]);
         });
     }
 

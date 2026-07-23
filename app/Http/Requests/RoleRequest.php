@@ -22,15 +22,16 @@ class RoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'roleName' => 'required|min:3',
-            'permissions' => 'required|array|min:1'
+            'role_name' => 'required|string|min:3',
+            'permissions' => 'required|array|min:1',
+            'permissions.*' => 'string',
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'roleName' => 'Nombre rol',
+            'role_name' => 'Nombre rol',
             'permissions' => 'Permisos',
         ];
     }
