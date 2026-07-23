@@ -23,7 +23,7 @@ class RoleController extends Controller
             ->with('permissions')
             ->get()
             ->map(fn($role) => [
-                'value'          => $role->id,
+                'id'             => $role->id,
                 'label'          => $role->name_label ?? ucfirst($role->name),
                 'name'           => $role->name,
                 'permissions'    => $role->permissions->pluck('name'),
@@ -122,7 +122,7 @@ class RoleController extends Controller
             ->map(function ($role) use ($counts, $allRolePermissions) {
                 $perms = $allRolePermissions[$role->id] ?? [];
                 return [
-                    'value'            => $role->id,
+                    'id'               => $role->id,
                     'label'            => $role->name_label ?? ucfirst($role->name),
                     'name'             => $role->name,
                     'employeeCount'    => $counts[$role->id] ?? 0,
