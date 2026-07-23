@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Helpers\PermissionHelper;
+use App\Helpers\ApiResponseHelper;
 use App\Models\RoleSnapshot;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RoleRequest;
@@ -56,10 +57,11 @@ class RoleController extends Controller
             $role->load('permissions');
             $role->forgetCachedPermissions();
 
-            return response()->json([
-                'message' => "Rol '{$data['role_name']}' creado correctamente.",
-                'data'    => new RoleResource($role),
-            ]);
+            return ApiResponseHelper::createResponse(
+                'ok',
+                'created_role',
+                'Rol creado exitosamente'
+            );
         });
     }
 
