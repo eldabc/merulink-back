@@ -49,6 +49,7 @@ class RoleController extends Controller
             $role = Role::create([
                 'name'       => $normalizedName,
                 'name_label' => trim($data['role_name']),
+                'guard_name' => 'sanctum',
             ]);
 
             // Vincular permisos directamente en la tabla pivote (evita guard mismatch)
