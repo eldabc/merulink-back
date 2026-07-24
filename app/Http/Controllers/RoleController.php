@@ -9,6 +9,7 @@ use App\Helpers\ApiResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\RoleSnapshot;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use App\Http\Requests\RoleRequest;
 use App\Http\Resources\RoleResource;
 
@@ -20,23 +21,23 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::where('name', '!=', 'super-admin')
-            ->with('permissions')
-            ->get()
-            ->map(fn($role) => [
-                'id'             => $role->id,
-                'label'          => $role->name_label ?? ucfirst($role->name),
-                'name'           => $role->name,
-                'permissions'    => $role->permissions->pluck('name'),
-            ]);
+        // $roles = Role::where('name', '!=', 'super-admin')
+        //     ->with('permissions')
+        //     ->get()
+        //     ->map(fn($role) => [
+        //         'id'             => $role->id,
+        //         'label'          => $role->name_label ?? ucfirst($role->name),
+        //         'name'           => $role->name,
+        //         'permissions'    => $role->permissions->pluck('name'),
+        //     ]);
 
-        // Todos los permisos por módulo
-        $all = PermissionHelper::allPermissions();
+        // // Todos los permisos por módulo
+        // $all = PermissionHelper::allPermissions();
 
-        return response()->json([
-            'data' => $roles,
-            'allModules'  => $all['modules'],
-        ]);
+        // return response()->json([
+        //     'data' => $roles,
+        //     'allModules'  => $all['modules'],
+        // ]);
     }
 
     public function show(Role $role)
@@ -118,7 +119,7 @@ class RoleController extends Controller
      * Devuelve listado personalizado de 
      * roles - permisos agupados por módulo
      */
-    public function getRolesPermissions()
+    public function getRolesPermissions(Request $request)
     {
         // Contador de empleados asignados por rol
         $counts = RoleSnapshot::select('role_id', DB::raw('count(*) as total'))
@@ -133,22 +134,25 @@ class RoleController extends Controller
                 $role->id => $role->permissions->pluck('name')->toArray(),
             ]);
 
-        // Todos los permisos únicos desde role_snapshots (versiones personalizadas)
-        $snapshotPermissions = RoleSnapshot::select('role_id', 'permissions')
-            ->get()
-            ->groupBy('role_id')
-            ->map(function ($snapshots) {
-                return $snapshots->flatMap(fn($s) => $s->permissions ?? [])
-                    ->unique()
-                    ->values()
-                    ->toArray();
-            });
+        $allRolePermissions = $basePermissions;
+        if($request->boolean('getAssignments')) {
+            // Todos los permisos únicos desde role_snapshots (versiones personalizadas)
+            $snapshotPermissions = RoleSnapshot::select('role_id', 'permissions')
+                ->get()
+                ->groupBy('role_id')
+                ->map(function ($snapshots) {
+                    return $snapshots->flatMap(fn($s) => $s->permissions ?? [])
+                        ->unique()
+                        ->values()
+                        ->toArray();
+                });
 
-        // Unir: base del rol + versiones de snapshots
-        $allRolePermissions = collect($basePermissions)->mapWithKeys(function ($perms, $roleId) use ($snapshotPermissions) {
-            $merged = array_unique(array_merge($perms, $snapshotPermissions[$roleId] ?? []));
-            return [$roleId => $merged];
-        });
+            // Unir: base del rol + versiones de snapshots
+            $allRolePermissions = collect($basePermissions)->mapWithKeys(function ($perms, $roleId) use ($snapshotPermissions) {
+                $merged = array_unique(array_merge($perms, $snapshotPermissions[$roleId] ?? []));
+                return [$roleId => $merged];
+            });
+        }       
 
         $roles = Role::where('name', '!=', 'super-admin')
             ->get()
