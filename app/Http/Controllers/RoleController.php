@@ -38,6 +38,18 @@ class RoleController extends Controller
         ]);
     }
 
+    public function show(Role $role)
+    {
+        $role->load('permissions');
+
+        return ApiResponseHelper::createResponse(
+            'ok',
+            'role_found',
+            'Rol encontrado',
+            new RoleResource($role)
+        );
+    }
+
     public function store(RoleRequest $request)
     {
         $data = $request->validated();

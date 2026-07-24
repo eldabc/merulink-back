@@ -18,9 +18,10 @@ class RoleResource extends JsonResource
         $permissions = $this->permissions->pluck('name')->toArray();
 
         return [
-            'value'            => $this->id,
+            'id'            => $this->id,
             'label'            => $this->name_label ?? ucfirst($this->name),
             'name'             => $this->name,
+            'permissions'      => $permissions,
             'permissionGroups' => PermissionHelper::buildGroupedPermissions($permissions),
         ];
     }
