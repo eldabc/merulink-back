@@ -155,6 +155,7 @@ class RoleController extends Controller
         }       
 
         $roles = Role::where('name', '!=', 'super-admin')
+            ->orderBy('name_label')
             ->get()
             ->map(function ($role) use ($counts, $allRolePermissions) {
                 $perms = $allRolePermissions[$role->id] ?? [];
