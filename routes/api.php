@@ -72,6 +72,7 @@ use App\Http\Controllers\RoleController;
         Route::post('/roles', [RoleController::class, 'store'])->middleware('role:admin|super-admin');
         Route::get('/roles/permissions', [RoleController::class, 'getRolesPermissions'])->middleware('role:admin|super-admin');
         Route::get('/roles/{role}', [RoleController::class, 'show'])->middleware('role:admin|super-admin');
+        Route::put('/roles/{role}', [RoleController::class, 'update'])->middleware('role:admin|super-admin');
 
         // Scraper de datos de empleado desde IVSS/SENIAT
         Route::post('/scrape/employee', [ScraperController::class, 'scrapeEmployee']);

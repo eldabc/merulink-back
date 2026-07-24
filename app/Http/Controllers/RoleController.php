@@ -6,6 +6,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Helpers\PermissionHelper;
 use App\Helpers\ApiResponseHelper;
+use App\Helpers\StringHelper;
 use App\Models\RoleSnapshot;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RoleRequest;
@@ -55,8 +56,7 @@ class RoleController extends Controller
         $data = $request->validated();
 
         return DB::transaction(function () use ($data) {
-            // Normalizar: minúsculas, sin espacios, espacios - guiones
-            $normalizedName = preg_replace('/\s+/', '-', trim(strtolower($data['role_name'])));
+            $normalizedName = StringHelper::slugify($data['role_name']);
 
             $role = Role::create([
                 'name'       => $normalizedName,
@@ -64,9 +64,8 @@ class RoleController extends Controller
                 'guard_name' => 'sanctum',
             ]);
 
-            // Vincular permisos directamente en la tabla pivote (evita guard mismatch)
-            $permissionIds = Permission::whereIn('name', $data['permissions'])->pluck('id');
-            $role->permissions()->sync($permissionIds);
+            // Sincronizar permisos
+            $role->syncPermissions($data['permissions']);
             $role->load('permissions');
             $role->forgetCachedPermissions();
 
@@ -74,6 +73,28 @@ class RoleController extends Controller
                 'ok',
                 'created_role',
                 'Rol creado exitosamente'
+            );
+        });
+    }
+
+    public function update(RoleRequest $request, Role $role)
+    {
+        $data = $request->validated();
+
+        return DB::transaction(function () use ($data, $role) {
+
+            $role->update([ 'name_label' => trim($data['role_name']) ]);
+
+            // Elimina los permisos desmarcados, añade los nuevos
+            $role->syncPermissions($data['permissions']);
+            $role->load('permissions');
+            $role->forgetCachedPermissions();
+
+            return ApiResponseHelper::createResponse(
+                'ok',
+                'updated_role',
+                'Rol actualizado exitosamente',
+                new RoleResource($role)
             );
         });
     }
