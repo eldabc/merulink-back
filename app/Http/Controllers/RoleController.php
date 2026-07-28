@@ -21,23 +21,23 @@ class RoleController extends Controller
      */
     public function index()
     {
-        // $roles = Role::where('name', '!=', 'super-admin')
-        //     ->with('permissions')
-        //     ->get()
-        //     ->map(fn($role) => [
-        //         'id'             => $role->id,
-        //         'label'          => $role->name_label ?? ucfirst($role->name),
-        //         'name'           => $role->name,
-        //         'permissions'    => $role->permissions->pluck('name'),
-        //     ]);
+        $roles = Role::where('name', '!=', 'super-admin')
+            ->with('permissions')
+            ->get()
+            ->map(fn($role) => [
+                'id'             => $role->id,
+                'label'          => $role->name_label ?? ucfirst($role->name),
+                'name'           => $role->name,
+                'permissions'    => $role->permissions->pluck('name'),
+            ]);
 
-        // // Todos los permisos por módulo
-        // $all = PermissionHelper::allPermissions();
+        // Todos los permisos por módulo
+        $all = PermissionHelper::allPermissions();
 
-        // return response()->json([
-        //     'data' => $roles,
-        //     'allModules'  => $all['modules'],
-        // ]);
+        return response()->json([
+            'data' => $roles,
+            'allModules'  => $all['modules'],
+        ]);
     }
 
     public function show(Role $role)
