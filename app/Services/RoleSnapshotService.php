@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Employee;
 use App\Models\RoleSnapshot;
 use Spatie\Permission\Models\Role;
-use Illuminate\Database\Eloquent\Model;
 
 class RoleSnapshotService
 {
@@ -35,16 +34,4 @@ class RoleSnapshotService
         ]);
     }
 
-    /**
-     * Sincroniza los permisos reales en Spatie (para middlewares).
-     */
-    public function syncSpatie(Model $user, int $roleId, array $permissions = []): void
-    {
-        $role = Role::find($roleId);
-
-        if ($role) {
-            $user->syncRoles([$role->name]);
-            $user->syncPermissions($permissions);
-        }
-    }
 }

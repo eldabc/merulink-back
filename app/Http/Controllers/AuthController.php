@@ -64,8 +64,8 @@ class AuthController extends Controller
                 'email' => $user->employee?->email,
                 'departmentId' => $user->employee?->department->id ?? null,
                 'roles' => $user->getRoleNames(),
-                'roleName' => $user->employee?->roleSnapshot?->role_name, 
-                'permissions' => $user->getAllPermissions()->pluck('name'),
+                'roleName' => $user->employee?->roleSnapshot?->role_name,
+                'permissions' => $user->employee?->roleSnapshot?->permissions ?? [],
             ]
         ]);
     }
@@ -114,7 +114,7 @@ class AuthController extends Controller
                 'departmentId' => $user->employee?->department->id ?? null,
                 'roles' => $user->getRoleNames(),
                 'roleName' => $user->employee->roleSnapshot->role_name,
-                'permissions' => $user->getAllPermissions()->pluck('name'),
+                'permissions' => $user->employee->roleSnapshot->permissions ?? [],
             ]
         ]);
     }

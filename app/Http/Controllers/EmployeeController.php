@@ -94,7 +94,6 @@ class EmployeeController extends Controller
                 // Guardar role_snapshot si se asignó un rol
                 if (!empty($data['role_id'])) {
                     $this->roleSnapshotService->save($employee, $data['role_id'], $data['permissions'] ?? []);
-                    $this->roleSnapshotService->syncSpatie($user, $data['role_id'], $data['permissions'] ?? []);
                 }
             }
 
@@ -159,7 +158,6 @@ class EmployeeController extends Controller
                 // Actualizar role_snapshot si se asignó un rol
                 if (!empty($data['role_id'])) {
                     $this->roleSnapshotService->save($employee, $data['role_id'], $data['permissions'] ?? [], isUpdate: true);
-                    $this->roleSnapshotService->syncSpatie($currentUser, $data['role_id'], $data['permissions'] ?? []);
                 }
             } else {
                 if ($currentUser) {
