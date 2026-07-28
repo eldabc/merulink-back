@@ -100,6 +100,33 @@ class RoleController extends Controller
         });
     }
 
+    public function destroy(Role $role)
+    {
+        // if (RoleSnapshot::where('role_id', $role->id)->exists()) {
+        //     return ApiResponseHelper::createResponse(
+        //         'fail',
+        //         'role_has_employees',
+        //         'No se puede eliminar el rol: tiene empleados asociados.',
+        //         null,
+        //         422
+        //     );
+        // }
+
+        // return DB::transaction(function () use ($role) {
+        //     // Limpiar permisos antes de borrar el rol
+        //     $role->syncPermissions([]);
+        //     $role->forgetCachedPermissions();
+
+        //     $role->delete();
+
+        //     return ApiResponseHelper::createResponse(
+        //         'ok',
+        //         'deleted_role',
+        //         'Rol eliminado exitosamente.'
+        //     );
+        // });
+    }
+
    
     /**
      * Devuelve todos los permisos del sistema agrupados por módulo,
