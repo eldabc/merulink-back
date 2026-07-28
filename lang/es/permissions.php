@@ -17,21 +17,22 @@ return [
     */
 
     'modules' => [
-        'employees'         => 'Empleados',
-        'lockers'           => 'Lockers',
-        'padlocks'          => 'Candados',
         'assigns'           => 'Asignaciones',
-        'departments'       => 'Departamentos',
-        'subdepartments'    => 'Subdepartamentos',
-        'positions'         => 'Cargos',
-        'events'            => 'Eventos',
         'calendar'          => 'Calendario',
+        'padlocks'          => 'Candados',
+        'positions'         => 'Cargos',
         // 'event-categories'  => 'Categorías de eventos',
-        // 'event-templates'   => 'Plantillas de eventos',
-        // 'locations'         => 'Ubicaciones',
-        'shifts'            => 'Turnos',
+        'departments'       => 'Departamentos',
+        'employees'         => 'Empleados',
+        'events'            => 'Eventos',
         'schedules'         => 'Horarios',
+        'lockers'           => 'Lockers',
         // 'schedule-plannings'=> 'Planificaciones',
+        // 'event-templates'   => 'Plantillas de eventos',
+        'roles'             => 'Roles',
+        'subdepartments'    => 'Subdepartamentos',
+        'shifts'            => 'Turnos',
+        // 'locations'         => 'Ubicaciones',
     ],
 
     'actions' => [

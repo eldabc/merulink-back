@@ -67,7 +67,7 @@ class RoleSeeder extends Seeder
             // Candados
             'create-padlocks', 'view-padlocks', 'edit-padlocks', 'delete-padlocks',
             // Roles
-            'create-roles', 'view-roles', 'edit-roles',
+            'create-roles', 'view-roles', 'edit-roles', 'delete-roles',
             // Asignaciones
             'create-assigns', 'view-assigns', 'edit-assigns', 'delete-assigns',
             // Departamentos
