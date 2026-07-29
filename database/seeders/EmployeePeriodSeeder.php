@@ -91,5 +91,72 @@ class EmployeePeriodSeeder extends Seeder
                 
             ]
         );
+
+        // Seguridad
+        EmployeePeriod::firstOrCreate(
+            ['employee_id' => 8], 
+            [
+                'hire_date'   => '2020-10-01',
+                'retire_date' => null,
+                'retire_reason' => '',
+                'notes' => '',
+                
+            ]
+        );
+
+        EmployeePeriod::firstOrCreate(
+            ['employee_id' => 9], 
+            [
+                'hire_date'   => '2020-10-01',
+                'retire_date' => null,
+                'retire_reason' => '',
+                'notes' => '',
+                
+            ]
+        );
+
+        EmployeePeriod::firstOrCreate(
+            ['employee_id' => 10], 
+            [
+                'hire_date'   => '2020-10-01',
+                'retire_date' => null,
+                'retire_reason' => '',
+                'notes' => '',
+                
+            ]
+        );
+
+        EmployeePeriod::firstOrCreate(
+            ['employee_id' => 11], 
+            [
+                'hire_date'   => '2020-10-01',
+                'retire_date' => null,
+                'retire_reason' => '',
+                'notes' => '',
+                
+            ]
+        );
+
+        EmployeePeriod::firstOrCreate(
+            ['employee_id' => 12], 
+            [
+                'hire_date'   => '2020-10-01',
+                'retire_date' => null,
+                'retire_reason' => '',
+                'notes' => '',
+                
+            ]
+        );
+
+        EmployeePeriod::firstOrCreate(
+            ['employee_id' => 13], 
+            [
+                'hire_date'   => '2020-10-01',
+                'retire_date' => null,
+                'retire_reason' => '',
+                'notes' => '',
+                
+            ]
+        );
     }
 }
