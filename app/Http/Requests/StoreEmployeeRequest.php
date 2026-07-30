@@ -179,6 +179,7 @@ class StoreEmployeeRequest extends FormRequest
             ],
             'role_id' => [
                 'required_if:use_meru_link,true',
+                'nullable',
                 'integer',
                 'exists:roles,id',
             ],
