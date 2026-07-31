@@ -1,0 +1,37 @@
+# Archivos y carpetas que NO deben copiarse a la imagen Docker
+# Esto hace que la imagen sea más pequeña y segura
+
+# Entorno local (las variables de entorno se pasan con docker-compose)
+.env
+.env.example
+
+# Dependencias (se instalan dentro del contenedor)
+vendor/
+node_modules/
+
+# Archivos de Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentación y pruebas
+tests/
+phpunit.xml
+README.md
+*.md
+
+# Archivos de editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs y caché (se generan en el contenedor)
+storage/logs/*
+storage/framework/cache/*
+storage/framework/views/*
+storage/framework/sessions/*
+bootstrap/cache/*
+
+# Archivos temporales
+tmp/

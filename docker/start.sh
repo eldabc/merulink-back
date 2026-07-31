@@ -1,0 +1,40 @@
+#!/bin/bash
+# ============================================================
+# Script de inicio del Backend
+# ============================================================
+# Se ejecuta cada vez que el contenedor arranca.
+# Prepara Laravel (migraciones, caché) y luego inicia los
+# servicios (Nginx + PHP-FPM) con Supervisor.
+# ============================================================
+
+echo "🚀 Iniciando Merulink Backend..."
+
+# Esperar a que la base de datos esté lista
+# (El contenedor de PostgreSQL puede tardar unos segundos en arrancar)
+echo "⏳ Esperando a que PostgreSQL esté listo..."
+until php -r "try { new PDO('pgsql:host=${DB_HOST};port=${DB_PORT};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}'); echo 'conectado'; } catch (Exception \$e) { exit(1); }" 2>/dev/null; do
+    echo "   PostgreSQL no está listo aún... reintentando en 3s"
+    sleep 3
+done
+echo "✅ PostgreSQL está listo."
+
+# ── Preparar Laravel ──────────────────────────────────────
+cd /var/www/html
+
+# Generar clave de la aplicación si no existe
+php artisan key:generate --force --no-interaction
+
+# Ejecutar migraciones pendientes
+echo "📊 Ejecutando migraciones..."
+php artisan migrate --force --no-interaction
+
+# Limpiar y regenerar caché
+php artisan config:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+echo "✅ Backend listo. Iniciando servicios..."
+
+# ── Iniciar Supervisor (Nginx + PHP-FPM) ──────────────────
+exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf

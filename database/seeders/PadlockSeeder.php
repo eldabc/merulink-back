@@ -15,6 +15,13 @@ class PadlockSeeder extends Seeder
      */
     public function run(): void
     {
-        Excel::import(new PadlockImport, storage_path('app\padlocks.xls'));
+        $filePath = storage_path('app/padlocks.xls');
+
+        if (!file_exists($filePath)) {
+            $this->command?->warn("Archivo {$filePath} no encontrado. Saltando PadlockSeeder.");
+            return;
+        }
+
+        Excel::import(new PadlockImport, $filePath);
     }
 }
