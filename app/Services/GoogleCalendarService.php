@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 
 class GoogleCalendarService
 {
-    protected string $apiKey;
+    protected ?string $apiKey;
     protected string $calendarId;
 
     public function __construct(
@@ -20,6 +20,11 @@ class GoogleCalendarService
 
     public function fetchHolidays(int $year)
     {
+        // Si consigue API key, no se consulta Google Calendar
+        if (empty($this->apiKey)) {
+            return collect();
+        }
+
         return Cache::remember(
             "google_holidays_{$year}",
             now()->addYears(1),
