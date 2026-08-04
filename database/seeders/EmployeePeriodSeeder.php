@@ -158,5 +158,16 @@ class EmployeePeriodSeeder extends Seeder
                 
             ]
         );
+
+        EmployeePeriod::firstOrCreate(
+            ['employee_id' => 14], 
+            [
+                'hire_date'   => '2020-10-01',
+                'retire_date' => null,
+                'retire_reason' => '',
+                'notes' => '',
+                
+            ]
+        );
     }
 }

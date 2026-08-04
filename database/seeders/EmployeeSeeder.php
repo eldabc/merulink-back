@@ -407,5 +407,35 @@ class EmployeeSeeder extends Seeder
                 'use_transport' => false,
             ]
         );
+
+        Employee::firstOrCreate(
+            ['ci' => '25373416'], 
+            [
+                'num_employee'   => '708',
+                'first_name' => 'GERMAN',
+                'second_name' => 'SEGURIDAD',
+                'last_name' => 'PULIDO',
+                'second_last_name' => 'SEGURIDAD',
+                'birthdate' => '1994-04-30',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'H',
+                'marital_status' => 'Soltero',
+                'blood_type' => 'O+',
+                'email' => 'german.fake@gmail.com',
+                'mobile_phone' => '04121234567',
+                'home_phone' => '02863410565',
+                'address' => 'PZO',
+                'join_date' => '2025-01-02',
+                'department_id' => 7,
+                'position_id' => 7,
+                'user_id' => null,
+                'status' => true,
+                'use_meru_link' => false,
+                'use_hid_card' => false,
+                'use_locker' => false,
+                'use_transport' => false,
+            ]
+        );
     }
 }

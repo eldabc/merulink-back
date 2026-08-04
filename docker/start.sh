@@ -28,11 +28,21 @@ php artisan key:generate --force --no-interaction
 echo "📊 Ejecutando migraciones..."
 php artisan migrate --force --no-interaction
 
+# Ejecutar seeders
+echo "🌱 Ejecutando seeders..."
+php artisan db:seed --force --no-interaction
+
 # Limpiar y regenerar caché
 php artisan config:clear
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+
+# Asegurar que logs, storage y caché de bootstrap pertenezcan a www-data
+chown -R www-data:www-data /var/www/html/storage
+chmod -R 775 /var/www/html/storage
+chown -R www-data:www-data /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/bootstrap/cache
 
 echo "✅ Backend listo. Iniciando servicios..."
 
