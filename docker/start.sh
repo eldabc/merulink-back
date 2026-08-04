@@ -21,6 +21,11 @@ echo "✅ PostgreSQL está listo."
 # ── Preparar Laravel ──────────────────────────────────────
 cd /var/www/html
 
+# Limpiar cachés ANTES de migrar para no usar configs obsoletas
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
 # Generar clave de la aplicación si no existe
 php artisan key:generate --force --no-interaction
 
@@ -32,8 +37,7 @@ php artisan migrate --force --no-interaction
 echo "🌱 Ejecutando seeders..."
 php artisan db:seed --force --no-interaction
 
-# Limpiar y regenerar caché
-php artisan config:clear
+# Regenerar caché
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
