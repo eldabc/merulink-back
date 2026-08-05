@@ -8,6 +8,7 @@ use App\Models\Locker;
 use App\Models\User;
 use App\Models\EmergencyContact;
 use App\Models\RoleSnapshot;
+use App\Models\EmployeePeriod;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\EmployeeResource;
@@ -81,7 +82,7 @@ class EmployeeController extends Controller
                 }
             }
 
-            if (filled($data['use_meru_link'])) {
+            if ($data['use_meru_link']) {
                 $user = User::create([
                     'username' => $data['username'],
                     'password' => $data['password'],
@@ -96,6 +97,11 @@ class EmployeeController extends Controller
                     $this->roleSnapshotService->save($employee, $data['role_id'], $data['permissions'] ?? []);
                 }
             }
+
+            EmployeePeriod::create([
+                'employee_id' => $employee->id,
+                'hire_date' => $data['join_date'],
+            ]);
 
             return new EmployeeResource($employee->load([
                 'position.department', 
