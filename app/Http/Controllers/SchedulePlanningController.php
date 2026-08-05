@@ -111,6 +111,8 @@ class SchedulePlanningController extends Controller
             // Recorrer los empleados y sus fechas asignadas para registrar
             $this->saveSchedulesBatch($data['schedules'], $planning);
 
+            $planning->recordHistory('created', 'Horario creado');
+
             DB::commit();
             return response()->json([
                 'status'  => 'success',
@@ -132,19 +134,18 @@ class SchedulePlanningController extends Controller
      */
     public function show(SchedulePlanning $schedulePlanning, Request $request, ShiftVisualIdentityService $scheduleShiftService)
     {
-        // 1. Extraemos las variables clave de la planificación cargada
         $start = $schedulePlanning->start;
         $end = $schedulePlanning->end;
         $departmentId = $schedulePlanning->department_id;
 
-        // Forzamos los parámetros en el Request en tiempo de ejecución.
+        // Forzar los parámetros en el Request en tiempo de ejecución.
         // Esto hace que el Resource lea 'start' y 'end' sin modificarle una sola línea de código.
         $request->merge([
             'start' => $start,
             'end'   => $end
         ]);
 
-        // 2. Evaluamos el estado reactivo de cierre (Igual que en tu filtro)
+        // Evaluar el estado reactivo de cierre
         $today = Carbon::now()->startOfDay();
         $periodEnd = Carbon::parse($end)->startOfDay();
         
@@ -153,8 +154,6 @@ class SchedulePlanningController extends Controller
 
         // El periodo se trata como cerrado si se cumple cualquiera de las dos
         $isClosed = $isClosedInDB || $isExpiredByDate;
-
-        // 3. Replicamos exactamente la misma consulta de Empleados
         $query = Employee::query();
 
         // Filtro por departamento a través de la posición
@@ -187,7 +186,7 @@ class SchedulePlanningController extends Controller
             'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
         ])->get();
 
-        // 4. Mapeo de la barra lateral de Turnos (Shifts) según estado
+        // Mapeo de la barra lateral de Turnos (Shifts) según estado
         if ($isClosed) {
             $shifts = Schedule::query()
                 ->where('schedule_planning_id', $schedulePlanning->id)
@@ -231,12 +230,13 @@ class SchedulePlanningController extends Controller
                 ->prepend((object) SystemShift::VACATIONS->getData());
         }
 
-        // 5. Agrupación por Subdepartamento para AG Grid
+        // Agrupar por Subdepartamento para AG Grid
         $groupedEmployees = $employees->groupBy(function ($employee) {
             return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
         });
 
-        // 6. Respuesta limpia y estructurada
+        $schedulePlanning->recordHistory('approved', 'Horario visualizado');
+
         return response()->json([
             'id'           => $schedulePlanning->id,
             'status'       => $schedulePlanning->status,
@@ -277,6 +277,9 @@ class SchedulePlanningController extends Controller
             // Recorrer los empleados y sus fechas asignadas para registrar
             $this->saveSchedulesBatch($data['schedules'], $schedulePlanning);
 
+            // Validar el status y registrar el historial
+            $this->recordStatusHistory($schedulePlanning, $data['status']);
+
             DB::commit();
             return response()->json([
                 'status'  => 'success',
@@ -307,6 +310,7 @@ class SchedulePlanningController extends Controller
             DB::transaction(function () use ($schedulePlanning) {            
                 $schedulePlanning->schedules()->delete();
                 $schedulePlanning->delete();
+                // $schedulePlanning->recordHistory('deleted', 'Horario eliminado');       
             });
 
             return response()->json([
@@ -602,6 +606,45 @@ class SchedulePlanningController extends Controller
                     'allow_exit'              => $shift['allowExit'] ?? null,
                     'allow_re_scanned'        => $shift['allowReScanned'] ?? null,
                 ]);
+            }
+        }
+    }
+
+    /**
+     * Valida el status del horario y registra el historial correspondiente.
+     *
+     * - 'approved' → registra action 'approved' (Horario aprobado por: usuario)
+     * - 'reviewed' → registra action 'reviewed' (Horario revisado por: usuario)
+     * - 'created' (desmarcado) y antes fue revisado/aprobado según el historial
+     *   → registra action 'unreviewed' (el usuario desmarcó/cambió el estatus)
+     */
+    private function recordStatusHistory(SchedulePlanning $planning, string $newStatus): void
+    {
+        // Aprobado
+        if ($newStatus === 'approved') {
+            $planning->recordHistory('approved', 'Horario aprobado');
+            return;
+        }
+
+        // Revisado
+        if ($newStatus === 'reviewed') {
+            $planning->recordHistory('reviewed', 'Horario revisado');
+            return;
+        }
+
+        // Desmarcado: volvió a 'created' pero antes ya había sido revisado/aprobado
+        if ($newStatus === 'created') {
+            $wasReviewedOrApproved = $planning->histories()
+                ->whereIn('action', ['reviewed', 'approved'])
+                ->exists();
+
+            if ($wasReviewedOrApproved) {
+                $planning->recordHistory(
+                    'unreviewed',
+                    "Cambió el estatus y quedó como creado"
+                );
+            } else {
+                $planning->recordHistory('edited', 'Horario editado');       
             }
         }
     }

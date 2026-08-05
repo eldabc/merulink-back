@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
             'user'     => 'App\Models\User',
             'employee' => 'App\Models\Employee',
             'event_contact'  => 'App\Models\EventContact',
+            'schedule_planning' => 'App\Models\SchedulePlanning',
         ]);
     }
 }

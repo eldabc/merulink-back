@@ -127,7 +127,8 @@ class ScheduleAutofillService
             if (!empty($newSchedulesData)) {
                 Schedule::insert($newSchedulesData);
             }
-
+            
+            SchedulePlanning::find($planningId)?->recordHistory('autofill', 'Horario autocompletado');
             return $planningId;
         });
     }
