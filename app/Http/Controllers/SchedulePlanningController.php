@@ -655,7 +655,7 @@ class SchedulePlanningController extends Controller
     public function history($id)
     {
         $planning = SchedulePlanning::findOrFail($id);
-        $history = $planning->histories()->with('user.employee:id,user_id,first_name,last_name')->get();
+        $history = $planning->histories()->with('user.employee:id,user_id,first_name,last_name')->orderBy('created_at', 'desc')->get();
         
         return ApiResponseHelper::createResponse(
             'ok', 
