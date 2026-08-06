@@ -249,6 +249,8 @@ class SchedulePlanningController extends Controller
             'end'          => $end,
             'monthNumber'  => $schedulePlanning->month_number,
             'shifts'       => $shifts,
+            'reviewedBy'   => $this->getWorkflowUser($schedulePlanning, 'reviewed'),
+            'approvedBy'   => $this->getWorkflowUser($schedulePlanning, 'approved'),
             'employees'    => $groupedEmployees->map(function ($group) {
                 return EmployeeFilterScheduleResource::collection($group);
             }),
@@ -560,6 +562,8 @@ class SchedulePlanningController extends Controller
             'end'          => $planning?->end ?? $end,
             'monthNumber'  => $planning?->month_number,
             'shifts'       => collect($shifts)->prepend(SystemShift::FREE->getData()), // Inyectar shift del sistema
+            'reviewedBy'   => $this->getWorkflowUser($planning, 'reviewed'),
+            'approvedBy'   => $this->getWorkflowUser($planning, 'approved'),
             'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed, $holidaysMap, $planning) {
                 return $group->map(function ($employee) use ($events, $shifts, $isClosed, $holidaysMap, $planning) {
                     return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts, $holidaysMap, $planning?->id);
@@ -568,6 +572,36 @@ class SchedulePlanningController extends Controller
         ]);
     }
 
+
+    /**
+     * Obtiene el usuario que (reviewed/approved).
+     * Si la acción más reciente es 'unreviewed', devuelve null
+     */
+    private function getWorkflowUser(?SchedulePlanning $planning, string $action): ?array
+    {
+        if (!$planning?->id) {
+            return null;
+        }
+
+        // Buscar la acción más reciente entre $action y 'unreviewed'
+        $history = $planning->histories()
+            ->whereIn('action', [$action, 'unreviewed'])
+            ->with('user.employee:id,user_id,first_name,last_name')
+            ->latest()
+            ->first();
+
+        // Si no hay historial, o la última acción fue unreviewed → no envia datos
+        if (!$history || $history->action === 'unreviewed' || !$history->user) {
+            return null;
+        }
+
+        return [
+            'userName'  => $history->user->username,
+            'firstName' => $history->user->employee->first_name ?? null,
+            'lastName'  => $history->user->employee->last_name ?? null,
+            'date'      => $history->created_at,
+        ];
+    }
 
     private function saveSchedulesBatch(array $schedulesData, SchedulePlanning $planning)
     {
