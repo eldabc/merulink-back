@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ShiftResource;
+use App\Http\Resources\HistoryResource;
 use App\Http\Resources\SchedulePlanningResource;
 use App\Http\Resources\EmployeeResource;
 use App\Http\Resources\EmployeeFilterScheduleResource;
@@ -28,6 +29,7 @@ use App\Services\EventToScheduleService;
 use App\Services\GoogleCalendarService;
 use App\Services\ScheduleAutofillService;
 use App\Services\HolidayService;
+use App\Helpers\ApiResponseHelper;
 
 class SchedulePlanningController extends Controller
 {
@@ -545,7 +547,8 @@ class SchedulePlanningController extends Controller
         // OBTENER FERIADOS (Fijos + Google Calendar unificados)
         $holidaysMap = $this->holidayService->getHolidaysInRange($carbonStart, $carbonEnd);
 
-
+        if($planning?->id) $planning->recordHistory('viewed', 'Horario visualizado');
+        
         return response()->json([
             'id'           => $planning?->id,
             'status'       => $planning?->status,
@@ -647,5 +650,18 @@ class SchedulePlanningController extends Controller
                 $planning->recordHistory('edited', 'Horario editado');       
             }
         }
+    }
+
+    public function history($id)
+    {
+        $planning = SchedulePlanning::findOrFail($id);
+        $history = $planning->histories()->with('user.employee:id,user_id,first_name,last_name')->get();
+        
+        return ApiResponseHelper::createResponse(
+            'ok', 
+            'history_found', 
+            'Historial obtenido', 
+            HistoryResource::collection($history)
+        );
     }
 }

@@ -88,7 +88,8 @@ use App\Http\Controllers\RoleController;
         Route::apiResource('eventTemplates', EventTemplateController::class);
         Route::apiResource('locations', LocationController::class);
         Route::apiResource('shifts', ShiftController::class);
-        
+
+        Route::get('/schedule-plannings/{id}/history', [SchedulePlanningController::class, 'history']);
         Route::get('/schedule-plannings/filter-schedule', [SchedulePlanningController::class, 'filterSchedule']);
         Route::post('/schedule-plannings/autofill', [SchedulePlanningController::class, 'autofill']);
         Route::post('/schedule-plannings/toggle-autofill', [SchedulePlanningController::class, 'toggleAutofill']);
