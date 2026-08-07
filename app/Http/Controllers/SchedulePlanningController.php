@@ -572,37 +572,6 @@ class SchedulePlanningController extends Controller
         ]);
     }
 
-
-    /**
-     * Obtiene el usuario que (reviewed/approved).
-     * Si la acción más reciente es 'unreviewed', devuelve null
-     */
-    private function getWorkflowUser(?SchedulePlanning $planning, string $action): ?array
-    {
-        if (!$planning?->id) {
-            return null;
-        }
-
-        // Buscar la acción más reciente entre $action y 'unreviewed'
-        $history = $planning->histories()
-            ->whereIn('action', [$action, 'unreviewed'])
-            ->with('user.employee:id,user_id,first_name,last_name')
-            ->latest()
-            ->first();
-
-        // Si no hay historial, o la última acción fue unreviewed → no envia datos
-        if (!$history || $history->action === 'unreviewed' || !$history->user) {
-            return null;
-        }
-
-        return [
-            'userName'  => $history->user->username,
-            'firstName' => $history->user->employee->first_name ?? null,
-            'lastName'  => $history->user->employee->last_name ?? null,
-            'date'      => $history->created_at,
-        ];
-    }
-
     private function saveSchedulesBatch(array $schedulesData, SchedulePlanning $planning)
     {
         foreach ($schedulesData as $employeeSchedule) {
@@ -648,15 +617,52 @@ class SchedulePlanningController extends Controller
     }
 
     /**
+     * Obtiene el usuario que (reviewed/approved).
+     * Si la acción más reciente es 'unapproved', devuelve null
+     */
+    private function getWorkflowUser(?SchedulePlanning $planning, string $action): ?array
+    {
+        if (!$planning?->id) {
+            return null;
+        }
+
+        $history = $planning->histories()
+            ->whereIn('action', [$action, 'unapproved'])
+            ->with('user.employee:id,user_id,first_name,last_name')
+            ->latest()
+            ->first();
+
+        // Si no hay historial, o la última acción fue canceladora → no enviar datos
+        if (!$history || in_array($history->action, ['unapproved']) || !$history->user) {
+            return null;
+        }
+
+        return [
+            'userName'  => $history->user->username,
+            'firstName' => $history->user->employee->first_name ?? null,
+            'lastName'  => $history->user->employee->last_name ?? null,
+            'date'      => $history->created_at,
+        ];
+    }
+
+    /**
      * Valida el status del horario y registra el historial correspondiente.
      *
-     * - 'approved' → registra action 'approved' (Horario aprobado por: usuario)
-     * - 'reviewed' → registra action 'reviewed' (Horario revisado por: usuario)
-     * - 'created' (desmarcado) y antes fue revisado/aprobado según el historial
-     *   → registra action 'unreviewed' (el usuario desmarcó/cambió el estatus)
+     * 'created'  → registra 'edited'
+     * 'approved' → registra 'approved'
+     * 'reviewed' → según el último estado del flujo:
+     *    approved  → registra 'unapproved'
+     *    reviewed o unapproved → registra 'edited'
+     *    ninguno   → registra 'reviewed'
      */
     private function recordStatusHistory(SchedulePlanning $planning, string $newStatus): void
     {
+        // Editado sin cambio de status
+        if ($newStatus === 'created') {
+            $planning->recordHistory('edited', 'Horario editado');
+            return;
+        }
+
         // Aprobado
         if ($newStatus === 'approved') {
             $planning->recordHistory('approved', 'Horario aprobado');
@@ -665,25 +671,26 @@ class SchedulePlanningController extends Controller
 
         // Revisado
         if ($newStatus === 'reviewed') {
+            
+            $lastWorkflowAction = $planning->histories()
+                ->whereIn('action', ['approved', 'reviewed', 'unapproved'])
+                ->latest()
+                ->first();
+
+            if ($lastWorkflowAction) {
+                if ( $lastWorkflowAction->action === 'approved' ) {
+                    // Venía de aprobado → desaprobar
+                    $planning->recordHistory('unapproved', 'Cambió el estatus y quedó como revisado');
+                } elseif ( $lastWorkflowAction->action === 'reviewed' || $lastWorkflowAction->action === 'unapproved' ) {
+                    // Ya estaba revisado → solo edición
+                    $planning->recordHistory('edited', 'Horario editado');
+                } 
+                return;
+            }            
+            
+            // Primera vez que se revisa
             $planning->recordHistory('reviewed', 'Horario revisado');
-            return;
-        }
-
-        // Desmarcado: volvió a 'created' pero antes ya había sido revisado/aprobado
-        if ($newStatus === 'created') {
-            $wasReviewedOrApproved = $planning->histories()
-                ->whereIn('action', ['reviewed', 'approved'])
-                ->exists();
-
-            if ($wasReviewedOrApproved) {
-                $planning->recordHistory(
-                    'unreviewed',
-                    "Cambió el estatus y quedó como creado"
-                );
-            } else {
-                $planning->recordHistory('edited', 'Horario editado');       
-            }
-        }
+        }      
     }
 
     public function history($id)

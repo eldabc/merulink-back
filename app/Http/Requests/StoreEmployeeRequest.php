@@ -197,6 +197,45 @@ class StoreEmployeeRequest extends FormRequest
         ];
     }
 
+    public function attributes(): array
+    {
+        return [
+            'ci' => 'cédula de identidad',
+            'num_employee' => 'número de empleado',
+            'first_name' => 'primer nombre',
+            'second_name' => 'segundo nombre',
+            'last_name' => 'primer apellido',
+            'second_last_name' => 'segundo apellido',
+            'birthdate' => 'fecha de cumpleaños',
+            'place_of_birth' => 'lugar de nacimiento',
+            'nationality' => 'nacionalidad',
+            'sex' => 'sexo',
+            'marital_status' => 'estado civil',
+            'blood_type' => 'tipo de sangre',
+            'email' => 'correo electrónico',
+            'mobile_phone' => 'teléfono móvil',
+            'home_phone' => 'teléfono fijo',
+            'address' => 'dirección',
+            'join_date' => 'fecha de ingreso',
+            'department_id' => 'departamento',
+            'sub_department.id' => 'subdepartamento',
+            'position_id' => 'cargo',
+            'username' => 'nombre de usuario',
+            'password' => 'contraseña',
+            'change_pass_next_login' => 'cambiar contraseña en el próximo inicio de sesión',
+            'status' => 'estado del empleado',
+            'use_meru_link' => 'usa Merulink',
+            'use_hid_card' => 'usa tarjeta HID',
+            'use_locker' => 'usa locker',
+            'use_transport' => 'usa transporte',
+            'contacts' => 'contactos de emergencia',
+            'assign_id' => 'id de asignación de locker',
+            'role_id' => 'rol de usuario',
+            'permissions' => 'permisos de usuario',
+            'retire_date' => 'fecha de retiro',
+        ];
+    }
+
     public function messages(): array
     {
         return [
