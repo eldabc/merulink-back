@@ -116,10 +116,21 @@ class SchedulePlanningController extends Controller
             $planning->recordHistory('created', 'Horario creado');
 
             DB::commit();
-            return response()->json([
-                'status'  => 'success',
-                'message' => 'Planificación e historial de turnos guardados exitosamente.'
-            ], 201);
+
+            // Asegura que filterSchedule reciba camelCase
+            $request->merge([
+                'departmentId' => $request->department_id,
+                'start'        => $data['start'],
+                'end'          => $data['end'],
+            ]);
+
+            $filterResponse = $this->filterSchedule($request);
+            return ApiResponseHelper::createResponse(
+                'ok', 
+                'schedule_planning_registred', 
+                'Horario Registrado Exitosamente', 
+                $filterResponse->getData(true)
+            );
 
         } catch (\Exception $e) {
             DB::rollBack();
