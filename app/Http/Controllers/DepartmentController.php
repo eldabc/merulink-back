@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use Illuminate\Support\Facades\Cache;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\DepartmentResource;
@@ -15,7 +16,10 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $departments = Department::with('subDepartments', 'positions')->get();
+        $departments = Cache::rememberForever('departments.all', function () {
+            return Department::with('subDepartments', 'positions')->orderBy('name')->get();
+        });
+
         return DepartmentResource::collection($departments);
     }
 
