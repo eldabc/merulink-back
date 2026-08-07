@@ -17,8 +17,13 @@
         /**
          * Método helper para registrar una acción en el historial.
          */
-        public function recordHistory(string $action, ?string $description = null, ?array $payload = null, ?int $userId = null): History
+        public function recordHistory(string $action, ?string $description = null, ?array $payload = null, ?int $userId = null): ?History
         {
+            // Si modelo tiene un campo status y está cerrado, no registra
+            if (isset($this->status) && $this->status === 'closed') {
+                return null;
+            }
+
             return $this->histories()->create([
                 'user_id'     => $userId ?? Auth::id(),
                 'action'      => $action,
