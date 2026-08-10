@@ -117,14 +117,9 @@ class SchedulePlanningController extends Controller
 
             DB::commit();
 
-            // Asegura que filterSchedule reciba camelCase
-            $request->merge([
-                'departmentId' => $request->department_id,
-                'start'        => $data['start'],
-                'end'          => $data['end'],
-            ]);
-
-            return $this->filterSchedule($request);
+            return response()->json(
+                $this->buildSchedulePayload($data['start'], $data['end'], $data['department_id'])
+            );
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -291,14 +286,9 @@ class SchedulePlanningController extends Controller
 
             DB::commit();
 
-            // Asegura que filterSchedule reciba camelCase
-            $request->merge([
-                'departmentId' => $request->department_id,
-                'start'        => $data['start'],
-                'end'          => $data['end'],
-            ]);
-
-            return $this->filterSchedule($request);
+            return response()->json(
+                $this->buildSchedulePayload($data['start'], $data['end'], $data['department_id'])
+            );
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -379,7 +369,9 @@ class SchedulePlanningController extends Controller
             );
 
             // Retornar la respuesta original de refresco visual para el Front
-            return $this->filterSchedule($request);
+            return response()->json(
+                $this->buildSchedulePayload($data['start'], $data['end'], $data['departmentId'])
+            );
 
         } catch (\Exception $e) {
             return response()->json([
@@ -397,13 +389,21 @@ class SchedulePlanningController extends Controller
         if (!$request->filled(['departmentId', 'start', 'end'])) {
             return response()->json([
                 'message' => 'Los parámetros departmentId, start y end son obligatorios.'
-            ], 400); 
+            ], 400);
         }
 
-        $start = $request->input('start');
-        $end = $request->input('end');
-        $departmentId = $request->departmentId;
+        return response()->json($this->buildSchedulePayload(
+            $request->input('start'),
+            $request->input('end'),
+            $request->input('departmentId')
+        ));
+    }
 
+    /**
+     * Construye el payload completo del horario (empleados, turnos, eventos y feriados).
+     */
+    private function buildSchedulePayload(string $start, string $end, int|string $departmentId): array
+    {
         $planning = SchedulePlanning::query()
             ->where('department_id', $departmentId)
             ->whereDate('start', $start)
@@ -500,7 +500,7 @@ class SchedulePlanningController extends Controller
                 ->unique('shift_id');
 
             // Transformar los registros de Schedule en instancias de Shift
-            $historicalShifts = $historicalSchedules->map(function ($schedule) use ($request, $departmentId) {
+            $historicalShifts = $historicalSchedules->map(function ($schedule) use ($departmentId) {
                 $mockShift = new Shift();
                 
                 // Asignar manualmente los atributos usando snake_case
@@ -523,7 +523,6 @@ class SchedulePlanningController extends Controller
                     'allow_re_scanned' => $schedule->allow_re_scanned,
                     'department_id' => $departmentId,
                     'available' => 'yes',
-                    // Se coloca now() para evitar errores
                     'available_from' => now(),
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -561,7 +560,7 @@ class SchedulePlanningController extends Controller
 
         if($planning?->id) $planning->recordHistory('viewed', 'Horario visualizado');
         
-        return response()->json([
+        return [
             'id'           => $planning?->id,
             'status'       => $planning?->status,
             'observations' => $planning?->observations,
@@ -579,7 +578,7 @@ class SchedulePlanningController extends Controller
                     return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts, $holidaysMap, $planning?->id);
                 });
             }),
-        ]);
+        ];
     }
 
     private function saveSchedulesBatch(array $schedulesData, SchedulePlanning $planning)
