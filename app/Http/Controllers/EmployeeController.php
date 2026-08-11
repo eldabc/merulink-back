@@ -53,6 +53,7 @@ class EmployeeController extends Controller
             'roleSnapshot',
             'user.permissions',
             'user.roles.permissions',
+            'latestEmployeePeriod'
         ])->get();
 
         return EmployeeResource::collection($employees);

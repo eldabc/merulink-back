@@ -71,6 +71,14 @@ class Employee extends Model
         return $this->hasMany(EmployeePeriod::class);
     }
 
+    /**
+     * Último periodo laboral del empleado (el más reciente por id).
+     */
+    public function latestEmployeePeriod(): HasOne
+    {
+        return $this->hasOne(EmployeePeriod::class)->latestOfMany();
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

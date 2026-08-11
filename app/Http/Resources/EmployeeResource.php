@@ -37,7 +37,7 @@ class EmployeeResource extends JsonResource
             'mobilePhone' => $this->mobile_phone,
             'homePhone' => $this->home_phone,
             'address' => $this->address,
-            'joinDate' => $this->hire_date,
+            'joinDate' => $this->latestEmployeePeriod?->hire_date,
             // 'department' => new DepartmentResource($this->department),
             'department' => [
                 'id' => $this->position->department->id,
