@@ -207,7 +207,7 @@ class EmployeeController extends Controller
 
     }
 
-    public function changeStatus(Request $request, Employee $employee)
+    public function changeBooleanField(Request $request, Employee $employee)
     {
         $field = $request->query('field');
 
@@ -215,28 +215,7 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'El campo a cambiar es requerido.'], 400);
         }
 
-        return DB::transaction(function () use ($field, $employee, $request) {
-            
-            $employeeDataReset = [];
-            if ($field === 'status') {
-
-                if (!$employee->status === false) {
-                    $employeeDataReset = [
-                        "use_meru_link" => false,
-                        "use_locker" => false,
-                        "use_hid_card" => false,
-                        "use_transport" => false,
-                    ];
-                    $this->lockerService->unassignLocker($employee->id);
-                    $employee->user?->update(['status' => false]);
-
-                    // Guardar los datos de baja en el periodo laboral vigente
-                    $this->saveRetireData($employee, $request);
-                } else {
-                    // Al reactivar, limpiar los datos de baja para que vuelva a contar como activo
-                    $this->clearRetireData($employee);
-                }       
-            } 
+        return DB::transaction(function () use ($field, $employee) {
 
             if ($field === 'use_locker' && !$employee->use_locker) {
                 $this->lockerService->unassignLocker($employee->id);
@@ -248,7 +227,6 @@ class EmployeeController extends Controller
 
             $employee->update(array_merge(
                 [$field => !$employee->$field],
-                $employeeDataReset
             ));
             
             return new EmployeeResource($employee->fresh()->load([
@@ -256,6 +234,44 @@ class EmployeeController extends Controller
                 'position.subDepartment',
                 'assignment',
                 'user'
+            ]));
+        });
+    }
+
+    public function changeStatus(Request $request, Employee $employee)
+    {
+        return DB::transaction(function () use ($request, $employee) {
+
+            if ($employee->status) {
+                // Dar de baja
+                $retireReason = $request->input('retire_reason');
+
+                if (!$retireReason) {
+                    return response()->json(['message' => 'Debe indicar el tipo de egreso.'], 422);
+                }
+
+                $employee->update([
+                    'status'        => false,
+                    'use_meru_link' => false,
+                    'use_locker'    => false,
+                    'use_hid_card'  => false,
+                    'use_transport' => false,
+                ]);
+
+                $this->lockerService->unassignLocker($employee->id);
+                $this->saveEmployeePeriod($employee, $request);
+                $employee->user?->update(['status' => false]);
+            } else {
+                // Reactivar
+                $this->saveEmployeePeriod($employee, $request);
+                $employee->update(['status' => true]);
+            }
+
+            return new EmployeeResource($employee->fresh()->load([
+                'position.department',
+                'position.subDepartment',
+                'assignment',
+                'user',
             ]));
         });
     }
@@ -330,7 +346,7 @@ class EmployeeController extends Controller
      * Guarda los datos de baja (tipo de egreso, fecha de efectividad y motivo)
      * en el periodo laboral vigente del empleado.
      */
-    private function saveRetireData(Employee $employee, Request $request): void
+    private function saveEmployeePeriod(Employee $employee, Request $request): void
     {
         $retireReason = $request->input('retire_reason');
         $retireDate   = $request->input('retire_date');
@@ -357,24 +373,5 @@ class EmployeeController extends Controller
             'retire_reason' => $retireReason,
             'notes'         => $notes,
         ]);
-    }
-
-    /**
-     * Limpia los datos de baja del periodo laboral cuando el empleado se reactiva.
-     */
-    private function clearRetireData(Employee $employee): void
-    {
-        $period = EmployeePeriod::where('employee_id', $employee->id)
-            ->whereNotNull('retire_date')
-            ->latest('id')
-            ->first();
-
-        if ($period) {
-            $period->update([
-                'retire_date'   => null,
-                'retire_reason' => null,
-                'notes'         => null,
-            ]);
-        }
     }
 }
