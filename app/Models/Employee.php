@@ -27,7 +27,6 @@ class Employee extends Model
         'mobile_phone',
         'home_phone',
         'address',
-        'join_date',
         'department_id',
         'position_id',
         'status',

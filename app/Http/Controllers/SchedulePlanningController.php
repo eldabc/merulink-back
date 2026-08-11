@@ -381,6 +381,19 @@ class SchedulePlanningController extends Controller
         }
     }
 
+    public function history($id)
+    {
+        $planning = SchedulePlanning::findOrFail($id);
+        $history = $planning->histories()->with('user.employee:id,user_id,first_name,last_name')->orderBy('created_at', 'desc')->get();
+        
+        return ApiResponseHelper::createResponse(
+            'ok', 
+            'history_found', 
+            'Historial obtenido', 
+            HistoryResource::collection($history)
+        );
+    }
+
     /**
      * Trae los empleados para schedule
      */
@@ -700,18 +713,5 @@ class SchedulePlanningController extends Controller
             // Primera vez que se revisa
             $planning->recordHistory('reviewed', 'Horario revisado');
         }      
-    }
-
-    public function history($id)
-    {
-        $planning = SchedulePlanning::findOrFail($id);
-        $history = $planning->histories()->with('user.employee:id,user_id,first_name,last_name')->orderBy('created_at', 'desc')->get();
-        
-        return ApiResponseHelper::createResponse(
-            'ok', 
-            'history_found', 
-            'Historial obtenido', 
-            HistoryResource::collection($history)
-        );
     }
 }

@@ -100,7 +100,7 @@ class EmployeeController extends Controller
 
             EmployeePeriod::create([
                 'employee_id' => $employee->id,
-                'hire_date' => $data['join_date'],
+                'hire_date' => $data['hire_date'],
             ]);
 
             return new EmployeeResource($employee->load([
@@ -215,11 +215,10 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'El campo a cambiar es requerido.'], 400);
         }
 
-        return DB::transaction(function () use ($field, $employee) {
+        return DB::transaction(function () use ($field, $employee, $request) {
             
             $employeeDataReset = [];
             if ($field === 'status') {
-                // $newStatus = !$employee->status;
 
                 if (!$employee->status === false) {
                     $employeeDataReset = [
@@ -229,6 +228,13 @@ class EmployeeController extends Controller
                         "use_transport" => false,
                     ];
                     $this->lockerService->unassignLocker($employee->id);
+                    $employee->user?->update(['status' => false]);
+
+                    // Guardar los datos de baja en el periodo laboral vigente
+                    $this->saveRetireData($employee, $request);
+                } else {
+                    // Al reactivar, limpiar los datos de baja para que vuelva a contar como activo
+                    $this->clearRetireData($employee);
                 }       
             } 
 
@@ -318,5 +324,57 @@ class EmployeeController extends Controller
             'message' => "Contraseña restablecida a la cédula ({$employee->ci}). El usuario deberá cambiarla en el próximo inicio de sesión.",
             'data'    => new EmployeeResource($employee),
         ]);
+    }
+
+    /**
+     * Guarda los datos de baja (tipo de egreso, fecha de efectividad y motivo)
+     * en el periodo laboral vigente del empleado.
+     */
+    private function saveRetireData(Employee $employee, Request $request): void
+    {
+        $retireReason = $request->input('retire_reason');
+        $retireDate   = $request->input('retire_date');
+        $notes        = $request->input('notes');
+
+        if (!$retireReason && !$retireDate && !$notes) {
+            return;
+        }
+
+        $period = EmployeePeriod::where('employee_id', $employee->id)
+            ->whereNull('retire_date')
+            ->latest('id')
+            ->first();
+
+        if (!$period) {
+            $period = EmployeePeriod::create([
+                'employee_id' => $employee->id,
+                'hire_date'   => $employee->hire_date ?? now()->toDateString(),
+            ]);
+        }
+
+        $period->update([
+            'retire_date'   => $retireDate ?? now()->toDateString(),
+            'retire_reason' => $retireReason,
+            'notes'         => $notes,
+        ]);
+    }
+
+    /**
+     * Limpia los datos de baja del periodo laboral cuando el empleado se reactiva.
+     */
+    private function clearRetireData(Employee $employee): void
+    {
+        $period = EmployeePeriod::where('employee_id', $employee->id)
+            ->whereNotNull('retire_date')
+            ->latest('id')
+            ->first();
+
+        if ($period) {
+            $period->update([
+                'retire_date'   => null,
+                'retire_reason' => null,
+                'notes'         => null,
+            ]);
+        }
     }
 }

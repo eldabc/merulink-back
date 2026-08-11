@@ -29,7 +29,6 @@ return new class extends Migration
             $table->string('mobile_phone');
             $table->string('home_phone')->nullable();
             $table->string('address')->nullable();
-            $table->string('join_date');
             $table->boolean('status')->default(true);
             $table->boolean('use_meru_link')->default(false);
             $table->boolean('use_hid_card')->default(false);

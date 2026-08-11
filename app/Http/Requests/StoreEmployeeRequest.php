@@ -97,7 +97,7 @@ class StoreEmployeeRequest extends FormRequest
                 'string',
             ],
 
-            'join_date' => [
+            'hire_date' => [
                 'required',
                 'date',
             ],
@@ -216,7 +216,7 @@ class StoreEmployeeRequest extends FormRequest
             'mobile_phone' => 'teléfono móvil',
             'home_phone' => 'teléfono fijo',
             'address' => 'dirección',
-            'join_date' => 'fecha de ingreso',
+            'hire_date' => 'fecha de ingreso',
             'department_id' => 'departamento',
             'sub_department.id' => 'subdepartamento',
             'position_id' => 'cargo',
@@ -250,7 +250,7 @@ class StoreEmployeeRequest extends FormRequest
             'last_name.required' => 'El segundo nombre es obligatorio.',
             'last_name.string'   => 'El segundo nombre debe ser una cadena de caracteres válida.',
             
-            'join_date.required' => 'La fecha de ingreso es requerida',
+            'hire_date.required' => 'La fecha de ingreso es requerida',
             'email'           => 'El email ingresado ya está en uso.',
             'blood_type.string'   => 'El tipo de sangre debe ser una cadena de caracteres válida.',
 
