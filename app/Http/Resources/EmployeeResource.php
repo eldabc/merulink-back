@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Helpers\PermissionHelper;
 
@@ -66,6 +67,9 @@ class EmployeeResource extends JsonResource
                 'permissions' => $snapshot->permissions,
             ] : null,
             'status' => $this->status,
+            'scheduledDeactivation' => $this->latestEmployeePeriod?->retire_date
+                ? Carbon::parse($this->latestEmployeePeriod->retire_date)->greaterThan(Carbon::today())
+                : false,
             'useMeruLink' => $this->use_meru_link,
             'useHidCard' => $this->use_hid_card,
             'useLocker' => $this->use_locker,

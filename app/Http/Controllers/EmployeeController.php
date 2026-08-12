@@ -11,6 +11,7 @@ use App\Models\RoleSnapshot;
 use App\Models\EmployeePeriod;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Http\Resources\EmployeeResource;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\ChangeStatusRequest;
@@ -18,16 +19,19 @@ use Illuminate\Support\Facades\DB;
 use App\Enums\LockerStatus;
 use App\Services\LockerService;
 use App\Services\RoleSnapshotService;
+use App\Services\ScheduleService;
 
 class EmployeeController extends Controller
 {
     protected $lockerService;
     protected $roleSnapshotService;
+    protected $scheduleService;
 
-    public function __construct(LockerService $lockerService, RoleSnapshotService $roleSnapshotService)
+    public function __construct(LockerService $lockerService, RoleSnapshotService $roleSnapshotService, ScheduleService $scheduleService)
     {
         $this->lockerService = $lockerService;
         $this->roleSnapshotService = $roleSnapshotService;
+        $this->scheduleService = $scheduleService;
     }
 
     /**
@@ -242,23 +246,36 @@ class EmployeeController extends Controller
 
     public function changeStatus(ChangeStatusRequest $request, Employee $employee)
     {
-        return DB::transaction(function () use ($request, $employee) {
+        $data = $request->validated();
+        return DB::transaction(function () use ($request, $employee, $data) {
 
             if ($employee->status) {
                 // Dar de baja
-                $retireReason = $request->input('retire_reason');
+                $effectiveDate = Carbon::parse($data['effective_date']);
 
-                $employee->update([
-                    'status'        => false,
-                    'use_meru_link' => false,
-                    'use_locker'    => false,
-                    'use_hid_card'  => false,
-                    'use_transport' => false,
-                ]);
+                if ($effectiveDate->greaterThan(Carbon::today())) {
+                    // Desactivación programada (cron job)
+                    $this->saveEmployeePeriod($employee, $request);
+                } else {
+                    // Desactivación inmediata
+                    $employee->update([
+                        'status'        => false,
+                        'use_meru_link' => false,
+                        'use_locker'    => false,
+                        'use_hid_card'  => false,
+                        'use_transport' => false,
+                    ]);
 
-                $this->lockerService->unassignLocker($employee->id);
-                $this->saveEmployeePeriod($employee, $request);
-                $employee->user?->update(['status' => false]);
+                    $this->lockerService->unassignLocker($employee->id);
+                    $this->saveEmployeePeriod($employee, $request);
+                    // Eliminar turnos a partir de fecha de efectividad
+                    $this->scheduleService->deleteSchedulesFromDate(
+                        $employee->id,
+                        $request->input('effective_date')
+                    );
+                    $employee->user?->update(['status' => false]);
+                }
+
             } else {
                 // Reactivar
                 $this->saveEmployeePeriod($employee, $request);
@@ -360,6 +377,7 @@ class EmployeeController extends Controller
                 'employee_id' => $employee->id,
                 'hire_date'   => $effectiveDate,
             ]);
+            return;
         }
 
         $period->update([
