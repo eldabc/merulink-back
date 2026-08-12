@@ -29,3 +29,7 @@ Schedule::command(
 Schedule::command(
     'schedule-plannings:autofill-schedule'
 )->monthlyOn(16, '00:00');
+
+Schedule::command(
+    'employees:scheduled-deactivate'
+)->dailyAt('00:00');

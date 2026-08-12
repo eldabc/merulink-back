@@ -148,6 +148,13 @@ return [
             'days' => 30,
         ],
 
+        'scheduled_deactivate_employees' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/employees/scheduled-deactivate-employees.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+
     ],
 
 ];
