@@ -13,6 +13,7 @@ use App\Models\EmployeePeriod;
 use Illuminate\Http\Request;
 use App\Http\Resources\EmployeeResource;
 use App\Http\Requests\StoreEmployeeRequest;
+use App\Http\Requests\ChangeStatusRequest;
 use Illuminate\Support\Facades\DB;
 use App\Enums\LockerStatus;
 use App\Services\LockerService;
@@ -239,17 +240,13 @@ class EmployeeController extends Controller
         });
     }
 
-    public function changeStatus(Request $request, Employee $employee)
+    public function changeStatus(ChangeStatusRequest $request, Employee $employee)
     {
         return DB::transaction(function () use ($request, $employee) {
 
             if ($employee->status) {
                 // Dar de baja
                 $retireReason = $request->input('retire_reason');
-
-                if (!$retireReason) {
-                    return response()->json(['message' => 'Debe indicar el tipo de egreso.'], 422);
-                }
 
                 $employee->update([
                     'status'        => false,
@@ -349,13 +346,9 @@ class EmployeeController extends Controller
      */
     private function saveEmployeePeriod(Employee $employee, Request $request): void
     {
-        $retireReason = $request->input('retire_reason');
-        $retireDate   = $request->input('retire_date');
-        $notes        = $request->input('notes');
+        $effectiveDate = $request->input('effective_date');
 
-        if (!$retireReason && !$retireDate && !$notes) {
-            return;
-        }
+        if (!$effectiveDate) return;
 
         $period = EmployeePeriod::where('employee_id', $employee->id)
             ->whereNull('retire_date')
@@ -365,14 +358,14 @@ class EmployeeController extends Controller
         if (!$period) {
             $period = EmployeePeriod::create([
                 'employee_id' => $employee->id,
-                'hire_date'   => $employee->hire_date ?? now()->toDateString(),
+                'hire_date'   => $effectiveDate,
             ]);
         }
 
         $period->update([
-            'retire_date'   => $retireDate ?? now()->toDateString(),
-            'retire_reason' => $retireReason,
-            'notes'         => $notes,
+            'retire_date'   => $effectiveDate,
+            'retire_reason' => $request->input('retire_reason'),
+            'notes'         => $request->input('notes'),
         ]);
     }
 }
