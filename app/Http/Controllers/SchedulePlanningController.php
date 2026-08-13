@@ -186,7 +186,10 @@ class SchedulePlanningController extends Controller
                 $q->whereBetween('date', [$start, $end]);
             },
             'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
-        ])->get();
+        ])
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get();
 
         // Mapeo de la barra lateral de Turnos (Shifts) según estado
         if ($isClosed) {
@@ -466,7 +469,10 @@ class SchedulePlanningController extends Controller
                 $q->whereBetween('date', [$start, $end]);
             },
             'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
-        ])->get();
+        ])
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get();
 
         if ($isClosed) {
             $shifts = Schedule::query()
