@@ -63,8 +63,11 @@ class EmployeeFilterScheduleResource extends JsonResource
                 // PRIORIDAD 1: Retiro
                 if ($hasPeriods) {
                     $hasActiveContractThisDay = $this->employeePeriods->contains(function ($period) use ($dateString) {
-                        return $dateString >= $period->hire_date && 
-                            (is_null($period->retire_date) || $dateString <= $period->retire_date);
+                        // Fecha efectiva de baja: retire_date o scheduled_deactivate_date
+                        $deactivationDate = $period->retire_date ?? $period->scheduled_deactivate_date;
+
+                        return $dateString >= $period->hire_date
+                            && (is_null($deactivationDate) || $dateString <= $deactivationDate);
                     });
                 }
 

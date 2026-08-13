@@ -270,11 +270,12 @@ class EmployeeController extends Controller
                     ]);
 
                     $this->lockerService->unassignLocker($employee->id);
-                    $this->scheduleService->deleteSchedulesFromDate($employee->id, $data['effective_date']);
                     $this->saveEmployeePeriod($employee, $data);
 
                     $employee->user?->update(['status' => false]);
                 }
+
+                $this->scheduleService->deleteSchedulesFromDate($employee->id, $data['effective_date']);
 
             } else {
                 // Reactivar
