@@ -94,6 +94,7 @@ class EmployeeManageService
         // Baja inmediata
         $period->update([
             'retire_date'               => $effectiveDate,
+            'scheduled_deactivate_date' => null,
             'retire_reason'             => $data['retire_reason'],
             'notes'                     => $data['notes'],
         ]);

@@ -64,8 +64,6 @@ class ScheduledDeactivateEmployee extends Command
             // Periodo vigente con baja programada vencida
             $period = $employee->employeePeriods
                 ->whereNotNull('scheduled_deactivate_date')
-                ->whereNull('retire_date')
-                ->sortByDesc('scheduled_deactivate_date')
                 ->first();
 
             if (!$period) {
