@@ -34,6 +34,10 @@ class ChangeStatusRequest extends FormRequest
                 'string',
             ],
             'notes' => ['nullable', 'string'],
+            'action' => [
+                'required',
+                Rule::in(['deactivate', 'activate']),
+            ],
         ];
     }
 
@@ -47,6 +51,7 @@ class ChangeStatusRequest extends FormRequest
         return [
             'effective_date.required' => 'Debe indicar la fecha de efectividad.',
             'retire_reason.required'  => 'Debe indicar el tipo de egreso.',
+            'action.required'         => 'Debe indicar el tipo de acción.',
         ];
     }
 }

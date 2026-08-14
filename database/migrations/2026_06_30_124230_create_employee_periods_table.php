@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->date('hire_date');
             $table->date('retire_date')->nullable();
+            $table->date('scheduled_deactivate_date')->nullable();
             $table->string('retire_reason')->nullable();
             $table->text('notes')->nullable();
             $table->foreignId('employee_id')

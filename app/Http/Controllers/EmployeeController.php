@@ -200,6 +200,9 @@ class EmployeeController extends Controller
                 }
             }
 
+            $employee->latestEmployeePeriod()->update([
+                'hire_date' => $data['hire_date'],
+            ]);
 
             return new EmployeeResource($employee->load([
                 'position.department', 
@@ -249,13 +252,13 @@ class EmployeeController extends Controller
         $data = $request->validated();
         return DB::transaction(function () use ($request, $employee, $data) {
 
-            if ($employee->status) {
+            if ($data['action'] === 'deactivate') {
                 // Dar de baja
                 $effectiveDate = Carbon::parse($data['effective_date']);
 
                 if ($effectiveDate->greaterThan(Carbon::today())) {
                     // Desactivación programada (cron job)
-                    $this->saveEmployeePeriod($employee, $request);
+                    $this->saveEmployeePeriod($employee, $data, true);
                 } else {
                     // Desactivación inmediata
                     $employee->update([
@@ -267,18 +270,15 @@ class EmployeeController extends Controller
                     ]);
 
                     $this->lockerService->unassignLocker($employee->id);
-                    $this->saveEmployeePeriod($employee, $request);
-                    // Eliminar turnos a partir de fecha de efectividad
-                    $this->scheduleService->deleteSchedulesFromDate(
-                        $employee->id,
-                        $request->input('effective_date')
-                    );
+                    $this->scheduleService->deleteSchedulesFromDate($employee->id, $data['effective_date']);
+                    $this->saveEmployeePeriod($employee, $data);
+
                     $employee->user?->update(['status' => false]);
                 }
 
             } else {
                 // Reactivar
-                $this->saveEmployeePeriod($employee, $request);
+                $this->saveEmployeePeriod($employee, $data);
                 $employee->update(['status' => true]);
             }
 
@@ -361,9 +361,9 @@ class EmployeeController extends Controller
      * Guarda los datos de baja (tipo de egreso, fecha de efectividad y motivo)
      * en el periodo laboral vigente del empleado.
      */
-    private function saveEmployeePeriod(Employee $employee, Request $request): void
+    private function saveEmployeePeriod(Employee $employee, array $data, $scheduledDeactivate = false): void
     {
-        $effectiveDate = $request->input('effective_date');
+        $effectiveDate = $data['effective_date'];
 
         if (!$effectiveDate) return;
 
@@ -371,6 +371,13 @@ class EmployeeController extends Controller
             ->whereNull('retire_date')
             ->latest('id')
             ->first();
+
+        if($period && $scheduledDeactivate) {
+            $period->update([
+                'scheduled_deactivate_date' => $data['effective_date'],
+            ]);
+            return;
+        }
 
         if (!$period) {
             $period = EmployeePeriod::create([
@@ -382,8 +389,8 @@ class EmployeeController extends Controller
 
         $period->update([
             'retire_date'   => $effectiveDate,
-            'retire_reason' => $request->input('retire_reason'),
-            'notes'         => $request->input('notes'),
+            'retire_reason' => $data['retire_reason'],
+            'notes'         => $data['notes'],
         ]);
     }
 }

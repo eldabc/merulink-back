@@ -40,9 +40,10 @@ class EmployeeResource extends JsonResource
             'address' => $this->address,
             'joinDate' => $this->latestEmployeePeriod?->hire_date,
             'latestPeriod' => [
-                'retireReason' => $this->latestEmployeePeriod?->retire_reason,
-                'retireDate' => $this->latestEmployeePeriod?->retire_date,
-                'retireNote' => $this->latestEmployeePeriod?->notes,
+                'retireReason'            => $this->latestEmployeePeriod?->retire_reason,
+                'retireDate'              => $this->latestEmployeePeriod?->retire_date,
+                'retireNote'              => $this->latestEmployeePeriod?->notes,
+                'scheduledDeactivateDate' => $this->latestEmployeePeriod?->scheduled_deactivate_date
             ],
             'department' => [
                 'id' => $this->position->department->id,
@@ -67,8 +68,8 @@ class EmployeeResource extends JsonResource
                 'permissions' => $snapshot->permissions,
             ] : null,
             'status' => $this->status,
-            'scheduledDeactivation' => $this->latestEmployeePeriod?->retire_date
-                ? Carbon::parse($this->latestEmployeePeriod->retire_date)->greaterThan(Carbon::today())
+            'scheduledDeactivation' => $this->latestEmployeePeriod?->scheduled_deactivate_date
+                ? Carbon::parse($this->latestEmployeePeriod->scheduled_deactivate_date)->greaterThan(Carbon::today())
                 : false,
             'useMeruLink' => $this->use_meru_link,
             'useHidCard' => $this->use_hid_card,

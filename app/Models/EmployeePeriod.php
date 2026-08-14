@@ -11,6 +11,7 @@ class EmployeePeriod extends Model
     protected $fillable = [
         'hire_date',
         'retire_date',
+        'scheduled_deactivate_date',
         'retire_reason',
         'notes',
         'employee_id',
