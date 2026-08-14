@@ -7,6 +7,7 @@ use Carbon\Carbon;
 class HolidayService
 {
     protected GoogleCalendarService $googleCalendarService;
+    protected NationalHolidayService $nationalHolidayService;
 
     /**
      * Fuente única de feriados fijos: config/holidays.php
@@ -16,9 +17,12 @@ class HolidayService
         return config('holidays.fixed', []);
     }
 
-    public function __construct(GoogleCalendarService $googleCalendarService)
-    {
+    public function __construct(
+        GoogleCalendarService $googleCalendarService,
+        NationalHolidayService $nationalHolidayService,
+    ) {
         $this->googleCalendarService = $googleCalendarService;
+        $this->nationalHolidayService = $nationalHolidayService;
     }
 
     /**
@@ -44,12 +48,7 @@ class HolidayService
             $googleEvents = $this->googleCalendarService->fetchHolidays($year);
             if (!empty($googleEvents)) {
                 foreach ($googleEvents as $event) {
-                    $titleLower = mb_strtolower($event['title'] ?? '', 'UTF-8');
-
-                    if (str_contains($titleLower, 'carnaval') || 
-                        str_contains($titleLower, 'jueves santo') || 
-                        str_contains($titleLower, 'viernes santo')) {
-                        
+                    if ($this->nationalHolidayService->isRotativeByTitle($event['title'] ?? '')) {
                         $dateKey = substr($event['start'], 0, 10); // Extrae YYYY-MM-DD
                         $holidayMap[$dateKey] = [
                             'title' => $event['title'] ?? 'Feriado Rotativo',
