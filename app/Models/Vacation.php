@@ -26,4 +26,12 @@ class Vacation extends Model
                 });
         });
     }
+
+    /**
+     * Scope para filtrar solo registros de tipo 'vacation'.
+     */
+    public function scopeOnlyVacation(Builder $query): Builder
+    {
+        return $query->where('type', 'vacation');
+    }
 }

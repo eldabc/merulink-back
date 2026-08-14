@@ -38,7 +38,7 @@ class ScheduleAutofillService
         $employees = Employee::where('department_id', $departmentId)
                         ->whereHas('employeePeriods', fn($q) => $q->activeInPeriod($start, $end))->with([
                             'employeePeriods' => fn($q) => $q->activeInPeriod($start, $end),
-                            'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
+                            'vacations'       => fn($q) => $q->overlapPeriod($start, $end)->onlyVacation(),
                         ])->get();
 
         if ($employees->isEmpty()) {
@@ -47,6 +47,7 @@ class ScheduleAutofillService
 
         // Traer las vacaciones que cruzan la quincena
         $vacations = Vacation::whereIn('employee_id', $employees->pluck('id'))
+            ->onlyVacation()
             ->overlapPeriod($start->format('Y-m-d'), $end->format('Y-m-d'))
             ->get();
 
