@@ -7,13 +7,22 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Vacation extends Model
 {
+
+    protected $fillable = [
+        'start',
+        'end',
+        'type',
+        'observations',
+        'employee_id',
+    ];
+
     public function employee() : BelongsTo
     {
         return $this->belongsTo(Employee::class);
     }
 
     /**
-     * Scope para filtrar vacaciones que se crucen con un periodo quincenal dado.
+     * Scope para filtrar vacaciones que se crucen con un periodo dado.
      */
     public function scopeOverlapPeriod(Builder $query, string $start, string $end): Builder
     {

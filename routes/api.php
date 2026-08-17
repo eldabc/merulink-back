@@ -20,6 +20,7 @@ use App\Http\Controllers\SchedulePlanningController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScraperController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\VacationController;
 
     // Ruta solo con fin informativo
     Route::get('/check-time', function () {
@@ -97,6 +98,8 @@ use App\Http\Controllers\RoleController;
         Route::apiResource('schedule-plannings', SchedulePlanningController::class);
         Route::apiResource('schedules', ScheduleController::class);
         Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);
+
+        Route::post('vacations', [VacationController::class, 'store']);
 
     
 
