@@ -99,7 +99,9 @@ use App\Http\Controllers\VacationController;
         Route::apiResource('schedules', ScheduleController::class);
         Route::get('/shifts/next-code/{department_id}', [ShiftController::class, 'getNextCodeData']);
 
+        Route::get('vacations', [VacationController::class, 'index']);
         Route::post('vacations', [VacationController::class, 'store']);
+        Route::put('vacations/{vacation}', [VacationController::class, 'update']);
 
     
 

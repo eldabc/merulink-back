@@ -20,6 +20,7 @@ class VacationResource extends JsonResource
             'end' => $this->end,
             'type' => $this->type,
             'observations' => $this->observations,
+            'employee_id' => $this->employee_id,
         ];
     }
 }
