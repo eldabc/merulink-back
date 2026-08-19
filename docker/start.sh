@@ -29,13 +29,15 @@ php artisan view:clear
 # Generar clave de la aplicación si no existe
 php artisan key:generate --force --no-interaction
 
-# Ejecutar migraciones pendientes
-echo "📊 Ejecutando migraciones..."
-php artisan migrate --force --no-interaction
-
-# Ejecutar seeders
-echo "🌱 Ejecutando seeders..."
-php artisan db:seed --force --no-interaction
+# ── Base de datos ────────────────────────────────────────
+# RUN_SEEDERS=true  → borra la BD y la reconstruye con seeders
+# RUN_SEEDERS=false → solo aplica migraciones pendientes, sin tocar datos.
+if [ "${RUN_SEEDERS:-false}" = "true" ]; then
+    echo "Borrando y reconstruyendo la BD con seeders..."
+    php artisan migrate:fresh --seed --force --no-interaction
+else
+    echo "⏭️  Seeders omitidos (RUN_SEEDERS != true)."
+fi
 
 # Regenerar caché
 php artisan config:cache

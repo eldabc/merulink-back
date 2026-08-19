@@ -16,64 +16,64 @@ class EmployeeSeeder extends Seeder
     {
         $startMonth = Carbon::now()->startOfMonth();
 
-        // $first_employee = Employee::firstOrCreate(
-        //     ['ci' => '21378987'], 
-        //     [
-        //         'num_employee'   => '100',
-        //         'first_name' => 'Ana',
-        //         'second_name' => 'Camila',
-        //         'last_name' => 'Bello',
-        //         'second_last_name' => 'Pérez',
-        //         'birthdate' => '1994-05-11',
-        //         'place_of_birth' => 'Puerto Ordaz',
-        //         'nationality' => 'V',
-        //         'sex' => 'M',
-        //         'marital_status' => 'Soltero',
-        //         'blood_type' => 'O+',
-        //         'email' => 'ana.camila@gmail.com',
-        //         'mobile_phone' => '04121234567',
-        //         'home_phone' => '02863410565',
-        //         'address' => 'PZO',
-        //         'department_id' => 1,
-        //         'position_id' => 1,
-        //         'user_id' => null,
-        //         'status' => false, // empleado prueba BAJA
-        //         'use_meru_link' => false,
-        //         'use_hid_card' => true,
-        //         'use_locker' => true,
-        //         'use_transport' => true,
+        $first_employee = Employee::firstOrCreate(
+            ['ci' => '21378987'], 
+            [
+                'num_employee'   => '100',
+                'first_name' => 'Ana',
+                'second_name' => 'Camila',
+                'last_name' => 'Bello',
+                'second_last_name' => 'Pérez',
+                'birthdate' => '1994-05-11',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'M',
+                'marital_status' => 'Soltero',
+                'blood_type' => 'O+',
+                'email' => 'ana.camila@gmail.com',
+                'mobile_phone' => '04121234567',
+                'home_phone' => '02863410565',
+                'address' => 'PZO',
+                'department_id' => 1,
+                'position_id' => 1,
+                'user_id' => null,
+                'status' => false, // empleado prueba BAJA
+                'use_meru_link' => false,
+                'use_hid_card' => true,
+                'use_locker' => true,
+                'use_transport' => true,
                 
-        //     ]
-        // );
+            ]
+        );
 
-        // Employee::firstOrCreate(
-        //     ['ci' => '21378988'], 
-        //     [
-        //         'num_employee'   => '101',
-        //         'first_name' => 'José',
-        //         'second_name' => 'Ramón',
-        //         'last_name' => 'Bello',
-        //         'second_last_name' => 'Pérez',
-        //         'birthdate' => '1994-04-30',
-        //         'place_of_birth' => 'Puerto Ordaz',
-        //         'nationality' => 'V',
-        //         'sex' => 'H',
-        //         'marital_status' => 'Soltero',
-        //         'blood_type' => 'O+',
-        //         'email' => 'jose.bello@gmail.com',
-        //         'mobile_phone' => '04121234567',
-        //         'home_phone' => '02863410565',
-        //         'address' => 'PZO',
-        //         'department_id' => 1,
-        //         'position_id' => 2,
-        //         'user_id' => null,
-        //         'status' => false, // empleado prueba vacations
-        //         'use_meru_link' => false,
-        //         'use_hid_card' => false,
-        //         'use_locker' => false,
-        //         'use_transport' => false,
-        //     ]
-        // );
+        Employee::firstOrCreate(
+            ['ci' => '21378988'], 
+            [
+                'num_employee'   => '101',
+                'first_name' => 'José',
+                'second_name' => 'Ramón',
+                'last_name' => 'Bello',
+                'second_last_name' => 'Pérez',
+                'birthdate' => '1994-04-30',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'H',
+                'marital_status' => 'Soltero',
+                'blood_type' => 'O+',
+                'email' => 'jose.bello@gmail.com',
+                'mobile_phone' => '04121234567',
+                'home_phone' => '02863410565',
+                'address' => 'PZO',
+                'department_id' => 1,
+                'position_id' => 2,
+                'user_id' => null,
+                'status' => false, // empleado prueba vacations
+                'use_meru_link' => false,
+                'use_hid_card' => false,
+                'use_locker' => false,
+                'use_transport' => false,
+            ]
+        );
 
         Employee::firstOrCreate(
             ['ci' => '21378989'], 
@@ -163,63 +163,63 @@ class EmployeeSeeder extends Seeder
         );
 
 
-        // Employee::firstOrCreate(
-        //     ['ci' => '21373456'], 
-        //     [
-        //         'num_employee'   => '701',
-        //         'first_name' => 'Carlos',
-        //         'second_name' => 'Andres',
-        //         'last_name' => 'Ramírez',
-        //         'second_last_name' => 'Pérez',
-        //         'birthdate' => '1994-04-30',
-        //         'place_of_birth' => 'Puerto Ordaz',
-        //         'nationality' => 'V',
-        //         'sex' => 'H',
-        //         'marital_status' => 'Soltero',
-        //         'blood_type' => 'O+',
-        //         'email' => 'carlos.ramirez@gmail.com',
-        //         'mobile_phone' => '04121234567',
-        //         'home_phone' => '02863410565',
-        //         'address' => 'PZO',
-        //         'department_id' => 3,
-        //         'position_id' => 8,
-        //         'user_id' => null,
-        //         'status' => true,
-        //         'use_meru_link' => false,
-        //         'use_hid_card' => false,
-        //         'use_locker' => false,
-        //         'use_transport' => false,
-        //     ]
-        // );
+        Employee::firstOrCreate(
+            ['ci' => '21373456'], 
+            [
+                'num_employee'   => '701',
+                'first_name' => 'Carlos',
+                'second_name' => 'Andres',
+                'last_name' => 'Ramírez',
+                'second_last_name' => 'Pérez',
+                'birthdate' => '1994-04-30',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'H',
+                'marital_status' => 'Soltero',
+                'blood_type' => 'O+',
+                'email' => 'carlos.ramirez@gmail.com',
+                'mobile_phone' => '04121234567',
+                'home_phone' => '02863410565',
+                'address' => 'PZO',
+                'department_id' => 3,
+                'position_id' => 8,
+                'user_id' => null,
+                'status' => true,
+                'use_meru_link' => false,
+                'use_hid_card' => false,
+                'use_locker' => false,
+                'use_transport' => false,
+            ]
+        );
 
-        // Employee::firstOrCreate(
-        //     ['ci' => '25373410'], 
-        //     [
-        //         'num_employee'   => '301',
-        //         'first_name' => 'Carmen',
-        //         'second_name' => 'Andrea',
-        //         'last_name' => 'Ramírez',
-        //         'second_last_name' => 'Pérez',
-        //         'birthdate' => '1994-04-30',
-        //         'place_of_birth' => 'Puerto Ordaz',
-        //         'nationality' => 'V',
-        //         'sex' => 'M',
-        //         'marital_status' => 'Soltero',
-        //         'blood_type' => 'O+',
-        //         'email' => 'carmen.ramirez@gmail.com',
-        //         'mobile_phone' => '04121234567',
-        //         'home_phone' => '02863410565',
-        //         'address' => 'PZO',
-        //         'department_id' => 3,
-        //         'position_id' => 8,
-        //         'user_id' => null,
-        //         'status' => true,
-        //         'use_meru_link' => false,
-        //         'use_hid_card' => false,
-        //         'use_locker' => false,
-        //         'use_transport' => false,
-        //     ]
-        // );
+        Employee::firstOrCreate(
+            ['ci' => '25373410'], 
+            [
+                'num_employee'   => '301',
+                'first_name' => 'Carmen',
+                'second_name' => 'Andrea',
+                'last_name' => 'Ramírez',
+                'second_last_name' => 'Pérez',
+                'birthdate' => '1994-04-30',
+                'place_of_birth' => 'Puerto Ordaz',
+                'nationality' => 'V',
+                'sex' => 'M',
+                'marital_status' => 'Soltero',
+                'blood_type' => 'O+',
+                'email' => 'carmen.ramirez@gmail.com',
+                'mobile_phone' => '04121234567',
+                'home_phone' => '02863410565',
+                'address' => 'PZO',
+                'department_id' => 3,
+                'position_id' => 8,
+                'user_id' => null,
+                'status' => true,
+                'use_meru_link' => false,
+                'use_hid_card' => false,
+                'use_locker' => false,
+                'use_transport' => false,
+            ]
+        );
 
         // Empleado para usuario guest (user_id = 5)
         Employee::firstOrCreate(

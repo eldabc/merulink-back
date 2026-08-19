@@ -38,6 +38,7 @@ class StoreEmployeeRequest extends FormRequest
                 'string',
             ],
             'second_name' => [
+                'nullable',
                 'string',
             ],
             'last_name' => [
