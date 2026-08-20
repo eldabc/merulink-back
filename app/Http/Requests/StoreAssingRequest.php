@@ -26,13 +26,13 @@ class StoreAssingRequest extends FormRequest
                                 ->where('padlock_id', $this->input('locker.padlock.id'))
                                 ->first();
         return [
-            'assignCode' => [
+            'assign_code' => [
                 'nullable',
                 'string',
                 'max:20',
                 Rule::unique('assigns', 'assign_code')->ignore($existingAssign)
             ],
-            'assignDate' => [
+            'assign_date' => [
                 'nullable',
                 'date',
                 'date_format:Y-m-d',
@@ -92,14 +92,14 @@ class StoreAssingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'assignCode.unique'      => 'Este código de asignación ya está registrado.',
+            'assign_code.unique'      => 'Este código de asignación ya está registrado.',
             'locker.id.exists'       => 'El locker seleccionado no es válido.',
             'locker.padlock.id.exists'  => 'El candado seleccionado no es válido.',
             'locker.id.required'     => 'El locker es obligatorio.',
             'locker.padlock.id.required' => 'El candado es obligatorio.',
             'employee.id.exists'     => 'El empleado seleccionado no existe.',
             'employee.id.integer'    => 'El id de empleado debe ser un número entero',
-            'assignDate.date'        => 'La fecha de asignación no tiene un formato válido.',
+            'assign_date.date'        => 'La fecha de asignación no tiene un formato válido.',
         ];
     }
 }

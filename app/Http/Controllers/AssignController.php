@@ -45,9 +45,9 @@ class AssignController extends Controller
                 ['locker_id' => $data['locker']['id']],
 
                 [
-                 'assign_code' => $data['assignCode'],
-                 'assign_date' => $data['assignDate']
-                     ? Carbon::parse($data['assignDate'])->format('Y-m-d')
+                 'assign_code' => $data['assign_code'],
+                 'assign_date' => $data['assign_date']
+                     ? Carbon::parse($data['assign_date'])->format('Y-m-d')
                      : null,
                  'padlock_id'  => $data['locker']['padlock']['id'],
                  'employee_id' => $employeeId,
