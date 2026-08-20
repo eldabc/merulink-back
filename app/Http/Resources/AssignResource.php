@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,7 +18,9 @@ class AssignResource extends JsonResource
         return [
             'id' => $this->id,
             'assignCode' => $this->assign_code,
-            'assignDate' => $this->assign_date,
+            'assignDate' => $this->assign_date
+                ? Carbon::parse($this->assign_date)->format('d-m-Y')
+                : null,
             'locker' => [
                 'id' => $this->locker->id,
                 'code' => $this->locker->code,

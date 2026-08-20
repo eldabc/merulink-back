@@ -35,7 +35,7 @@ class StoreAssingRequest extends FormRequest
             'assignDate' => [
                 'nullable',
                 'date',
-                'date_format:d-m-Y',
+                'date_format:Y-m-d',
             ],
             // Accede al ID dentro del objeto locker
             'locker.id' => [

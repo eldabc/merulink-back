@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+
 use App\Models\Assign;
 use App\Models\Padlock;
 use App\Models\Locker;
@@ -44,7 +46,9 @@ class AssignController extends Controller
 
                 [
                  'assign_code' => $data['assignCode'],
-                 'assign_date' => $data['assignDate'],
+                 'assign_date' => $data['assignDate']
+                     ? Carbon::parse($data['assignDate'])->format('Y-m-d')
+                     : null,
                  'padlock_id'  => $data['locker']['padlock']['id'],
                  'employee_id' => $employeeId,
                 ]
@@ -60,6 +64,8 @@ class AssignController extends Controller
             Padlock::where('id', $data['locker']['padlock']['id'])->update([
                 'status' => PadlockStatus::ASSIGNED
             ]);
+
+            $assign->load('employee');
 
             return new AssignResource($assign);
         });
