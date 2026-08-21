@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ScrapeEmployeeRequest extends FormRequest
 {
@@ -25,7 +26,8 @@ class ScrapeEmployeeRequest extends FormRequest
            'source'       => ['required', 'string', 'in:ivss,seniat'],
             'ci'          => ['required', 'string', 'min:5', 'max:10'],
             'birthdate'   => ['required_if:source,ivss', 'string', 'min:8', 'max:10'],
-            'seniat_code' => ['required_if:source,seniat', 'string', 'max:10'],  
+            'seniat_code' => ['required_if:source,seniat', 'string', 'max:10'],
+            'nationality' => ['required', Rule::in(['V', 'E'])],
         ];
 
     }
@@ -37,6 +39,7 @@ class ScrapeEmployeeRequest extends FormRequest
             'ci' => 'Cédula',
             'birthdate'   => 'Fecha de nacimiento',
             'seniat_code'   => 'Código SENIAT',
+            'nationality' => 'Nacionalidad (V/E)',
         ];
     }
 }

@@ -50,7 +50,7 @@ class SeniatScraper extends BaseScraper
      * @param string $codigo Código captcha ingresado por el usuario
      * @return array Datos extraídos
      */
-    public function scrape(string $ci, string $codigo = null): array
+    public function scrape(string $ci, string $codigo = null, string $nationality): array
     {
         $ciNorm = $this->normalizeCi($ci);
 
@@ -76,7 +76,8 @@ class SeniatScraper extends BaseScraper
             ]);
         }
 
-        Log::info("SENIAT: Consultando CI={$ciNorm}, codigo={$codigo}");
+        $pcedula = $nationality . $ciNorm;
+        Log::info("SENIAT: Consultando CI={$pcedula}, codigo={$codigo}");
 
         $response = $this->httpClient->post(self::BASE_URL, [
             'form_params' => [

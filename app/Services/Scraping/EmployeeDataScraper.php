@@ -18,7 +18,7 @@ class EmployeeDataScraper
         'seniat' => SeniatScraper::class,
     ];
 
-    public function fetchBySource(string $source, string $ci, string $birthdate, ?string $seniatCode = null): array
+    public function fetchBySource(string $source, string $ci, string $birthdate, ?string $seniatCode = null, string $nationality): array
     {
         if (!isset(self::SCRAPERS[$source])) {
             return $this->fail($ci, "Fuente no válida: {$source}");
@@ -38,14 +38,14 @@ class EmployeeDataScraper
             // }
 
             $data = match ($source) {
-                'ivss'   => $scraper->scrape($ci, $birthdate),
-                'seniat' => $scraper->scrape($ci, $seniatCode),
+                'ivss'   => $scraper->scrape($ci, $birthdate, $nationality),
+                'seniat' => $scraper->scrape($ci, $seniatCode, $nationality),
             };
 
             if (!empty($data['first_name']) && !empty($data['last_name'])) {
                 return [
                     'success' => true,
-                    'data'    => $this->formatResponse($data, $ci),
+                    'data'    => $this->formatResponse($data, $ci, $nationality),
                     'source'  => $source,
                     'error'   => null,
                 ];
@@ -73,7 +73,7 @@ class EmployeeDataScraper
     /**
      * Formatea la respuesta con los datos obtenidos, asegurando que la CI esté presente.
      */
-    private function formatResponse(array $data, string $ci): array
+    private function formatResponse(array $data, string $ci, string $nationality): array
     {
         return [
             'ci'               => $data['ci'] ?? $ci,
@@ -83,7 +83,7 @@ class EmployeeDataScraper
             'second_last_name' => $data['second_last_name'] ?? null,
             'birthdate'        => $data['birthdate'] ?? null,
             'sex'              => $data['sex'] ?? '',
-            'nationality'      => $data['nationality'] ?? '',
+            'nationality'      => $nationality,
             'source'           => $data['source'] ?? '',
         ];
     }

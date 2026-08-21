@@ -43,16 +43,16 @@ class IvssScraper extends BaseScraper
         ]);
     }
 
-    public function scrape(string $ci, string $birthdate): array
+    public function scrape(string $ci, string $birthdate, string $nationality): array
     {
         $ciNorm = $this->normalizeCi($ci);
         $birth   = $this->formatBirthdate($birthdate);
         $parts   = explode('/', $birth);
 
-        Log::info("IVSS: CI={$ciNorm}, FN={$birth}");
+        Log::info("IVSS: CI={$nationality}-{$ciNorm}, FN={$birth}");
 
         $formData = [
-            'nacionalidad_aseg' => 'V',
+            'nacionalidad_aseg' => $nationality,
             'cedula_aseg'       => $ciNorm,
             'd'                 => (int) ($parts[0]),
             'm'                 => (int) ($parts[1]),

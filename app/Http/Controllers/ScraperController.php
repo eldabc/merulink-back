@@ -25,7 +25,8 @@ class ScraperController extends Controller
             $validated['source'],
             $validated['ci'],
             $validated['birthdate'] ?? '',
-            $validated['seniat_code'] ?? null
+            $validated['seniat_code'] ?? null,
+            $validated['nationality'] ?? 'V'
         );
 
         $statusCode = ($result['success'] ?? false) ? 200 : 422;
