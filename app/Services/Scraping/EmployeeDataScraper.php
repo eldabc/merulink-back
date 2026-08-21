@@ -57,7 +57,7 @@ class EmployeeDataScraper
             return $this->fail($ci, $e->getMessage());
         }
 
-        return $this->fail($ci, "No se encontraron datos del empleado en {$source}.");
+        return $this->fail($ci, 'No se encontraron datos del empleado en ' . strtoupper($source) . '.');
     }
 
     private function fail(string $ci, string $msg): array
