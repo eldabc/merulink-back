@@ -43,7 +43,7 @@ class IvssScraper extends BaseScraper
         ]);
     }
 
-    public function scrape(string $ci, string $birthdate, string $nationality): array
+    public function scrape(string $ci, string $birthdate, string $nationality = 'V'): array
     {
         $ciNorm = $this->normalizeCi($ci);
         $birth   = $this->formatBirthdate($birthdate);
