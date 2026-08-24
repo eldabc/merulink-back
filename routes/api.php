@@ -20,6 +20,7 @@ use App\Http\Controllers\SchedulePlanningController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScraperController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\VacationController;
 
     // Ruta solo con fin informativo
@@ -44,6 +45,9 @@ use App\Http\Controllers\VacationController;
         Route::get('/user', function (Request $request) {
             return $request->user();
         })->middleware('auth:sanctum');
+
+        // Menú del usuario filtrado por permisos
+        Route::get('/me/menu', [MenuController::class, 'index']);
        
         Route::get('/lockers', [LockerController::class, 'index']);
         Route::post('/lockers', [LockerController::class, 'store']);
