@@ -15,6 +15,7 @@
 |   - path        (string)  Ruta a la que navega (usa "#" si es solo contenedor)
 |   - permission  (string)  Permiso requerido (omitir si no exige permiso)
 |   - hidden      (bool)    true = módulo no desarrollado, nunca se muestra
+|   - hideFromTop (bool)    true = se mantiene en estructura/sidebar pero NO sale en el top menú
 |   - children    (array)   Sub-items del sidebar
 |
 */
@@ -34,7 +35,7 @@ return [
 
     [
         'id'         => 'RRHH',
-        'label'      => 'Empleados',
+        'label'      => 'RRHH',
         'path'       => '/empleados',
         'permission' => 'view-employees',
         'children'   => [
@@ -79,11 +80,13 @@ return [
         // Aterrizaje del módulo (no hay ruta índice en /eventos)
         'path'       => '/eventos/eventos-meru',
         'permission' => 'view-events',
+        // No se muestra en el top menú.
+        'hideFromTop' => true,
         'children'   => [
             ['id' => 'Events', 'label' => 'Eventos Merú', 'path' => '/eventos/eventos-meru'],
             ['id' => 'EventWeddingAndDinnerHeights', 'label' => 'Noches Bodas / Cena en Alturas', 'path' => '/eventos/noche-bodas-cena-alturas'],
             ['id' => 'VeHolidaysGoogleCalendar', 'label' => 'Festivos VE / Calendario Google', 'path' => '/eventos/festivos-venezolanos-calendario-google'],
-            ['id' => 'MeruBirthDays', 'label' => 'Cumpleaños Merú', 'path' => '/eventos/cumpleaños-merú'],
+            ['id' => 'MeruBirthDays', 'label' => 'Cumpleaños Merú', 'path' => '/eventos/cumpleanos-meru'],
             ['id' => 'ExecutiveMod', 'label' => 'Ejecutivos MOD', 'path' => '/eventos/ejecutivo-mod'],
             ['id' => 'BankingMondays', 'label' => 'Lunes Bancarios', 'path' => '/eventos/lunes-bancarios'],
         ],
