@@ -5,7 +5,11 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Models\Department;
+use App\Models\SubDepartment;
+use App\Models\Position;
 use App\Observers\DepartmentObserver;
+use App\Observers\SubDepartmentObserver;
+use App\Observers\PositionObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,5 +34,7 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         Department::observe(DepartmentObserver::class);
+        SubDepartment::observe(SubDepartmentObserver::class);
+        Position::observe(PositionObserver::class);
     }
 }

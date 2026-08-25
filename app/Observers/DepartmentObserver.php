@@ -3,28 +3,23 @@
 namespace App\Observers;
 
 use App\Models\Department;
-use Illuminate\Support\Facades\Cache;
+use App\Support\DepartmentCache;
 
 class DepartmentObserver
 {
     /**
-     * Cache key usada para el listado de departamentos.
-     */
-    private const CACHE_KEY = 'departments.all';
-
-    /**
-     * Limpia la caché al crear/actualizar.
+     * Limpia la caché de departamentos al crear/actualizar.
      */
     public function saved(Department $department): void
     {
-        Cache::forget(self::CACHE_KEY);
+        DepartmentCache::clear();
     }
 
     /**
-     * Limpia la caché al eliminar.
+     * Limpia la caché de departamentos al eliminar.
      */
     public function deleted(Department $department): void
     {
-        Cache::forget(self::CACHE_KEY);
+        DepartmentCache::clear();
     }
 }
