@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Vacation extends Model
 {
@@ -14,6 +15,14 @@ class Vacation extends Model
         'type',
         'observations',
         'employee_id',
+        // Campos de desactivación temporal de servicios
+        'services_suspended_at',
+        'services_restore_at',
+        'prev_services',
+    ];
+
+    protected $casts = [
+        'prev_services' => 'array',
     ];
 
     public function employee() : BelongsTo

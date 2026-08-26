@@ -16,7 +16,7 @@ class EmployeeFilterScheduleResource extends JsonResource
     protected $holidaysMap;
     protected $isRegistred;
 
-    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null, $holidaysMap = null, $isRegistred)
+    public function __construct($resource, $events = null, $isClosed = true, $liveShifts = null, $holidaysMap = null, $isRegistred = null)
     {
         parent::__construct($resource);
         $this->events = $events ?? collect();
@@ -30,7 +30,13 @@ class EmployeeFilterScheduleResource extends JsonResource
     {
         $start = $request->input('start');
         $end = $request->input('end');
-        $hasVacation = $this->relationLoaded('vacations') && $this->vacations->isNotEmpty();
+        // Separar ausencias: vacaciones y permisos médicos son tipos distintos
+        $vacationsLoaded = $this->relationLoaded('vacations');
+        $absences = $vacationsLoaded ? $this->vacations : collect();
+        $vacations = $absences->where('type', 'vacation')->values();
+        $permissions = $absences->where('type', 'medical_leave')->values();
+        $hasVacation = $vacations->isNotEmpty();
+        $hasPermission = $permissions->isNotEmpty();
         $hasPeriods = $this->relationLoaded('employeePeriods') && $this->employeePeriods->isNotEmpty();
         $globalEvents = $this->events;
       
@@ -42,11 +48,6 @@ class EmployeeFilterScheduleResource extends JsonResource
             // Indexa los schedules cargados por fecha
             $indexedSchedules = $this->relationLoaded('schedules') ? $this->schedules->keyBy('date') : collect();
             
-            // Trae las vacaciones del empleado
-            $vacation = $hasVacation ? $this->vacations->first() : null;
-            $vacationStart = $vacation ? Carbon::parse($vacation->start)->startOfDay() : null;
-            $vacationEnd = $vacation ? Carbon::parse($vacation->end)->startOfDay() : null;
-
             // Fecha de retiro si el empleado la tiene
             $retireDate = $this->retire_date ? Carbon::parse($this->retire_date)->startOfDay() : null;
 
@@ -75,7 +76,19 @@ class EmployeeFilterScheduleResource extends JsonResource
                 if ($hasPeriods && !$hasActiveContractThisDay) {
                     $shiftData = SystemShift::RETIREMENT->getData();
                 }
-                // CASO 2: Turno registrado
+                // PRIORIDAD 2: Ausencia (permiso médico o vacaciones) → gana sobre turno registrado
+                $absenceForDay = $absences->first(function ($absence) use ($currentDate) {
+                    return $currentDate->between(
+                        Carbon::parse($absence->start)->startOfDay(),
+                        Carbon::parse($absence->end)->startOfDay()
+                    );
+                });
+                if ($absenceForDay) {
+                    $shiftData = $absenceForDay->type === 'medical_leave'
+                        ? SystemShift::PERMISSION->getData()
+                        : SystemShift::VACATIONS->getData();
+                }
+                // CASO 3: Turno registrado
                 elseif ($indexedSchedules->has($dateString)) {
                     $schedule = $indexedSchedules->get($dateString);
                     
@@ -91,10 +104,6 @@ class EmployeeFilterScheduleResource extends JsonResource
                         'checkOutTime' => $schedule->check_out_time,
                     ];
                 }
-                // CASO 3: Vacaciones
-                elseif ($vacation && $currentDate->between($vacationStart, $vacationEnd)) {
-                    $shiftData = SystemShift::VACATIONS->getData();
-                } 
                 // CASO 4: Día Libre
                 else { 
                     $shiftData = SystemShift::FREE->getData();
@@ -157,7 +166,10 @@ class EmployeeFilterScheduleResource extends JsonResource
             'status' => $this->status,
             'retireDate' => $this->retire_date,
             $this->mergeWhen($hasVacation, [
-                'vacation' => new VacationResource($this->vacations->first())
+                'vacation' => new VacationResource($vacations->first())
+            ]),
+            $this->mergeWhen($hasPermission, [
+                'permission' => new VacationResource($permissions->first())
             ]),
             'dates' => $datesMap,
         ];

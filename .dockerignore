@@ -32,6 +32,7 @@ storage/framework/cache/*
 storage/framework/views/*
 storage/framework/sessions/*
 bootstrap/cache/*
+public/storage
 
 # Archivos temporales
 tmp/

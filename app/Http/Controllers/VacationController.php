@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vacation;
 use App\Helpers\ApiResponseHelper;
+use App\Services\TemporaryDeactivationService;
 use App\Http\Resources\VacationResource;
 use App\Http\Requests\StoreVacationRequest;
 use Carbon\Carbon;
@@ -12,6 +13,9 @@ use Illuminate\Http\Request;
 
 class VacationController extends Controller
 {
+    public function __construct(private TemporaryDeactivationService $tempDeactivationService)
+    {
+    }
     /**
      * Display a listing of the resource.
      */
@@ -52,6 +56,9 @@ class VacationController extends Controller
             'observations' => $data['observations'],
             'employee_id'  => $data['employee_id'],
         ]);
+
+        // Si la ausencia ya está activa hoy, suspender servicios al instante
+        $this->tempDeactivationService->syncVacation($vacation);
 
         return ApiResponseHelper::createResponse(
             'ok',
@@ -98,6 +105,9 @@ class VacationController extends Controller
             'end'          => $data['end'],
             'observations' => $data['observations'],
         ]);
+
+        // Recalcular suspensión según las nuevas fechas
+        $this->tempDeactivationService->syncVacation($vacation);
 
         return ApiResponseHelper::createResponse(
             'ok',

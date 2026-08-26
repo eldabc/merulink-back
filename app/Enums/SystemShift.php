@@ -7,6 +7,7 @@ enum SystemShift: string
     case FREE = 'S-0';
     case RETIREMENT = 'S-1';
     case VACATIONS = 'S-2';
+    case PERMISSION = 'S-3';
 
     /**
      * Retorna la estructura completa del turno simulando un objeto de BD
@@ -46,6 +47,19 @@ enum SystemShift: string
                 'letterShift' => 'VAC',
                 'color' => '#d0d5d6',
                 'description' => 'Periodo de Vacaciones',
+                'nightShift' => null,
+                'typeShift' => null,
+                'checkInTime' => null,
+                'checkOutTime' => null,
+                'isSystemShift' => true,
+                'isNotShowShift' => true
+            ],
+            self::PERMISSION => [
+                'id' => self::PERMISSION->value,
+                'code' => 'PER',
+                'letterShift' => 'PER',
+                'color' => '#00ffd7',
+                'description' => 'Permiso médico (reposo)',
                 'nightShift' => null,
                 'typeShift' => null,
                 'checkInTime' => null,

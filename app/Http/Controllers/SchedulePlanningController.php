@@ -173,7 +173,7 @@ class SchedulePlanningController extends Controller
                 $mainGroup->whereHas('employeePeriods', fn($q) => $q->activeInPeriod($start, $end));
             }
 
-            $mainGroup->orWhereHas('vacations', fn($v) => $v->overlapPeriod($start, $end)->onlyVacation());
+            $mainGroup->orWhereHas('vacations', fn($v) => $v->overlapPeriod($start, $end));
 
         });
 
@@ -185,7 +185,7 @@ class SchedulePlanningController extends Controller
             'schedules' => function ($q) use ($start, $end) {
                 $q->whereBetween('date', [$start, $end]);
             },
-            'vacations'       => fn($q) => $q->overlapPeriod($start, $end)->onlyVacation(),
+            'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
         ])
             ->orderBy('first_name')
             ->orderBy('last_name')
@@ -228,11 +228,12 @@ class SchedulePlanningController extends Controller
                 $this->scheduleShiftService->apply($departmentShifts)
             );
 
-            // Inyectamos los del sistema convirtiéndolos a objetos limpios
+            // Inyectamos los turnos del sistema convirtiéndolos a objetos limpios
             $shifts = collect($shiftsCollection)
                 ->prepend((object) SystemShift::FREE->getData())
                 ->prepend((object) SystemShift::RETIREMENT->getData())
-                ->prepend((object) SystemShift::VACATIONS->getData());
+                ->prepend((object) SystemShift::VACATIONS->getData())
+                ->prepend((object) SystemShift::PERMISSION->getData());
         }
 
         // Agrupar por Subdepartamento para AG Grid
@@ -456,7 +457,7 @@ class SchedulePlanningController extends Controller
                 $mainGroup->whereHas('employeePeriods', fn($q) => $q->activeInPeriod($start, $end));
             }
 
-            $mainGroup->orWhereHas('vacations', fn($v) => $v->overlapPeriod($start, $end)->onlyVacation());
+            $mainGroup->orWhereHas('vacations', fn($v) => $v->overlapPeriod($start, $end));
 
         });
 
@@ -468,7 +469,7 @@ class SchedulePlanningController extends Controller
             'schedules' => function ($q) use ($start, $end) {
                 $q->whereBetween('date', [$start, $end]);
             },
-            'vacations'       => fn($q) => $q->overlapPeriod($start, $end)->onlyVacation(),
+            'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
         ])
             ->orderBy('first_name')
             ->orderBy('last_name')

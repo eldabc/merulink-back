@@ -19,4 +19,21 @@ class ScheduleService
             ->whereDate('date', '>', $date)
             ->delete();
     }
+
+    /**
+     * Elimina los turnos (schedules) de un empleado dentro de un rango de fechas.
+     * Se usa al suspender servicios por ausencia (vacación/reposo).
+     *
+     * @param int    $employeeId ID del empleado.
+     * @param string $start      Fecha inicial (inclusive, Y-m-d).
+     * @param string $end        Fecha final (inclusive, Y-m-d).
+     * @return int Número de registros eliminados.
+     */
+    public function deleteSchedulesInRange($employeeId, $start, $end)
+    {
+        return Schedule::where('employee_id', $employeeId)
+            ->whereDate('date', '>=', $start)
+            ->whereDate('date', '<=', $end)
+            ->delete();
+    }
 }

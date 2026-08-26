@@ -155,6 +155,14 @@ return [
             'days' => 30,
         ],
 
+
+        'temporary_deactivation_employees' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/employees/temporary-deactivation-employees.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+
     ],
 
 ];

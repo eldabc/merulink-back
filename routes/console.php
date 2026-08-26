@@ -33,3 +33,7 @@ Schedule::command(
 Schedule::command(
     'employees:scheduled-deactivate'
 )->dailyAt('00:00');
+
+Schedule::command(
+    'employees:sync-absences'
+)->dailyAt('00:00');
