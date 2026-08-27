@@ -67,7 +67,7 @@ class EmployeeSeeder extends Seeder
                 'department_id' => 1,
                 'position_id' => 2,
                 'user_id' => null,
-                'status' => false, // empleado prueba vacations
+                'status' => true, // empleado prueba vacations
                 'use_meru_link' => false,
                 'use_hid_card' => false,
                 'use_locker' => false,

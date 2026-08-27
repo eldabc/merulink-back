@@ -59,7 +59,7 @@ class RoleSeeder extends Seeder
             'reviewed-schedules', 'approve-schedules', 'autofill-schedules',
             // Empleados
             'create-employees', 'view-employees', 'edit-employees',
-            'change-status-employees', 'manage-merulink-tab-employees',
+            'change-status-employees', 'manage-merulink-tab-employees', 'manage-absences-tab-employees',
             // Calendario
             'view-calendar',
             // Lockers

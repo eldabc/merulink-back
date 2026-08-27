@@ -51,7 +51,8 @@ return [
         'autofill-schedules'      => 'Autocompletar horarios',
 
         // Empleados
-        'change-status-employees' => 'Cambiar estado de empleados',
-        'manage-merulink-tab-employees'     => 'Gestionar pestaña Meru Link',
+        'change-status-employees'       => 'Activar/Desactivar empleados',
+        'manage-merulink-tab-employees' => 'Gestionar pestaña Meru Link',
+        'manage-absences-tab-employees' => 'Gestionar pestaña Ausencias',
     ],
 ];

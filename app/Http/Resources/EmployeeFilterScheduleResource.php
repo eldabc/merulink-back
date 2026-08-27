@@ -61,6 +61,14 @@ class EmployeeFilterScheduleResource extends JsonResource
                 $holidayEvents = [];
                 $shiftData = null;
                 
+                // Ausencia del día (si alguna cubre esta fecha)
+                $absenceForDay = $absences->first(function ($absence) use ($currentDate) {
+                    return $currentDate->between(
+                        Carbon::parse($absence->start)->startOfDay(),
+                        Carbon::parse($absence->end)->startOfDay()
+                    );
+                });
+                
                 // PRIORIDAD 1: Retiro
                 if ($hasPeriods) {
                     $hasActiveContractThisDay = $this->employeePeriods->contains(function ($period) use ($dateString) {
@@ -72,18 +80,10 @@ class EmployeeFilterScheduleResource extends JsonResource
                     });
                 }
 
-                // SI el empleado registra periodos pero NINGUNO cubre esta fecha, se marca como RETIRO (Baja)
+                // Cadena de prioridad: RETIRO → AUSENCIA (PER/VAC) → TURNO → LIBRE
                 if ($hasPeriods && !$hasActiveContractThisDay) {
                     $shiftData = SystemShift::RETIREMENT->getData();
-                }
-                // PRIORIDAD 2: Ausencia (permiso médico o vacaciones) → gana sobre turno registrado
-                $absenceForDay = $absences->first(function ($absence) use ($currentDate) {
-                    return $currentDate->between(
-                        Carbon::parse($absence->start)->startOfDay(),
-                        Carbon::parse($absence->end)->startOfDay()
-                    );
-                });
-                if ($absenceForDay) {
+                } elseif ($absenceForDay) {
                     $shiftData = $absenceForDay->type === 'medical_leave'
                         ? SystemShift::PERMISSION->getData()
                         : SystemShift::VACATIONS->getData();

@@ -16,7 +16,17 @@ class AbsenceSyncCommand extends Command
     {
         Log::channel('temporary_deactivation_employees')
             ->info('Iniciando tarea para desactivación/activación temporal de empleados');
-        $service->sync();
+
+        $stats = $service->sync();
+
+        Log::channel('temporary_deactivation_employees')
+            ->info(sprintf(
+                'Sincronización completada: %d ausencias procesadas (suspendidas: %d, restauradas: %d, limpiezas retroactivas: %d).',
+                array_sum($stats),
+                $stats['suspended'],
+                $stats['restored'],
+                $stats['cleaned']
+            ));
 
         $this->info('Servicios de empleados sincronizados según ausencias.');
 
