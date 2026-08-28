@@ -39,6 +39,7 @@ return [
         'path'       => '/empleados',
         'permission' => 'view-employees',
         'children'   => [
+            ['id' => 'Empleados', 'label' => 'Empleados', 'path' => '/empleados', 'permission' => 'view-employees'],
             ['id' => 'Departamentos', 'label' => 'Departamentos', 'path' => '/empleados/departamentos', 'permission' => 'view-departments'],
             ['id' => 'Sub-Departamentos', 'label' => 'Sub-Departamentos', 'path' => '/empleados/sub-departamentos', 'permission' => 'view-subdepartments'],
             ['id' => 'Cargos', 'label' => 'Cargos', 'path' => '/empleados/cargos', 'permission' => 'view-positions'],
