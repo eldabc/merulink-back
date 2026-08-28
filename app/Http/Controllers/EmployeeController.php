@@ -58,6 +58,9 @@ class EmployeeController extends Controller
             $query->whereDoesntHave('assignment'); 
         }
 
+        // Ordenar por código de empleado (numérico: num_employee se guarda como string "1000", "1001"...)
+        $query->orderByRaw('num_employee::int');
+
         $employees = $query->with([
             'position.department', 
             'position.subDepartment',

@@ -51,7 +51,7 @@ class ScraperController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error'   => 'No se pudo obtener el captcha del SENIAT: ' . $e->getMessage(),
+                'error'   => 'No se pudo obtener el captcha del SENIAT: ' //. $e->getMessage(),
             ], 500);
         }
     }

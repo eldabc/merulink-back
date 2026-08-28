@@ -90,8 +90,8 @@ class IvssScraper extends BaseScraper
             }
         }
 
-        Log::warning("IVSS: Agotados " . (self::MAX_RETRIES + 1) . " intentos.");
-        throw new \RuntimeException("No se pudo conectar con el IVSS: " . $lastException->getMessage());
+        Log::warning("IVSS: Agotados " . (self::MAX_RETRIES + 1) . " intentos." . $lastException->getMessage());
+        throw new \RuntimeException("No se pudo conectar con el IVSS. ");
     }
 
     // ============================================================
