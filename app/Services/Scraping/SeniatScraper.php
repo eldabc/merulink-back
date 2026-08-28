@@ -76,7 +76,8 @@ class SeniatScraper extends BaseScraper
             ]);
         }
 
-        $pcedula = $nationality . $ciNorm;
+        // SENIAT Busca cédula SIN prefijo de nacionalidad.
+        $pcedula = $ciNorm;
         Log::info("SENIAT: Consultando CI={$pcedula}, codigo={$codigo}");
 
         $response = $this->httpClient->post(self::BASE_URL, [
@@ -87,6 +88,9 @@ class SeniatScraper extends BaseScraper
         ]);
 
         $html = (string) $response->getBody();
+
+        // TEMP DEBUG: volcar respuesta cruda del SENIAT para diagnosticar el parser
+        // file_put_contents(storage_path('logs/seniat_last_response.html'), $html);
 
         return $this->parse($html);
     }
