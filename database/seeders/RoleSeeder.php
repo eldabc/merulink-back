@@ -17,13 +17,6 @@ class RoleSeeder extends Seeder
         $guard = 'sanctum';
 
         // ROLES
-        $superAdminRole = Role::firstOrCreate([
-            'name'       => 'super-admin',
-            'guard_name' => $guard,
-        ], [
-            'name_label' => 'Super Admin',
-        ]);
-
         $adminRole = Role::firstOrCreate([
             'name'       => 'admin',
             'guard_name' => $guard,
@@ -92,8 +85,7 @@ class RoleSeeder extends Seeder
         // ASIGNACIÓN DE PERMISOS
         // Busca los permisos del guard correcto, para evitar problemas de guard mismatch al asignar permisos
         $allPermissions = Permission::where('guard_name', $guard)->get();
-
-        $superAdminRole->syncPermissions($allPermissions);
+        
         $adminRole->syncPermissions($allPermissions);
         
         $supervisorRole->syncPermissions([

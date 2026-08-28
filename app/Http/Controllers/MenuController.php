@@ -15,7 +15,12 @@ class MenuController extends Controller
      */
     public function index(Request $request)
     {
-        $permissions = $request->user()->employee?->roleSnapshot?->permissions ?? [];
+        $user = $request->user();
+
+        // superadmin: permisos del rol (Spatie); resto: permisos del role_snapshot
+        $permissions = $user->username === 'admin'
+            ? $user->getAllPermissions()->pluck('name')->values()->all()
+            : ($user->employee?->roleSnapshot?->permissions ?? []);
 
         $menu = (new MenuService())->visibleFor($permissions);
 

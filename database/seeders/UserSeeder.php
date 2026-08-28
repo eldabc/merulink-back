@@ -14,14 +14,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $superAdmin = User::firstOrCreate(
-            ['username' => 'superadmin'],
-            [
-                'password' => Hash::make('7654321'),
-            ]
-        );
-
-        $superAdmin->assignRole('super-admin');
 
         $user = User::firstOrCreate(
             ['username' => 'admin'],

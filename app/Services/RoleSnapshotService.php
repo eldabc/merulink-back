@@ -27,6 +27,12 @@ class RoleSnapshotService
             $employee->roleSnapshot()->delete();
         }
 
+        // Sincronizar el rol de Spatie en el usuario vinculado para que
+        // getRoleNames() / hasRole() y el middleware `role:` funcionen
+        if ($employee->user && $role) {
+            $employee->user->syncRoles([$roleId]);
+        }
+
         return $employee->roleSnapshot()->create([
             'role_id'     => $roleId,
             'role_name'   => $roleName,

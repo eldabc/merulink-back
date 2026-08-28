@@ -21,8 +21,8 @@ class HistoryResource extends JsonResource
             'user' => [
                 'id' => $this->user_id,
                 'userName' => $this->user->username,
-                'firstName' => $this->user->employee->first_name,
-                'lastName' => $this->user->employee->last_name,
+                'firstName' => $this->user->employee?->first_name,
+                'lastName' => $this->user->employee?->last_name,
             ],
             'date' => $this->created_at,
         ];
