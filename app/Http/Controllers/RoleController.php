@@ -16,13 +16,12 @@ use App\Http\Resources\RoleResource;
 class RoleController extends Controller
 {
     /**
-     * Devuelve todos los roles (excepto super-admin) con sus permisos
+     * Devuelve todos los roles con sus permisos
      * ya formateados en estructura de tabla para el frontend.
      */
     public function index()
     {
-        $roles = Role::where('name', '!=', 'super-admin')
-            ->with('permissions')
+        $roles = Role::with('permissions')
             ->get()
             ->map(fn($role) => [
                 'id'             => $role->id,
@@ -156,8 +155,7 @@ class RoleController extends Controller
             ->pluck('total', 'role_id');
 
         // Permisos base del rol (Spatie)
-        $basePermissions = Role::where('name', '!=', 'super-admin')
-            ->with('permissions')
+        $basePermissions = Role::with('permissions')
             ->get()
             ->mapWithKeys(fn($role) => [
                 $role->id => $role->permissions->pluck('name')->toArray(),
@@ -183,8 +181,7 @@ class RoleController extends Controller
             });
         }       
 
-        $roles = Role::where('name', '!=', 'super-admin')
-            ->orderBy('name_label')
+        $roles = Role::orderBy('name_label')
             ->get()
             ->map(function ($role) use ($counts, $allRolePermissions) {
                 $perms = $allRolePermissions[$role->id] ?? [];

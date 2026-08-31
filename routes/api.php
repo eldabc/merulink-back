@@ -73,13 +73,13 @@ use App\Http\Controllers\VacationController;
         Route::get('employees/by-permission', [EmployeeController::class, 'byPermission']);
         Route::apiResource('employees', EmployeeController::class);
 
-        Route::get('/permissions', [RoleController::class, 'allPermissions'])->middleware('role:admin|super-admin');
-        Route::get('/roles', [RoleController::class, 'index'])->middleware('role:admin|super-admin');
-        Route::post('/roles', [RoleController::class, 'store'])->middleware('role:admin|super-admin');
-        Route::get('/roles/permissions', [RoleController::class, 'getRolesPermissions'])->middleware('role:admin|super-admin');
-        Route::get('/roles/{role}', [RoleController::class, 'show'])->middleware('role:admin|super-admin');
-        Route::put('/roles/{role}', [RoleController::class, 'update'])->middleware('role:admin|super-admin');
-        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->middleware('role:admin|super-admin');
+        Route::get('/permissions', [RoleController::class, 'allPermissions'])->middleware('role:admin');
+        Route::get('/roles', [RoleController::class, 'index'])->middleware('role:admin');
+        Route::post('/roles', [RoleController::class, 'store'])->middleware('role:admin');
+        Route::get('/roles/permissions', [RoleController::class, 'getRolesPermissions'])->middleware('role:admin');
+        Route::get('/roles/{role}', [RoleController::class, 'show'])->middleware('role:admin');
+        Route::put('/roles/{role}', [RoleController::class, 'update'])->middleware('role:admin');
+        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->middleware('role:admin');
 
         // Scraper de datos de empleado desde IVSS/SENIAT
         Route::post('/scrape/employee', [ScraperController::class, 'scrapeEmployee']);
