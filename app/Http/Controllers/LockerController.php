@@ -27,7 +27,7 @@ class LockerController extends Controller
             $query->whereDoesntHave('assignment'); 
         }
 
-        $lockers = $query->get();
+        $lockers = $query->orderBy('code')->get();
 
         return LockerResource::collection($lockers);
     }

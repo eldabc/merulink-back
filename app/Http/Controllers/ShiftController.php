@@ -34,7 +34,7 @@ class ShiftController extends Controller
             $shifts = $scheduleShiftService->apply($shifts);
             
         } else {
-            $shifts = $query->with('department')->get();
+            $shifts = $query->orderBy('code')->with('department')->get();
         }
         
         return ShiftResource::collection($shifts);

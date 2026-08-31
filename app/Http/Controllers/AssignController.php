@@ -27,6 +27,10 @@ class AssignController extends Controller
         if ($request->boolean('unassigned')) {
             $query->whereDoesntHave('employee'); 
         }
+        // Ordenar por el código del locker
+        $query->orderBy(
+            Locker::select('code')->whereColumn('lockers.id', 'assigns.locker_id')
+        );
         $assigns = $query->with('employee')->get();
         return AssignResource::collection($assigns);
     }

@@ -18,7 +18,7 @@ class DepartmentController extends Controller
     public function index()
     {
         $departments = Cache::rememberForever(DepartmentCache::KEY, function () {
-            return Department::with('subDepartments', 'positions')->orderBy('name')->get();
+            return Department::with('subDepartments', 'positions')->orderByRaw('code::int')->get();
         });
 
         return DepartmentResource::collection($departments);

@@ -17,7 +17,7 @@ class PositionController extends Controller
      */
     public function index()
     {
-        $positions = Position::all();
+        $positions = Position::orderByRaw('code::int')->get();
         return PositionResource::collection($positions);
     }
 

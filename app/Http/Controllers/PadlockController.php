@@ -22,7 +22,7 @@ class PadlockController extends Controller
             $query->whereDoesntHave('assignment'); 
         }
 
-        $padlocks = $query->get();
+        $padlocks = $query->orderBy('serial')->get();
         return PadlockResource::collection($padlocks);
     }
 

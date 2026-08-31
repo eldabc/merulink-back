@@ -14,7 +14,7 @@ class SubDepartmentController extends Controller
      */
     public function index()
     {
-        $sub_departments = SubDepartment::with('department','positions')->get();
+        $sub_departments = SubDepartment::with('department','positions')->orderByRaw('code::int')->get();
         return SubDepartmentResource::collection($sub_departments);
     }
 
