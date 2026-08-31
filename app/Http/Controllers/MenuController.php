@@ -17,7 +17,7 @@ class MenuController extends Controller
     {
         $user = $request->user();
 
-        // superadmin: permisos del rol (Spatie); resto: permisos del role_snapshot
+        // admin: permisos del rol (Spatie); resto: permisos del role_snapshot
         $permissions = $user->username === 'admin'
             ? $user->getAllPermissions()->pluck('name')->values()->all()
             : ($user->employee?->roleSnapshot?->permissions ?? []);

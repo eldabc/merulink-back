@@ -5,8 +5,8 @@ $app = require_once '/var/www/html/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 // ============================================================
-// CONFIG — para añadir un permiso solo cambias $permName (y si
-// quieres, los roles). Luego ejecutas este archivo.
+// Para añadir un permiso cambiar $permName (y si
+// desea, los roles). Luego ejecutar este archivo.
 // ============================================================
 $permName = 'manage-absences-tab-employees';
 $guard    = 'sanctum';
