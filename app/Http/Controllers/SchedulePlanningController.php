@@ -78,8 +78,9 @@ class SchedulePlanningController extends Controller
                   ->whereYear('start', $currentYear);
         } else {
 
-            $dateEnd = Carbon::now()->endOfMonth()->format('Y-m-d'); 
-            $dateStart = Carbon::now()->subMonths(2)->startOfMonth()->format('Y-m-d');
+            // Rango: mes actual + mes próximo
+            $dateStart = Carbon::now()->startOfMonth()->format('Y-m-d');
+            $dateEnd = Carbon::now()->addMonth()->endOfMonth()->format('Y-m-d');
 
             // Filtro por el rango de fechas calculado
             $query->whereBetween('start', [$dateStart, $dateEnd]);
