@@ -309,6 +309,9 @@ class EmployeeController extends Controller
             $query->whereJsonContains('permissions', $permission);
         }
 
+        // Solo empleados con estatus activo
+        $query->whereHas('employee', fn($q) => $q->where('status', true));
+
         $snapshots = $query->with(['employee' => fn($q) => $q->select('id', 'first_name', 'last_name', 'position_id')
                                     ->with(['position' => fn($q) => $q->select('id', 'name', 'department_id')
                                             ->with(['department' => fn($q) => $q->select('id', 'name')])

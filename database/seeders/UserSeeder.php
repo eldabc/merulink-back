@@ -52,11 +52,6 @@ class UserSeeder extends Seeder
         );
 
         $user->assignRole('guest');
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
         
     }
 }
