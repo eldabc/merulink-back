@@ -3,6 +3,7 @@
 namespace App\Services\Scraping;
 
 use Illuminate\Support\Facades\Log;
+use App\Helpers\StringHelper;
 
 /**
  * Orquestador de scraping por source.
@@ -77,14 +78,14 @@ class EmployeeDataScraper
     {
         return [
             'ci'               => $data['ci'] ?? $ci,
-            'first_name'       => $data['first_name'] ?? null,
-            'second_name'      => $data['second_name'] ?? null,
-            'last_name'        => $data['last_name'] ?? null,
-            'second_last_name' => $data['second_last_name'] ?? null,
+            'first_name'       => isset($data['first_name']) ? StringHelper::capitalize($data['first_name']) : null,
+            'second_name'      => isset($data['second_name']) ? StringHelper::capitalize($data['second_name']) : null,
+            'last_name'        => isset($data['last_name']) ? StringHelper::capitalize($data['last_name']) : null,
+            'second_last_name' => isset($data['second_last_name']) ? StringHelper::capitalize($data['second_last_name']) : null,
             'birthdate'        => $data['birthdate'] ?? null,
-            'sex'              => $data['sex'] ?? '',
+            'sex'              => isset($data['sex']) ? StringHelper::capitalize($data['sex']) : '',
             'nationality'      => $nationality,
-            'source'           => $data['source'] ?? '',
+            // 'source'           => $data['source'] ?? '',
         ];
     }
 
