@@ -66,6 +66,7 @@ class EmployeeResource extends JsonResource
                 'roleId'      => $snapshot->role_id,
                 'roleName'    => $snapshot->role_name,
                 'permissions' => $snapshot->permissions,
+                'departments' => $snapshot->departments ?? [],
             ] : null,
             'status' => $this->status,
             'scheduledDeactivation' => $this->latestEmployeePeriod?->scheduled_deactivate_date

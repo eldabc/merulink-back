@@ -69,6 +69,7 @@ class AuthController extends Controller
                 'permissions' => $user->username === 'admin'
                     ? $user->getAllPermissions()->pluck('name')->values()->all()
                     : ($user->employee?->roleSnapshot?->permissions ?? []),
+                'departments' => $user->employee?->roleSnapshot?->departments ?? [],
             ]
         ]);
     }
@@ -118,6 +119,7 @@ class AuthController extends Controller
                 'roles' => $user->getRoleNames(),
                 'roleName' => $user->employee->roleSnapshot->role_name,
                 'permissions' => $user->employee->roleSnapshot->permissions ?? [],
+                'departments' => $user->employee->roleSnapshot->departments ?? [],
             ]
         ]);
     }

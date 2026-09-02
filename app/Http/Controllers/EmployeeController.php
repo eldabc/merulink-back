@@ -108,10 +108,14 @@ class EmployeeController extends Controller
                 $employee->user_id = $user->id;
                 $employee->save();
 
-                // Guardar role_snapshot si se asignó un rol
-                if (!empty($data['role_id'])) {
-                    $this->roleSnapshotService->save($employee, $data['role_id'], $data['permissions'] ?? []);
-                }
+                // Guardar role_snapshot
+                $this->roleSnapshotService->save(
+                    $employee,
+                    $data['role_id'],
+                    $data['permissions'] ?? [],
+                    isUpdate: false,
+                    departments: $data['departments'] ?? []
+                );
             }
 
             EmployeePeriod::create([
@@ -179,7 +183,13 @@ class EmployeeController extends Controller
 
                 // Actualizar role_snapshot si se asignó un rol
                 if (!empty($data['role_id'])) {
-                    $this->roleSnapshotService->save($employee, $data['role_id'], $data['permissions'] ?? [], isUpdate: true);
+                    $this->roleSnapshotService->save(
+                        $employee,
+                        $data['role_id'],
+                        $data['permissions'] ?? [],
+                        isUpdate: true,
+                        departments: $data['departments'] ?? []
+                    );
                 }
             } else {
                 if ($currentUser) {

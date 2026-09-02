@@ -12,10 +12,12 @@ class RoleSnapshot extends Model
         'employee_id',
         'role_name',
         'permissions',
+        'departments',
     ];
 
     protected $casts = [
         'permissions' => 'array',
+        'departments' => 'array',
     ];
 
     public function employee(): BelongsTo

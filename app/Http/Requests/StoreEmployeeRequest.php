@@ -191,6 +191,14 @@ class StoreEmployeeRequest extends FormRequest
             'permissions.*' => [
                 'string',
             ],
+            'departments' => [
+                'nullable',
+                'array',
+            ],
+            'departments.*' => [
+                'integer',
+                'exists:departments,id',
+            ],
             'retire_date' => [
                 'nullable',
                 'date',
