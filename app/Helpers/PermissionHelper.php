@@ -69,6 +69,25 @@ class PermissionHelper
     public const CRUD_ACTIONS = ['create', 'view', 'edit', 'delete'];
 
     /**
+     * Permisos FIJOS sobre módulo de empleados para el usuario de emergencia.
+     */
+    public const EMERGENCY_EMPLOYEE_PERMISSIONS = [
+        'view-employees',
+        'edit-employees',
+        'manage-merulink-tab-employees',
+    ];
+
+    /**
+     * Devuelve los permisos fijos del usuario de emergencia.
+     *
+     * @return array  Permisos de empleados del usuario de emergencia.
+     */
+    public static function emergencyEmployeePermissions(): array
+    {
+        return self::EMERGENCY_EMPLOYEE_PERMISSIONS;
+    }
+
+    /**
      * Agrupa los permisos en una estructura lista para renderizar,
      * separando acciones CRUD (por módulo) de permisos especiales.
      *

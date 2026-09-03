@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
+use App\Helpers\PermissionHelper;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -65,9 +66,10 @@ class AuthController extends Controller
                 'departmentId' => $user->employee?->department->id ?? null,
                 'roles' => $user->getRoleNames(),
                 'roleName' => $user->employee?->roleSnapshot?->role_name ?? null,
-                // admin: permisos del rol (Spatie); resto: permisos del role_snapshot
-                'permissions' => $user->username === 'admin'
-                    ? $user->getAllPermissions()->pluck('name')->values()->all()
+                // Usuario de emergencia recibe permisos FIJOS sobre empleados.
+                // Resto de usuarios: permisos del role_snapshot.
+                'permissions' => $user->username === env('EMERGENCY_USER')
+                    ? PermissionHelper::emergencyEmployeePermissions()
                     : ($user->employee?->roleSnapshot?->permissions ?? []),
                 'departments' => $user->employee?->roleSnapshot?->departments ?? [],
             ]
