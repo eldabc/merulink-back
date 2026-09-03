@@ -30,13 +30,14 @@ php artisan view:clear
 php artisan key:generate --force --no-interaction
 
 # ── Base de datos ────────────────────────────────────────
-# RUN_SEEDERS=true  → borra la BD y la reconstruye con seeders
-# RUN_SEEDERS=false → solo aplica migraciones pendientes, sin tocar datos.
+# RUN_SEEDERS=true  → borra la BD y la reconstruye con seeders.
+# RUN_SEEDERS=false → aplica SOLO las migraciones nuevas, sin tocar datos existentes.
 if [ "${RUN_SEEDERS:-false}" = "true" ]; then
     echo "Borrando y reconstruyendo la BD con seeders..."
     php artisan migrate:fresh --seed --force --no-interaction
 else
-    echo "⏭️  Seeders omitidos (RUN_SEEDERS != true)."
+    echo "Aplicando migraciones nuevas si las hay."
+    php artisan migrate --force --no-interaction
 fi
 
 # Regenerar caché
