@@ -185,15 +185,17 @@ class StoreEmployeeRequest extends FormRequest
                 'exists:roles,id',
             ],
             'permissions' => [
-                'nullable',
+                'required_if:use_meru_link,true',
                 'array',
+                'min:1',
             ],
             'permissions.*' => [
                 'string',
             ],
             'departments' => [
-                'nullable',
+                'required_if:use_meru_link,true',
                 'array',
+                'min:1',
             ],
             'departments.*' => [
                 'integer',
@@ -241,6 +243,7 @@ class StoreEmployeeRequest extends FormRequest
             'assign_id' => 'id de asignación de locker',
             'role_id' => 'rol de usuario',
             'permissions' => 'permisos de usuario',
+            'departments' => 'departamentos',
             'retire_date' => 'fecha de retiro',
         ];
     }
