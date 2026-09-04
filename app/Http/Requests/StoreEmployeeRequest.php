@@ -74,7 +74,7 @@ class StoreEmployeeRequest extends FormRequest
             ],
             'email' => [
                 'email',
-                'required',
+                'nullable',
                 'string',
                 Rule::unique('employees', 'email')->ignore($this->route('employee')),
             ],
@@ -169,7 +169,6 @@ class StoreEmployeeRequest extends FormRequest
             'contacts' => [
                 'nullable',
                 'array',
-                // 'min:1',
                 'max:5',
             ],
 
@@ -187,7 +186,6 @@ class StoreEmployeeRequest extends FormRequest
             'permissions' => [
                 'required_if:use_meru_link,true',
                 'array',
-                'min:1',
             ],
             'permissions.*' => [
                 'string',
@@ -195,7 +193,6 @@ class StoreEmployeeRequest extends FormRequest
             'departments' => [
                 'required_if:use_meru_link,true',
                 'array',
-                'min:1',
             ],
             'departments.*' => [
                 'integer',
