@@ -12,6 +12,7 @@ class ShiftVisualIdentityService
         1 => ['code' => 'B', 'color' => '#33a1c0'],
         2 => ['code' => 'C', 'color' => '#10b981'],
         3 => ['code' => 'D', 'color' => '#8b5cf6'],
+        4 => ['code' => 'E', 'color' => '#460809'],
     ];
 
     public function apply(Collection $shifts): Collection

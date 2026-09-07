@@ -58,7 +58,7 @@ enum SystemShift: string
                 'id' => self::PERMISSION->value,
                 'code' => 'PER',
                 'letterShift' => 'PER',
-                'color' => '#a600ffc9',
+                'color' => '#ff8f00',
                 'description' => 'Permiso médico (reposo)',
                 'nightShift' => null,
                 'typeShift' => null,
