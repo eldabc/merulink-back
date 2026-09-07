@@ -58,6 +58,17 @@ class EmployeeController extends Controller
             $query->whereDoesntHave('assignment'); 
         }
 
+        // Restringir a los departamentos que el usuario tiene asignados
+        // Si no tiene lista, se limita a su propio departamento.
+        $user = $request->user();
+        $allowedDepartments = $user?->employee?->roleSnapshot?->departments ?? [];
+        if (empty($allowedDepartments) && $user?->employee?->department_id) {
+            $allowedDepartments = [$user->employee->department_id];
+        }
+        if (!empty($allowedDepartments)) {
+            $query->whereIn('department_id', array_map('intval', $allowedDepartments));
+        }
+
         // Ordenar por código de empleado (numérico: num_employee se guarda como string "1000", "1001"...)
         $query->orderByRaw('num_employee::int');
 
