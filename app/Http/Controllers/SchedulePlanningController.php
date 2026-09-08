@@ -239,7 +239,7 @@ class SchedulePlanningController extends Controller
 
         // Agrupar por Subdepartamento para AG Grid
         $groupedEmployees = $employees->groupBy(function ($employee) {
-            return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
+            return $employee->position->subDepartment->name ?? '';
         });
 
         $schedulePlanning->recordHistory('approved', 'Horario visualizado');
@@ -568,7 +568,7 @@ class SchedulePlanningController extends Controller
 
         // Agrupación por Subdepartamento
         $groupedEmployees = $employees->groupBy(function ($employee) {
-            return $employee->position->subDepartment->name ?? 'Sin Subdepartamento';
+            return $employee->position->subDepartment->name ?? '';
         });
 
         // Buscar eventos que crucen con la quincena y tengan coloring_day
