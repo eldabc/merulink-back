@@ -26,12 +26,18 @@ class RoleSnapshotSeeder extends Seeder
             // Permisos que tiene ese rol en Spatie
             $permissions = $spatieRole->permissions->pluck('name')->toArray();
 
+            // El rol admin tiene acceso a todos los departamentos; el resto solo al departamento 1
+            $departments = $spatieRole->name === 'admin'
+                ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                : [1];
+
             RoleSnapshot::updateOrCreate(
                 ['employee_id' => $user->employee->id],
                 [
                     'role_id'     => $spatieRole->id,
                     'role_name'   => $spatieRole->name_label ?? $spatieRole->name,
                     'permissions' => $permissions,
+                    'departments' => $departments,
                 ]
             );
 
