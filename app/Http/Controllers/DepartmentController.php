@@ -30,11 +30,20 @@ class DepartmentController extends Controller
     public function store(StoreDepartmentRequest $request)
     {
         $data = $request->validated();
+        $user = $request->user();
+        $allowedDepartments = $user?->employee?->roleSnapshot?->departments ?? [];
 
         // Crear
         $department = Department::create([
             'code' => $data['code'],
             'name' => $data['departmentName'],
+        ]);
+
+        // Dar acceso al usuario logueado al departamento recién creado.
+        $allowedDepartments[] = $department->id;
+
+        $user?->employee?->roleSnapshot?->update([
+            'departments' => $allowedDepartments,
         ]);
 
         return new DepartmentResource($department->load(['subDepartments', 'positions']));
