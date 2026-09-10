@@ -7,6 +7,12 @@
     trait HasHistory
     {
         /**
+         * Acciones que NO son idempotentes.
+         * Un modelo puede sobrescribir esta constante.
+         */
+        protected const NON_IDEMPOTENT_ACTIONS = ['viewed'];
+
+        /**
          * Relación Polimórfica de Historiales.
          */
         public function histories()
@@ -32,17 +38,21 @@
             ]);
         }
 
-        
+
         /**
          * Registra la acción solo si no es idéntica a la última registrada
-         * (idempotencia: evita duplicar "visto", "editado", "revisado", "aprobado"...).
+         * (idempotencia: evita duplicar "editado", "revisado", "aprobado"...).
+         *
+         * Excepción: NON_IDEMPOTENT_ACTIONS se registran siempre.
          */
         public function recordHistoryOnce(string $action, ?string $description = null, ?array $payload = null, ?int $userId = null): ?History
         {
-            $last = $this->histories()->reorder('id', 'desc')->first();
+            if (!in_array($action, static::NON_IDEMPOTENT_ACTIONS, true)) {
+                $last = $this->histories()->reorder('id', 'desc')->first();
 
-            if ($last && $last->action === $action) {
-                return null;
+                if ($last && $last->action === $action) {
+                    return null;
+                }
             }
 
             return $this->recordHistory($action, $description, $payload, $userId);

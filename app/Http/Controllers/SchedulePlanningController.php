@@ -137,129 +137,129 @@ class SchedulePlanningController extends Controller
      */
     public function show(SchedulePlanning $schedulePlanning, Request $request, ShiftVisualIdentityService $scheduleShiftService)
     {
-        $start = $schedulePlanning->start;
-        $end = $schedulePlanning->end;
-        $departmentId = $schedulePlanning->department_id;
+        // $start = $schedulePlanning->start;
+        // $end = $schedulePlanning->end;
+        // $departmentId = $schedulePlanning->department_id;
 
-        // Forzar los parámetros en el Request en tiempo de ejecución.
-        // Esto hace que el Resource lea 'start' y 'end' sin modificarle una sola línea de código.
-        $request->merge([
-            'start' => $start,
-            'end'   => $end
-        ]);
+        // // Forzar los parámetros en el Request en tiempo de ejecución.
+        // // Esto hace que el Resource lea 'start' y 'end' sin modificarle una sola línea de código.
+        // $request->merge([
+        //     'start' => $start,
+        //     'end'   => $end
+        // ]);
 
-        // Evaluar el estado reactivo de cierre
-        $today = Carbon::now()->startOfDay();
-        $periodEnd = Carbon::parse($end)->startOfDay();
+        // // Evaluar el estado reactivo de cierre
+        // $today = Carbon::now()->startOfDay();
+        // $periodEnd = Carbon::parse($end)->startOfDay();
         
-        $isClosedInDB = $schedulePlanning->status === 'closed';
-        $isExpiredByDate = $today->greaterThan($periodEnd);
+        // $isClosedInDB = $schedulePlanning->status === 'closed';
+        // $isExpiredByDate = $today->greaterThan($periodEnd);
 
-        // El periodo se trata como cerrado si se cumple cualquiera de las dos
-        $isClosed = $isClosedInDB || $isExpiredByDate;
-        $query = Employee::query();
+        // // El periodo se trata como cerrado si se cumple cualquiera de las dos
+        // $isClosed = $isClosedInDB || $isExpiredByDate;
+        // $query = Employee::query();
 
-        // Filtro por departamento a través de la posición
-        $query->whereHas('position', function ($q) use ($departmentId) {
-            $q->where('department_id', $departmentId);
-        });
+        // // Filtro por departamento a través de la posición
+        // $query->whereHas('position', function ($q) use ($departmentId) {
+        //     $q->where('department_id', $departmentId);
+        // });
 
-        // Misma estrategia de empleados históricos vs activos o retiros
-        $query->where(function ($mainGroup) use ($isClosed, $start, $end) {
-            if ($isClosed) {
-                $mainGroup->whereHas('schedules', function ($q) use ($start, $end) {
-                    $q->whereBetween('date', [$start, $end]);
-                });
-            } else {
-                $mainGroup->whereHas('employeePeriods', fn($q) => $q->activeInPeriod($start, $end));
-            }
+        // // Misma estrategia de empleados históricos vs activos o retiros
+        // $query->where(function ($mainGroup) use ($isClosed, $start, $end) {
+        //     if ($isClosed) {
+        //         $mainGroup->whereHas('schedules', function ($q) use ($start, $end) {
+        //             $q->whereBetween('date', [$start, $end]);
+        //         });
+        //     } else {
+        //         $mainGroup->whereHas('employeePeriods', fn($q) => $q->activeInPeriod($start, $end));
+        //     }
 
-            $mainGroup->orWhereHas('vacations', fn($v) => $v->overlapPeriod($start, $end));
+        //     $mainGroup->orWhereHas('vacations', fn($v) => $v->overlapPeriod($start, $end));
 
-        });
+        // });
 
-        // Eager Loading con el contexto quincenal de la planificación
-        $employees = $query->with([
-            'position.department', 
-            'position.subDepartment',
-            'employeePeriods' => fn($q) => $q->activeInPeriod($start, $end),
-            'schedules' => function ($q) use ($start, $end) {
-                $q->whereBetween('date', [$start, $end]);
-            },
-            'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
-        ])
-            ->orderBy('first_name')
-            ->orderBy('last_name')
-            ->get();
+        // // Eager Loading con el contexto quincenal de la planificación
+        // $employees = $query->with([
+        //     'position.department', 
+        //     'position.subDepartment',
+        //     'employeePeriods' => fn($q) => $q->activeInPeriod($start, $end),
+        //     'schedules' => function ($q) use ($start, $end) {
+        //         $q->whereBetween('date', [$start, $end]);
+        //     },
+        //     'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
+        // ])
+        //     ->orderBy('first_name')
+        //     ->orderBy('last_name')
+        //     ->get();
 
-        // Mapeo de la barra lateral de Turnos (Shifts) según estado
-        if ($isClosed) {
-            $shifts = Schedule::query()
-                ->where('schedule_planning_id', $schedulePlanning->id)
-                ->select([
-                    'shift_id as id',
-                    'code',
-                    'letter_shift as letterShift',
-                    'color',
-                    'night_shift as nightShift',
-                    'type_shift as typeShift',
-                    'check_in_time as checkInTime',
-                    'check_out_time as checkOutTime',
-                    'active_period_time as activePeriodTime',
-                    'active_period_unit_time as activePeriodUnitTime',
-                    'rest_period_time as restPeriodTime',
-                    'rest_period_unit_time as restPeriodUnitTime',
-                    'total_period_time as totalPeriodTime',
-                    'total_period_unit_time as totalPeriodUnitTime',
-                    'allow_exit as allowExit',
-                    'allow_re_scanned as allowReScanned',
-                ])
-                ->distinct()
-                ->get()
-                ->unique('shift_id')
-                ->values();
-        } else {
-            $departmentShifts = Shift::where('department_id', $departmentId)
-                ->where('available', 'yes')
-                ->orderBy('check_in_time')
-                ->with('department')
-                ->get();
+        // // Mapeo de la barra lateral de Turnos (Shifts) según estado
+        // if ($isClosed) {
+        //     $shifts = Schedule::query()
+        //         ->where('schedule_planning_id', $schedulePlanning->id)
+        //         ->select([
+        //             'shift_id as id',
+        //             'code',
+        //             'letter_shift as letterShift',
+        //             'color',
+        //             'night_shift as nightShift',
+        //             'type_shift as typeShift',
+        //             'check_in_time as checkInTime',
+        //             'check_out_time as checkOutTime',
+        //             'active_period_time as activePeriodTime',
+        //             'active_period_unit_time as activePeriodUnitTime',
+        //             'rest_period_time as restPeriodTime',
+        //             'rest_period_unit_time as restPeriodUnitTime',
+        //             'total_period_time as totalPeriodTime',
+        //             'total_period_unit_time as totalPeriodUnitTime',
+        //             'allow_exit as allowExit',
+        //             'allow_re_scanned as allowReScanned',
+        //         ])
+        //         ->distinct()
+        //         ->get()
+        //         ->unique('shift_id')
+        //         ->values();
+        // } else {
+        //     $departmentShifts = Shift::where('department_id', $departmentId)
+        //         ->where('available', 'yes')
+        //         ->orderBy('check_in_time')
+        //         ->with('department')
+        //         ->get();
 
-            $shiftsCollection = ShiftResource::collection(
-                $this->scheduleShiftService->apply($departmentShifts)
-            );
+        //     $shiftsCollection = ShiftResource::collection(
+        //         $this->scheduleShiftService->apply($departmentShifts)
+        //     );
 
-            // Inyectamos los turnos del sistema convirtiéndolos a objetos limpios
-            $shifts = collect($shiftsCollection)
-                ->prepend((object) SystemShift::FREE->getData())
-                ->prepend((object) SystemShift::RETIREMENT->getData())
-                ->prepend((object) SystemShift::VACATIONS->getData())
-                ->prepend((object) SystemShift::PERMISSION->getData());
-        }
+        //     // Inyectamos los turnos del sistema convirtiéndolos a objetos limpios
+        //     $shifts = collect($shiftsCollection)
+        //         ->prepend((object) SystemShift::FREE->getData())
+        //         ->prepend((object) SystemShift::RETIREMENT->getData())
+        //         ->prepend((object) SystemShift::VACATIONS->getData())
+        //         ->prepend((object) SystemShift::PERMISSION->getData());
+        // }
 
-        // Agrupar por Subdepartamento para AG Grid
-        $groupedEmployees = $employees->groupBy(function ($employee) {
-            return $employee->position->subDepartment->name ?? '';
-        });
+        // // Agrupar por Subdepartamento para AG Grid
+        // $groupedEmployees = $employees->groupBy(function ($employee) {
+        //     return $employee->position->subDepartment->name ?? '';
+        // });
 
-        $schedulePlanning->recordHistoryOnce('viewed', 'Horario visualizado');
+        // $schedulePlanning->recordHistoryOnce('viewed', 'Horario visualizadooo');
 
-        return response()->json([
-            'id'           => $schedulePlanning->id,
-            'status'       => $schedulePlanning->status,
-            'observations' => $schedulePlanning->observations,
-            'isClosed'     => $isClosed,
-            'departmentId' => $departmentId,
-            'start'        => $start,
-            'end'          => $end,
-            'monthNumber'  => $schedulePlanning->month_number,
-            'shifts'       => $shifts,
-            'reviewedBy'   => $this->getWorkflowUser($schedulePlanning, 'reviewed'),
-            'approvedBy'   => $this->getWorkflowUser($schedulePlanning, 'approved'),
-            'employees'    => $groupedEmployees->map(function ($group) {
-                return EmployeeFilterScheduleResource::collection($group);
-            }),
-        ]);
+        // return response()->json([
+        //     'id'           => $schedulePlanning->id,
+        //     'status'       => $schedulePlanning->status,
+        //     'observations' => $schedulePlanning->observations,
+        //     'isClosed'     => $isClosed,
+        //     'departmentId' => $departmentId,
+        //     'start'        => $start,
+        //     'end'          => $end,
+        //     'monthNumber'  => $schedulePlanning->month_number,
+        //     'shifts'       => $shifts,
+        //     'reviewedBy'   => $this->getWorkflowUser($schedulePlanning, 'reviewed'),
+        //     'approvedBy'   => $this->getWorkflowUser($schedulePlanning, 'approved'),
+        //     'employees'    => $groupedEmployees->map(function ($group) {
+        //         return EmployeeFilterScheduleResource::collection($group);
+        //     }),
+        // ]);
     }
 
     /**
@@ -475,8 +475,7 @@ class SchedulePlanningController extends Controller
             },
             'vacations'       => fn($q) => $q->overlapPeriod($start, $end),
         ])
-            ->orderBy('first_name')
-            ->orderBy('last_name')
+            ->orderBy('num_employee')
             ->get();
 
         if ($isClosed) {
@@ -599,6 +598,7 @@ class SchedulePlanningController extends Controller
             'shifts'       => collect($shifts)->prepend(SystemShift::FREE->getData()), // Inyectar shift del sistema
             'reviewedBy'   => $this->getWorkflowUser($planning, 'reviewed'),
             'approvedBy'   => $this->getWorkflowUser($planning, 'approved'),
+            'lastModification' => Carbon::parse($planning?->updated_at)->format('d/m/Y'),
             'employees'    => $groupedEmployees->map(function ($group) use ($events, $shifts, $isClosed, $holidaysMap, $planning) {
                 return $group->map(function ($employee) use ($events, $shifts, $isClosed, $holidaysMap, $planning) {
                     return new EmployeeFilterScheduleResource($employee, $events, $isClosed, $shifts, $holidaysMap, $planning?->id);
