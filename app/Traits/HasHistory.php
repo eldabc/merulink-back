@@ -31,4 +31,20 @@
                 'payload'     => $payload,
             ]);
         }
+
+        
+        /**
+         * Registra la acción solo si no es idéntica a la última registrada
+         * (idempotencia: evita duplicar "visto", "editado", "revisado", "aprobado"...).
+         */
+        public function recordHistoryOnce(string $action, ?string $description = null, ?array $payload = null, ?int $userId = null): ?History
+        {
+            $last = $this->histories()->reorder('id', 'desc')->first();
+
+            if ($last && $last->action === $action) {
+                return null;
+            }
+
+            return $this->recordHistory($action, $description, $payload, $userId);
+        }
     }

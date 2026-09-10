@@ -242,7 +242,7 @@ class SchedulePlanningController extends Controller
             return $employee->position->subDepartment->name ?? '';
         });
 
-        $schedulePlanning->recordHistory('approved', 'Horario visualizado');
+        $schedulePlanning->recordHistoryOnce('viewed', 'Horario visualizado');
 
         return response()->json([
             'id'           => $schedulePlanning->id,
@@ -271,6 +271,9 @@ class SchedulePlanningController extends Controller
         try {
             DB::beginTransaction();
             
+            // Estatus previo, para distinguir un cambio real de estatus de una edición.
+            $previousStatus = $schedulePlanning->status;
+
             // Actualizar cabecera
             $schedulePlanning->update([
                 'start' => $data['start'],
@@ -287,7 +290,7 @@ class SchedulePlanningController extends Controller
             $this->saveSchedulesBatch($data['schedules'], $schedulePlanning);
 
             // Validar el status y registrar el historial
-            $this->recordStatusHistory($schedulePlanning, $data['status']);
+            $this->recordStatusHistory($schedulePlanning, $data['status'], $previousStatus);
 
             DB::commit();
 
@@ -389,7 +392,7 @@ class SchedulePlanningController extends Controller
     public function history($id)
     {
         $planning = SchedulePlanning::findOrFail($id);
-        $history = $planning->histories()->with('user.employee:id,user_id,first_name,last_name')->orderBy('created_at', 'desc')->get();
+        $history = $planning->histories()->with('user.employee:id,user_id,first_name,last_name')->reorder('id', 'desc')->get();
         
         return ApiResponseHelper::createResponse(
             'ok', 
@@ -579,7 +582,9 @@ class SchedulePlanningController extends Controller
         // OBTENER FERIADOS (Fijos + Google Calendar unificados)
         $holidaysMap = $this->holidayService->getHolidaysInRange($carbonStart, $carbonEnd);
 
-        if($planning?->id) $planning->recordHistory('viewed', 'Horario visualizado');
+        if ($planning?->id) {
+            $planning->recordHistoryOnce('viewed', 'Horario visualizado');
+        }
         
         return [
             'id'           => $planning?->id,
@@ -659,7 +664,7 @@ class SchedulePlanningController extends Controller
         $history = $planning->histories()
             ->whereIn('action', [$action, 'unapproved'])
             ->with('user.employee:id,user_id,first_name,last_name')
-            ->latest()
+            ->reorder('id', 'desc')
             ->first();
 
         // Si no hay historial, o la última acción fue canceladora → no enviar datos
@@ -678,24 +683,41 @@ class SchedulePlanningController extends Controller
     /**
      * Valida el status del horario y registra el historial correspondiente.
      *
-     * 'created'  → registra 'edited'
-     * 'approved' → registra 'approved'
-     * 'reviewed' → según el último estado del flujo:
-     *    approved  → registra 'unapproved'
-     *    reviewed o unapproved → registra 'edited'
-     *    ninguno   → registra 'reviewed'
+     * Reglas (idempotentes: no repiten la misma acción consecutiva):
+     *  - Sin cambio real de estatus  → 'edited'
+     *  - 'created'                   → 'edited'
+     *  - 'approved'                  → asegura un 'reviewed' previo (si falta lo registra) y luego 'approved'
+     *  - 'reviewed' desde 'approved' → 'unapproved'
+     *  - 'reviewed' ya revisado      → 'edited'
+     *  - 'reviewed' primera vez      → 'reviewed'
+     *
+     * @param  string|null  $previousStatus  Estatus antes de la operación (para detectar cambio real)
      */
-    private function recordStatusHistory(SchedulePlanning $planning, string $newStatus): void
+    private function recordStatusHistory(SchedulePlanning $planning, string $newStatus, ?string $previousStatus = null): void
     {
-        // Editado sin cambio de status
-        if ($newStatus === 'created') {
-            $planning->recordHistory('edited', 'Horario editado');
+        // Sin cambio real de estatus → solo edición
+        if ($previousStatus !== null && $newStatus === $previousStatus) {
+            $planning->recordHistoryOnce('edited', 'Horario editado');
             return;
         }
 
-        // Aprobado
+        // Editado sin flujo propio
+        if ($newStatus === 'created') {
+            $planning->recordHistoryOnce('edited', 'Horario editado');
+            return;
+        }
+
+        // Aprobado: si nunca se revisó, se registra 'reviewed' antes de aprobar.
         if ($newStatus === 'approved') {
-            $planning->recordHistory('approved', 'Horario aprobado');
+            $alreadyReviewed = $planning->histories()
+                ->where('action', 'reviewed')
+                ->exists();
+
+            if (!$alreadyReviewed) {
+                $planning->recordHistoryOnce('reviewed', 'Horario revisado');
+            }
+
+            $planning->recordHistoryOnce('approved', 'Horario aprobado');
             return;
         }
 
@@ -703,23 +725,23 @@ class SchedulePlanningController extends Controller
         if ($newStatus === 'reviewed') {
             
             $lastWorkflowAction = $planning->histories()
+                ->reorder('id', 'desc')
                 ->whereIn('action', ['approved', 'reviewed', 'unapproved'])
-                ->latest()
                 ->first();
 
             if ($lastWorkflowAction) {
                 if ( $lastWorkflowAction->action === 'approved' ) {
                     // Venía de aprobado → desaprobar
-                    $planning->recordHistory('unapproved', 'Cambió el estatus y quedó como revisado');
+                    $planning->recordHistoryOnce('unapproved', 'Cambió el estatus y quedó como revisado');
                 } elseif ( $lastWorkflowAction->action === 'reviewed' || $lastWorkflowAction->action === 'unapproved' ) {
                     // Ya estaba revisado → solo edición
-                    $planning->recordHistory('edited', 'Horario editado');
+                    $planning->recordHistoryOnce('edited', 'Horario editado');
                 } 
                 return;
             }            
             
             // Primera vez que se revisa
-            $planning->recordHistory('reviewed', 'Horario revisado');
+            $planning->recordHistoryOnce('reviewed', 'Horario revisado');
         }      
     }
 }
