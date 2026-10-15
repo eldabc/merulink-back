@@ -17,7 +17,9 @@ class ShiftResource extends JsonResource
     {
 
         $alert = null;
-        $daysSinceUpdate = Carbon::now()->diffInDays($this->updated_at);
+        // Carbon 3 devuelve diferencias firmadas por defecto: hay que pedir el valor absoluto
+        // (now()->diffInDays($updated_at) devuelve negativo si $updated_at es pasado).
+        $daysSinceUpdate = Carbon::now()->diffInDays($this->updated_at, true);
         $isModifiedInDifferentDay = !$this->updated_at->isSameDay($this->created_at);
 
         if ($isModifiedInDifferentDay && $daysSinceUpdate <= 20) {
