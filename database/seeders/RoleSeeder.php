@@ -73,6 +73,8 @@ class RoleSeeder extends Seeder
             'create-events', 'view-events', 'edit-events', 'delete-events',
             // Turnos
             'create-shifts', 'view-shifts', 'edit-shifts', 'delete-shifts',
+            // Asistencia
+            'create-attendances','view-attendances', 'edit-attendances', 'view-at-home-attendances', 'prepayroll-attendances',
         ];
 
         foreach ($permissions as $permissionName) {

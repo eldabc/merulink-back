@@ -44,6 +44,17 @@ return [
             ['id' => 'Sub-Departamentos', 'label' => 'Sub-Departamentos', 'path' => '/empleados/sub-departamentos', 'permission' => 'view-subdepartments'],
             ['id' => 'Cargos', 'label' => 'Cargos', 'path' => '/empleados/cargos', 'permission' => 'view-positions'],
             [
+                'id'       => 'Control-Asistencia-Top',
+                'label'    => 'Control Asistencia',
+                'path'     => '#',
+                'children' => [
+                    ['id' => 'En Casa', 'label' => 'En Casa', 'path' => '/empleados/asistencia/en-casa', 'permission' => 'view-at-home-attendances'],
+                    ['id' => 'Consultar', 'label' => 'Consultar', 'path' => '/empleados/asistencia/ver', 'permission' => 'view-attendances'],
+                    ['id' => 'Prenomina', 'label' => 'Prenomina', 'path' => '/empleados/asistencia/prenomina', 'permission' => 'prepayroll-attendances'],
+                    ['id' => 'Modificar', 'label' => 'Modificar', 'path' => '/empleados/asistencia/editar', 'permission' => 'edit-attendances'],
+                ],
+            ],
+            [
                 'id'       => 'Roles',
                 'label'    => 'Roles',
                 'path'     => '#',

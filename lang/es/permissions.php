@@ -33,6 +33,7 @@ return [
         'subdepartments'    => 'Subdepartamentos',
         'shifts'            => 'Turnos',
         // 'locations'         => 'Ubicaciones',
+        'attendances' => 'Asistencia',
     ],
 
     'actions' => [
@@ -54,5 +55,9 @@ return [
         'change-status-employees'       => 'Activar/Desactivar empleados',
         'manage-merulink-tab-employees' => 'Gestionar pestaña Meru Link',
         'manage-absences-tab-employees' => 'Gestionar pestaña Ausencias',
+
+        // Asistencia
+        'view-at-home-attendances' => 'En casa',
+        'prepayroll-attendances' => 'Prenomina de asistencia',
     ],
 ];
